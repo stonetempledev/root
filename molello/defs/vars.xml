@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+
+  <vars>
+    <var name="title-app">MolellO</var>
+    <var name="db-connection">conns.home</var>
+    <var name="page-top">{@basepath}\scripts\top.html</var>
+    <var name="page-menu">{@basepath}\scripts\menu.html</var>
+    <var name="page-body">{@basepath}\scripts\body.html</var>
+  </vars>
+
+</config>

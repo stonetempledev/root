@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+
+  <conns>
+    <conn name="home" des="connessione pc portatile a casa"
+      conn-string="Server=localhost\SQLEXPRESS;Database=molello;Trusted_Connection=True;" provider="System.Data.SqlClient"
+      date-format="yyyy-MM-dd HH:mm:ss" timeout='300'/>
+  </conns>
+
+</config>
