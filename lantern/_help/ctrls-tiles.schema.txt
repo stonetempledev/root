@@ -1,0 +1,20 @@
+xmlschema.tiles - derivato da xmlschema.ctrls
+
+definizione tiles
+
+<tiles>: definizione tiles
+ <contents>: definizione contenuti
+  <flip, carousel>: definizione insieme tiles
+   @href (facoltativo) [espressione parsificata]: riferimento della mattonella
+   @classes (facoltativo): classi da aggiungere agli elementi html
+   @delay (facoltativo): ritardo di animazione
+   @direction (facoltativo): verso
+   @slide-direction (facoltativo): direzione
+   @onhover (facoltativo): true, false
+   @if (facoltativo): permessi
+   @exclude (facoltativo): escludere la piastrella dalle animazioni
+   <tile>: mattonella 
+    @imgpage: inserire gli elementi html riferiti alla pagina specificata (icona o immagine)
+    @href (facoltativo) [espressione parsificata]: riferimento della mattonella
+	@title [espressione parsificata]: titolo mattonella
+	@des (facoltativo) [espressione parsificata]: descrizione mattonella

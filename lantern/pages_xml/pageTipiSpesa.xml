@@ -1,0 +1,23 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="tipi-spesa" title="Tipi scontrini" selects='load' pagesize='15'>
+      <cols key="idtipospesa(idtpsp)">
+        <col title='Cod. Scontrino' field='codspesa' des="codice tipo scontrino"/>
+        <col title='Tipo Scontrino' field='tipospesa' des="descrizione tipo scontrino" width="200"/>
+        <col title='Entrata' field='entrata' type='check' des="si tratta di un entrata?"/>
+        <col title='Note' field='note' des='note particolari' width='200'/>
+        <action des='modifica tipo spesa...' icon='mif-pencil' pageref="{@pagerefargs='tipoSpesa','type=upd'}"/>
+        <action des='elimina tipo spesa...' icon='mif-cross' primarykey='idtipospesa' demand="Sei sicuro di voler cancellare il tipo spesa?"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi tipo scontrino' ref="{@pagerefargs='tipoSpesa','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select tp.idtipospesa, tp.codspesa, tp.tipospesa, tp.entrata, tp.note
+ from tipispesa tp]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

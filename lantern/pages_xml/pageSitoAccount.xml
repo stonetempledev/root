@@ -1,0 +1,75 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="sito-account" title="Sito web" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row tooltip='utente'>
+          <field>
+            <label text='Nome Utente:'/>
+          </field>
+          <field colspan='2'>
+            <input field='user' type='text' required='true' errField='Utente'/>
+          </field>
+        </row>
+        <row tooltip='password'>
+          <field>
+            <label text='Password:'/>
+          </field>
+          <field colspan='2'>
+            <input field='password' type='text' required='true' errField='Password'/>
+          </field>
+        </row>
+        <row tooltip='note particolari'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text'/>
+          </field>
+        </row>
+        <row tooltip='utente che usa il veicolo'>
+          <field>
+            <label text='Utente:'/>
+          </field>
+          <field>
+            <combo field='idutente' fielddes='utente' select='utenti' onsel_desfield='noteutente' required='true' errField='Utente' width='200px'/>
+          </field>
+          <field>
+            <input field='noteutente' type='text' enabled='false'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[select a.idaccount, a.idsitoweb, a.[user], a.[password], a.note
+  , u.idutente, u.nome as utente, u.note as noteutente
+ from accounts a
+ left join utenti u on u.idutente = a.idutente
+  where a.idaccount = {@qrykey='idacc'}
+   and a.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL AS idaccount, NULL AS idsitoweb, NULL AS [user], NULL AS [password], NULL AS note
+       , u.idutente, u.nome as utente, u.note as noteutente
+      from (select 1 as col) tbl
+      left join utenti u on ('{@property='userTypeLogged'}' <> 'admin' and u.idutente = '{@property='userId'}')
+    ]]>
+        </select>
+        <select name='utenti' forcombos='idutente, nome, note'>
+          <![CDATA[select u.idutente, u.nome, u.note from utenti u
+      join tipiutente t on u.idtipoutente = t.idtipoutente
+      where t.tipoutente <> 'admin' and u.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update [accounts] set [user] = {@qryText='user'}, [password] = {@qryText='password'}
+         , note = {@qryText='note'}, dtupd = getDate()
+         , idutente = {@qryNumb='idutente'}
+        where idaccount = {@qrykey='idacc'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [accounts] (idsitoweb, [user], [password], note, idutente, dtins)
+      select {@qrykey='idsw'}, {@qryText='user'}, {@qryText='password'}, {@qryText='note'}, {@qryNumb='idutente'}, getdate()]]>
+        </update>
+      </queries>
+    </form>    <import name="buttons-noconfirm"/>
+  </contents>
+</page>

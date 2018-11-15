@@ -1,0 +1,129 @@
+xmlschema.config - derivato da xmlschema.ctrls
+  
+<vars>: definizione variabili   
+ <vars/var>: definizione variabile
+  @name: id variabile 
+  @des (facoltativo): descrizione utilizzo variabile
+  @toclient (facoltativo): salvata nel documento client
+  @toparse (facoltativo): va parsificata?
+
+<login>: gestione login sito
+ @active
+ @conn: nome connessione da utilizzare per l'autenticazione
+ @selid: id query di selezione per l'accesso al sito
+ @cookies
+  <login/infields> campi di selezione utente
+  <login/outfields> campi descrizione utente
+
+<grp_modules>: elenco di gruppi di moduli da includere
+ <grp_module>: ragguppamento di moduli
+   @name: nome del gruppo di moduli
+  <module>: modulo da caricare lato client
+   @type: tipo di modulo da caricare
+    'link': modulo css da linkare alla pagina
+    'script': modulo js da caricare 
+   @href [espressione parsificata]: riferimento al modulo da caricare
+
+<include>: elenco moduli da caricare sempre al caricamento della pagina  
+ <grp_module>: ragguppamento di moduli
+   @name: nome del gruppo di moduli
+  <module>: modulo da caricare lato client
+   @type: tipo di modulo da caricare
+    'link': modulo css da linkare alla pagina
+    'script': modulo js da caricare 
+   @href [espressione parsificata]: riferimento al modulo da caricare
+
+<images>
+ <images/image>: immagine
+  @name: nome immagine
+  @url [espressione parsificata]
+
+<fs>: definizione proprietà file system
+ <filetypes>: definizione tipi files
+  <filetype>: definizione tipo di file
+   @name: codice tipo file
+   @title: titolo tipo file
+   @des: descrizione tipo file
+   <infos>: definizione informazioni legate al tipo file
+    <info>: definizione singola informazione legata al tipo file
+	 @name: nome variabile
+	 @title: titolo variabile
+	 @des: descrizione variabile
+
+<websites>: elenco dei siti web  
+ <websites/website>: sito web
+  @name: nome del sito, codice identificativo all'interno dell'ambiente
+  @title: titolo del sito
+  @url: url web del sito
+  @root: percorso fisico del sito
+  @des: descrizione
+  
+<xmlschemas>: elenco schemi xml
+ <xmlschemas/xmlschema>: definizione schema xml
+  @name: nome schema
+  @file: file che contiene il tracciato dello schema
+  @des: descrizione
+
+<import_schemas>: elenco schemi di importazione
+ @base_path: percorso cartella contenente i tracciati
+ </import_schema>: definizione schema xml tracciato da importare
+  @code: codice tracciato
+  @file: nome file xml contenente il tracciato
+  @des: descrizione tracciato
+  @type [csv, db]: tipo di importazione definita
+
+<dbgroups>: definizione gruppi connessioni dati
+ <dbgroup>: definizione gruppo connessione dati
+  @name: nome gruppo
+  @schema, @meta (facoltativo): nome file schema e meta xml
+   parole chiave: {@ver} (facoltativo) versione schema o meta
+  @initscript (facoltativo): nome file xml contenente le query di inizializzazione del database
+
+<dbconns>: definizione connessioni dati
+ @default: nome connessione di default
+ @openonrequest: aprire la connessione all'atto della richiesta oppure ad ogni query di select o update 
+ <dbconn>: singola connessione al database
+  @name: nome connessione usata all'interno nell'applicazione per identificarla   
+  @des: descrizione connessione
+  @group: gruppo appartenenza della connessione
+  @type: tipo di database alla quale si accede 
+   'oledb': connessione ad un database oledb (es.: access)
+   'sqlserver': connessione ad un database sql server
+  @connString [espressione parsificata]: stringa di connessione
+   parole chiave disponibili: [[site_path]]
+  @language (facoltativo): linguaggio da impostare per l'esecuzione della query   
+
+<pages>: definizione pagine
+  @href: documento di default per le pagine
+  @menu (facoltativo): controllo menu da applicare alle pagine
+  @header (facoltativo): controllo header da applicare alle pagine
+  <pages/page>: singola pagina web
+   @name: codice associato alla pagina  
+   @title [espressione parsificata]: titolo della pagina che appare in alto e nei menu
+   @href [espressione parsificata]: url assoluto della pagina
+   @params (facoltativo): eventuale stringa di parametri da passare alla pagina
+   @class (facoltativo) [espressione parsificata]: classe da istanziare 
+   @xml (facoltativo): documento xml con i contenuti
+   @des (facoltativo) [espressione parsificata]: descrizione pagina che appare in alto e nei menu
+   @menu (facoltativo: true): boolean che indica se visualizzare il menu
+   @noheader (facoltativo: false): boolean che indica se evitare l'intestazione 
+   @noheaderprev (facoltativo: false): boolean che indica se evitare l'intestazione prev
+   @header (facoltativo): eventuale controllo personalizzato per la pagina da usare come header
+   @headerprev (facoltativo): eventuale controllo personalizzato per la pagina da usare come header prev
+   @if (facoltativo) [espressione parsificata]: condizione da rispettare
+   <pages/page/title> [espressione parsificata]: titolo da applicare alla pagina in fase di visualizzazione, sostitutivo del page/@title
+    . select
+	 @page (facoltativo): pagina contenente la select specificata
+     @select (facoltativo): identificativo della select da utilizzare
+	. cond
+     @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+	. par
+	 @par (facoltativo) - name_par=value_par: se il parametro alla pagina soddisfa la condizione 
+   <pages/page/des> [espressione parsificata]: descrizione di dettaglio da applicare alla pagina in fase di visualizzazione
+	@page (facoltativo): pagina contenente la select specificata
+    @select: identificativo della select da utilizzare
+    @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+    
+<dateformats>: definizione formati date
+ <dateformats/dateformat>: definizione formato data
+

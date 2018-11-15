@@ -1,0 +1,49 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-anagrafiche" title="Elenco Anagrafiche" selects='load' pagesize='15'>
+      <cols key="idanagrafica(idan),idutente(idusr)">
+        <col title='Nome' field='anagrafica' fieldref='weblink' type='link' tooltipfld='noteweblink' des="titolo anagrafica" width="200"/>
+        <col title='Citta' field='citta' width="130"/>
+        <col title='Provincia' field='provincia' width="50">
+          <refheader title="elenco provincie" ref="{@pageref='province'}"/>
+        </col>
+        <col title='Telefono' field='telefono' width="100"/>
+        <!--<col title='Indirizzo' field='indirizzo' width="200"/>
+        <col title='CAP' field='cap' width="100"/>-->
+        <col title='Email' field='email' width="200"/>
+        <col title='Argomenti' field='tags' des="argomenti" width='200'/>
+        <col title='Gradimento' field='notegradimento' des="gradimento" width='75'/>
+        <col title='Km dist.' type='integer' field='distanza' des="distanza in Km" width='75'/>
+        <!--<col title='Capitale Sociale' type='euro' field='capitalesociale' width='150'/>
+        <col title='Nro dipendenti' type='integer' format="#,#" field='nrodipendenti' width='150'/>
+        <col title='Note' field='note' des='descrizione sito web' width='200'/>-->
+        <col title='Utente' field='utente' tooltipfld='desutente' des="utente che ha inserito il sito">
+          <refitem ref="{@pagerefargs='utente','type=upd'}" usertypes="admin"/>
+        </col>
+        <action des='modifica anagrafica...' icon='mif-pencil' pageref="{@pagerefargs='anagrafica','type=upd'}"/>
+        <action des='elimina anagrafica...' icon='mif-cross' primarykey='idanagrafica' demand="Sei sicuro di voler cancellare l'anagrafica?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi anagrafica' ref="{@pagerefargs='anagrafica','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select a.idanagrafica, a.anagrafica, a.citta, a.telefono
+  , a.indirizzo, a.email, a.cap, a.note, [dbo].[getListOfTags](idtags) as tags  
+  , a.distanza, a.capitalesociale, a.nrodipendenti
+  , u.idutente, u.nome as utente, u.note as desutente 
+  , p.idprovincia, p.citta as citta_pr, p.provincia
+  , i.stelle, i.note as notegradimento
+  , w.weblink, w.note as noteweblink
+ from anagrafiche a
+ left join utenti u on u.idutente = a.idutente
+ left join province p on a.idprovincia = p.idprovincia
+ left join indicegradimento i on a.idgradimento = i.idgradimento
+ left join anagraficheweblinks aw on aw.idanagrafica = a.idanagrafica and aw.principale = 1
+ left join weblinks w on aw.idweblink = w.idweblink
+ where a.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

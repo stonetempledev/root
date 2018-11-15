@@ -1,0 +1,32 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-saldi" title="Elenco saldi conto corrente" selects='load' pagesize='45'>
+      <cols key="idsaldoccorrente(idscc)">
+        <col title='C.Corrente' field='nroccorrente' tooltipfld='noteccorrente' des="n.ro c.corrente relativo" width="100"/>
+        <col title='Quando' field='data' type='date' formatDate='dataEstesa' des='quando è stato effettuato il movimento'/>
+        <col title='Causale' field='causale' des='causale movimento' width='300'/>
+        <col title='Movimento' field='movimento' type='euro' summary='SUM(isnull(movimento, 0))' des='i soldi spesi o presi'/>
+        <col title='Saldo' field='saldo' type='euro' des='saldo del conto al momento'/>
+        <col title='Note' field='note' des='note o dettaglio movimento' width='600'/>
+      </cols>
+      <buttons>
+        <button text='Carica saldi' ref="{@pagerefargs='import_csv','type=csv&amp;code=cc&amp;idcc={@qrykey='idcc'}'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[SELECT s.idsaldoccorrente, s.idccorrente, s.causale, s.data, s.movimento, s.saldo, s.note
+    , c.nroccorrente, c.note as noteccorrente
+    --, u.idutente, u.nome as utente, u.note as desutente
+ from saldoccorrente s
+ join ccorrente c on c.idccorrente = s.idccorrente
+ --left join utenti u on u.idutente = s.idutente
+ where s.idccorrente = {@qrykey='idcc'}
+  and ('{@qrypar='neg'}' = '' or ('{@qrypar='neg'}' = '1' and s.movimento < 0))
+  and ('{@qrypar='pos'}' = '' or ('{@qrypar='pos'}' = '1' and s.movimento > 0))
+  and ('{@qrypar='from'}' = '' or ('{@qrypar='from'}' <> '' and s.data >= convert(datetime, '{@qrypar='from'}', 112)))
+  and ('{@qrypar='to'}' = '' or ('{@qrypar='to'}' <> '' and s.data <= convert(datetime, '{@qrypar='to'}', 112)))]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

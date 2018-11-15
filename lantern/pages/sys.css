@@ -1,0 +1,102 @@
+﻿input.input-hidden
+{
+	display: none !important;
+}
+div.rcvry-sec
+{
+	margin-top: 20px;
+	margin-bottom: 20px;
+	padding-left: 10px;
+	border-left: 2pt solid azure;
+}
+div.rcvry-sec:hover
+{
+	margin-top: 20px;
+	margin-bottom: 20px;
+	padding-left: 10px;
+	border-left: 2pt solid lightblue;
+}
+span.rcvry-sec-title
+{
+	font-weight: bold;
+	display: block;
+	width: 100%;
+	margin-bottom: 20px;
+	font-size: 120%;
+}
+span.rcvry-sec-subtitle
+{
+    color: Gray;	
+	margin-right: 5px;
+}
+span.rcvry-sec-info
+{
+	margin-right: 2px;
+}
+span.rcvry-sec-err
+{
+	margin-right: 2px;
+	color:tomato;
+}
+input.rcvry-sec-info
+{
+	margin-right: 2px;
+}
+a.rcvry-sec-info
+{
+	margin-right: 2px;
+}
+input.rcvry-btn
+{
+	background-color: transparent !important;
+	font-family: 'Segoe UI Light_' , 'Open Sans Light' , Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12pt !important;
+	display: inline-block;
+	border: 1pt solid white !important;
+	vertical-align: middle;
+	margin-top: 11px !important;
+	padding-top: 10px;
+	padding-bottom: 25px;
+	/*margin-left: 5px;*/
+}
+input.rcvry-btn-little
+{
+	background-color: transparent !important;
+	font-family: 'Segoe UI Light_' , 'Open Sans Light' , Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12pt !important;
+	display: inline-block;
+	border: 1pt solid white !important;
+	vertical-align: middle;
+	margin-left: 5px;
+}
+input.rcvry-btn:hover
+{
+	background-color: transparent !important;
+	border: 1pt solid lightblue !important;
+	/*margin-left: 5px;*/
+}
+input.rcvry-btn-little:hover
+{
+	background-color: transparent !important;
+	border: 1pt solid lightblue !important;
+	margin-left: 5px;
+}
+a.btn-section
+{
+	color: Black;
+	border: 1pt solid white;
+	font-family: 'Segoe UI Light_' , 'Open Sans Light' , Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12pt;
+	margin-top: 10px !important;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	display: inline-block;
+	vertical-align: middle;
+}
+a.btn-section:hover
+{
+	color: Black;
+	border: 1pt solid lightblue;
+}

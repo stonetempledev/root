@@ -1,0 +1,131 @@
+<Job id="scripting">
+<script language="JScript">
+
+// arguments: "<xml path>"
+
+try{
+
+	if(WScript.Arguments.Item(0) == "setNodeXml")
+		setNodeXml(WScript.Arguments.Item(1), WScript.Arguments.Item(2), WScript.Arguments.Item(3));
+	else if(WScript.Arguments.Item(0) == "removeChildsNode")
+		removeChildsNode(WScript.Arguments.Item(1), WScript.Arguments.Item(2));
+	else if(WScript.Arguments.Item(0) == "setAttrXml")
+		setAttrXml(WScript.Arguments.Item(1), WScript.Arguments.Item(2), WScript.Arguments.Item(3), parseValue(WScript.Arguments.Item(4)));
+	else if(WScript.Arguments.Item(0) == "setAttrXmlObb")
+		setAttrXml(WScript.Arguments.Item(1), WScript.Arguments.Item(2), WScript.Arguments.Item(3), parseValue(WScript.Arguments.Item(4)), false);
+	else if(WScript.Arguments.Item(0) == "getLocalIP")
+		setTxtFile(WScript.Arguments.Item(1	), getLocalIP());
+	else
+		throw new Error("la funzione '" + WScript.Arguments.Item(0) + "' non è gestita!");
+
+	WScript.Quit(1); 
+
+} catch(e) {
+	WScript.Echo(e.message);
+	WScript.Quit(-1); 
+}
+
+function parseValue(value)
+{
+	var parsed = new String(value);
+	
+	return parsed.replace(/@perc;/g, "%")
+}
+
+function setNodeXml(pathxml, pathnode, value)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml))
+		throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+
+	if(doc.selectSingleNode(pathnode) == null)
+		throw new Error ("il nodo '" + pathnode + "' non esiste!");
+	 
+	doc.selectSingleNode(pathnode).text = value;
+
+	doc.save(pathxml);
+}
+
+function removeChildsNode(pathxml, pathnode)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml))
+		throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+	
+	if(doc.selectSingleNode(pathnode) == null)
+		throw new Error ("il nodo '" + pathnode + "' non esiste!");
+
+	while(doc.selectSingleNode(pathnode).childNodes.length > 0)
+		doc.selectSingleNode(pathnode).removeChild(doc.selectSingleNode(pathnode).childNodes[0]);
+	
+	doc.save(pathxml);
+}
+
+function setAttrXml(pathxml, pathnode, attr, value, facoltativo)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml))
+		throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+
+	var node = doc.selectSingleNode(pathnode);
+	if(node == null)
+		throw new Error ("il nodo '" + pathnode + "' non esiste!");	 
+	
+	if(value != null && value != "")
+	{
+		if(node.selectSingleNode("@" + attr) == null)
+			node.attributes.setNamedItem(node.ownerDocument.createAttribute(attr));
+					
+		node.selectSingleNode("@" + attr).text = value;
+	}
+	else
+	{
+		if(facoltativo == null || facoltativo)
+		{
+			if(node.selectSingleNode("@" + attr) != null)
+				node.attributes.removeNamedItem(attr);
+		}
+		else
+		{
+			if(node.selectSingleNode("@" + attr) == null)
+				node.attributes.setNamedItem(node.ownerDocument.createAttribute(attr));
+				
+			node.selectSingleNode("@" + attr).text = "";
+		}
+	}
+	
+	doc.save(pathxml);
+}
+
+function setTxtFile(filepath, text)
+{
+	var fs = WScript.CreateObject("Scripting.FileSystemObject");
+	var txt = fs.CreateTextFile(filepath, true);
+	txt.WriteLine (text);
+	txt.Close();
+}
+
+function getLocalIP()
+{
+	// create shell 
+	var ws = WScript.createobject ("WScript.shell");
+	var objWshScriptExec = ws.Exec("ipconfig");
+	var objStdOut = objWshScriptExec.StdOut;
+
+	var ip = "";
+	while(!objStdOut.AtEndOfStream)
+	{	
+		var line = objStdOut.ReadLine();
+		if(line.indexOf("Indirizzo IPv4") > 0)
+		{ 
+			var start = line.indexOf(":") + 2;
+			ip = line.substr(start, line.length);
+			break;
+		}
+	}
+	
+	return ip;
+}
+
+</script>
+</Job>

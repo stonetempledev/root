@@ -1,0 +1,3 @@
+xmlschema.db.meta
+
+definizione relazioni tabelle database

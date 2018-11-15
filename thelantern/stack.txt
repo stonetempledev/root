@@ -1,0 +1,22 @@
+﻿/ nodes
+ / add, remove, rename
+ ~ sections, notes, titles, scadenze
+  i, stack, crypt, docuteck references, links...
+. fondamenta
+ . log tabella azioni utenti
+ . gestione gruppi utenti
+ . gestione capo gruppo
+ . gestione utente
+  . foto
+  . stile
+  . enum stati utente
+  . comandi 
+   . '[list users]'
+  . lista degli utenti
+   . abilita, disabilita, attivita, reimposta la password, ultimo aggiornamento
+ . tree-lantern: tutto basato su un'unica gerarchia di elementi definita nel database
+  . i nodi-rami di questo albero saranno di vari tipi e visualizzati in un certo modo (DA PENSARE)
+  . ogni utente avrà dei permessi su questa gerarchia
+ . validazione documenti xml
+ . editor XML - XML schema
+

@@ -1,0 +1,31 @@
+<form schema="xmlschema.ctrls" title="Login" width="300px" height="200px" >
+  <contents>
+    <row>
+      <field>
+        <label text='Utente:'/>
+      </field>
+      <field>
+        <input field='userName' type='text' jskeydown='return keydown(event, this)'/>
+      </field>
+    </row>
+    <row>
+      <field>
+        <label text='Password:'/>
+      </field>
+      <field>
+        <input field='userPwd' type='pwd' jskeydown='return keydown(event, this)'/>
+      </field>
+    </row>
+    <row>
+      <field class='footer' maxspan='true' right='true'>
+        <button name='login' type='action' action='login' value='Entra'/>
+      </field>
+    </row>
+  </contents>
+  <queries>
+    <select name='idUser'>
+      <![CDATA[select u.idutente
+   from utenti u where u.nome = {@qryText='userName'}]]>
+    </select>
+  </queries>
+</form>

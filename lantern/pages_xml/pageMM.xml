@@ -1,0 +1,12 @@
+<page schema="xmlschema.ctrls">
+  <include>
+    <grp_module name='vis'/>
+  </include>
+  <queries>
+    <select name='path_file' des="percorso file">
+      <![CDATA[select ('{@var='filesFolder'}' + dbo.[getPathOfFolder](idfolder)) as rel_path
+      , [filename] + '.' + isnull([ext], '') as file_name
+ from files where idfile = {@qrykey='idfile'}]]>
+    </select>
+  </queries>
+</page>

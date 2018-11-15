@@ -1,0 +1,7 @@
+risultato recordset
+
+<rows>: elenco righe
+
+<rows/row>: singolo record
+
+<rows/row/*>: contenuto singolo campo

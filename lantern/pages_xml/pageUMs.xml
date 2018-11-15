@@ -1,0 +1,21 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-um" title="Unità di misura" selects='load' pagesize='15'>
+      <cols key="idunitamisura(idms)">
+        <col title='Unità di misura' field='unitamisura' des="descrizione unita di misura" width="200"/>
+        <col title='Note' field='note' des='note particolari' width='200'/>
+        <action des='modifica unita di misura...' icon='mif-pencil' pageref="{@pagerefargs='um','type=upd'}"/>
+        <action des='elimina unita di misura...' icon='mif-cross' primarykey='idunitamisura' demand="Sei sicuro di voler cancellare l'unita di misura?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi unita di misura' ref="{@pagerefargs='um','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[SELECT u.idunitamisura, u.unitamisura, u.note
+ from unitamisura u]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

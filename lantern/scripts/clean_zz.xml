@@ -1,0 +1,8 @@
+<root schema="xmlschema.script" title='rimozione dati sulle tabelle di storico' des='ripulita tabelle di backup'>
+  <script>
+    <for_each_table filter_type='history'>
+      <delete_data/>
+    </for_each_table>
+  </script>
+</root>
+

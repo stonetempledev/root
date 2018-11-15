@@ -1,0 +1,124 @@
+
+xmlschema.form - derivato da xmlschema.ctrls
+
+definizione form
+
+<form, form-attach>
+ @title [espressione parsificata]: titolo form
+ @selects: identificativi delle queries separate da ',' da valutare per il caricamento dei dati
+ @updates: identificativi delle queries separate da ',' da valutare per l'aggiornamento dei dati
+ @class (facoltativo)
+ @width (facoltativo): larghezza form
+ @height (facoltativo): altezza form
+ @flds-width (facoltativo): elenco delle larghezze applicate ai fields della form separate da ','
+ @if (facoltativo) [espressione parsificata]: condizione da rispettare
+ @enabled_if (facoltativo) [espressione parsificata]: abilitare o meno tutti i controlli all'interno del form
+
+<contents>: contenuti visualizzati
+    
+<contents/row> (multiple): elemento TR tabella struttura form
+ @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+ @tooltip (facoltativo): tooltip da applicare alla riga
+ @enabled_if (facoltativo) [espressione parsificata]: abilitare o meno tutti i controlli all'interno della riga 
+ @style (facoltativo): stile da applicare alla riga
+
+<contents/row/field> (multiple): elemento TD tabella struttura 
+ @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+ @title: titolo da applicare all'elemento fieldset che verrà generato
+ @tooltip (facoltativo): tooltip da applicare al campo
+ @width (facoltativo): larghezza colonna
+ @colspan (facoltativo): attributo colspan TD
+ @right (facoltativo): allineamento del contenuto a destra
+ @maxspan (facoltativo): calcolo automatico dello span con il massimo numero di colonne definite
+ @class (facoltativo): classe da applicare al TD  
+
+<contents/row/field/*>: attributi comuni ai controlli
+ @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+
+<contents/row/field/label> (multiple): etichetta
+ @field (facoltativo): nome campo (potrebbe corrispondere con il nome del campo della select)
+ @ref (facoltativo) [espressione parsificata]: riferimento alla pagina da lanciare 
+  || @open (facoltativo) [espressione parsificata]: riferimento alla pagina da lanciare con apertura di un nuovo tab e gestione chiusura automatica
+ @width (facoltativo): larghezza
+ @align (facoltativo): allineamento testo
+ @text: testo libero impostato di default
+ @dateformat (facoltativo): formato data
+ @style (facoltativo): stile libero 
+ @title (facoltativo): titolo da applicare alla label
+   
+<contents/row/field/input> (multiple): casella di imputazione libera 
+ @field: nome campo (potrebbe corrispondere con il nome del campo della select)
+ @type: 'pwd, 'text', 'int', 'check', 'date', 'euro', 'migliaia', 'real', 'upload', 'textarea'
+ @width (facoltativo): larghezza            
+ @enabled (facoltativo: false): 'true', 'false'
+ @enabled_if (facoltativo) [espressione parsificata]: abilitazione intelligente
+ @hide (facoltativo se type = 'text': false): 'true', 'false'
+ @onclientchange (facoltativo): funzione lato client da richiamare in caso di modifica del campo  
+ @required (facoltativo: false): obbligatorio!?!?
+ @errField (facoltativo): nome del campo da visualizzare per gli errori
+ @formatDate (facoltativo type 'date'): formato data da applicare fra quelli disponibili definiti nel config /root/dateformats
+ @jsblur (facoltativo): funzione javascript innescata sull'onblur del controllo editabile, testo direttamente immesso nell'onblur del controllo html
+ @jskeydown (facoltativo): funzione javascript innescata sull'onkeydown del controllo editabile
+ @jskeyup (facoltativo): funzione javascript innescata sull'onkeyup
+ @maxlength (facoltativo): massima lunghezza caratteri imputabili (per il tipo 'text', 'pwd') è necessario specificare tabella.campo 
+  oppure semplicemente il valore numerico
+
+<contents/row/field/list> (multiple): lista di elementi
+ @field: nome campo 
+ @select: identificativo della query contenente i dati
+ @width (facoltativo): larghezza
+ @enabled (facoltativo): abilitazione 'secca' della lista
+ @enabled_if (facoltativo) [espressione parsificata]: abilitazione intelligente
+
+<contents/row/field/combo> (multiple): combo
+ @field (facoltativo): campo codice identificativo 
+ @fielddes: campo contenente la descrizione del valore identificativo presente nella select legata al form
+ @select: identificativo della query contenente i dati 
+ @width (facoltativo): larghezza
+ @enabled (facoltativo: false): 'true', 'false'
+ @enabled_if (facoltativo) [espressione parsificata]: abilitazione intelligente
+ @required (facoltativo: false): obbligatorio!?!?
+ @errField (facoltativo): nome del campo da visualizzare per gli errori
+ @onsel_desfield (facoltativo): aggiornamento del campo specificato con il valore descrittivo sulla selezione del combo
+ @onsel_setkey (facoltativo): parametro della pagina da impostare sulla selezione del combo
+ @onsel_resetkeys (facoltativo): parametri della pagina da resettare sulla selezione del combo
+ @title (facoltativo): titolo combo
+ @tolist (facoltativo): controllo list di riferimento
+ @can_edit (facoltativo): è possibile editare (tipo casella di testo?)
+ @jsblur (facoltativo): funzione javascript innescata sull'on blur del controllo editabile, testo direttamente immesso nell'onblur del controllo html
+ @jsselect (facoltativo): specificare solo il nome della funzione javascript innescata sulla selezione della voce del combo 
+
+ <contents/row/field/button> (multiple): pulsante
+  @name: nome univoco del pulsante
+  @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+  @type: tipo di pulsante
+   . 'submit': aggiornamento dati form
+   . 'action': azione libera gestita nella pagina
+    @action: nome azione da trattare a codice
+	@demand (facoltativo): domandina topica prima della conferma
+	@check (facoltativo): vuoi convalidare i controlli	
+   . 'exit': uscita dalla form
+  @value: Testo contenuto nel bottone 
+  @tooltip: tooltip da applicare al pulsantillo
+  @noconfirm (facoltativo): evitare il messaggio finale di conferma degli aggiornamenti
+   || @confirm (facoltativo): visualizzare il messaggio finale di conferma degli aggiornamenti
+  @ref (facoltativo): vai all'url in uscita  
+  <par>: parametri utilizzati per la gestione dell'azione libera letti dalla pagina
+  @style (facoltativo): stile libero 
+
+ <contents/row/field/input/if> (multiple) [espressione parsificata]: convalida del codice inserito
+ <contents/row/field/combo/if> (multiple) [espressione parsificata]: convalida del codice inserito
+  @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+  @select (facoltativo): identificativo della query di selezione da eseguire per poter parsificare il codice di controllo
+   nota bene: per la select specificata non viene presa in considerazione la eventuale condizione specificata
+  @message: mnessaggio che appare se la condizione inserita torna 'false'
+  nota bene: la condizione scritta come codice c# deve tornare 'true' per bloccare l'aggiornamento dei dati, 'false' se il dato inserito è corretto.
+   se non viene specificato codice c# allora viene presa come condizione l'esistenza stessa di un record nella select specificata.
+    
+<contents/row/field/newline> (multiple): nuova linea
+
+<jscripts>: insieme di scripts javascript lato client da inserire
+
+<jscripts/jscript> (multiple): singolo script javascript da inserire lato client 
+
+

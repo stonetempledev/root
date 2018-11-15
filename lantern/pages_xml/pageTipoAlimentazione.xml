@@ -1,0 +1,39 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="tipo-alimentazione" title="Tipo carburante" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row>
+          <field>
+            <label text='Tipo Alimentazione:'/>
+          </field>
+          <field colspan='2'>
+            <input field='tipoalimentazione' type='text' enabled='true' required='true' errField='Tipo Alimentazione'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text' enabled='true'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}">
+          <![CDATA[SELECT t.idtipoalimentazione, t.tipoalimentazione, t.note
+ from tipialimentazione t
+ where t.idtipoalimentazione = {@qrykey='idta'}]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update tipialimentazione set tipoalimentazione = {@qryText='tipoalimentazione'}, [note] = {@qryText='note'}, dtupd = getdate()
+        where idtipoalimentazione = {@qrykey='idta'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [tipialimentazione] (tipoalimentazione, note, dtins)       
+      select {@qryText='tipoalimentazione'}, {@qryText='note'}, getdate()]]>
+        </update>
+      </queries>
+    </form>    <import name="buttons"/>
+  </contents>
+</page>

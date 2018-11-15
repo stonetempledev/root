@@ -332,3 +332,9 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+# system folders
+_tmp/
+_backups/
+_log/
+_files/

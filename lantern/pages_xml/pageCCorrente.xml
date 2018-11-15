@@ -1,0 +1,64 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-cc" title="Conto Corrente" hcenter="true" selects="load" updates="update" width="600px" height="200px">
+      <contents>
+        <row tooltip='n.ro conto'>
+          <field>
+            <label text='N.ro C.Corrente:'/>
+          </field>
+          <field colspan='2'>
+            <input field='nroccorrente' type='text' required='true' errField='N.ro C.Corrente'/>
+          </field>
+        </row>
+        <row tooltip='note particolari'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text'/>
+          </field>
+        </row>
+        <row tooltip='utente intestatario o responsabile'>
+          <field>
+            <label text='Utente:'/>
+          </field>
+          <field>
+            <combo field='idutente' fielddes='utente' select='utenti' onsel_desfield='noteutente' required='true' errField='Utente' width='200px'/>
+          </field>
+          <field>
+            <input field='noteutente' type='text' enabled='false'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[select c.idccorrente, c.nroccorrente, c.note, c.idutente
+   , u.nome as utente, u.note as noteutente
+  from [ccorrente] c
+  left join utenti u on u.idutente = c.idutente
+  where c.idccorrente = {@qrykey='idcc'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL as idccorrente, NULL as nroccorrente, NULL as note, NULL as idutente, NULL as utente, NULL as noteutente
+      from (select 1 as col) tbl
+    ]]>
+        </select>
+        <select name='utenti' forcombos='idutente, nome, note'>
+          <![CDATA[select u.idutente, u.nome, u.note from utenti u
+      join tipiutente t on u.idtipoutente = t.idtipoutente
+      where t.tipoutente <> 'admin' and u.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update [ccorrente]   set nroccorrente = {@qryText='nroccorrente'}
+       , note = {@qryText='note'}, idutente = {@qryNumb='idutente'}, dtupd = getDate()
+        where idccorrente = {@qrykey='idcc'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [ccorrente] (nroccorrente, note, idutente, dtins)       
+      select {@qryText='nroccorrente'}, {@qryText='note'}, {@qryNumb='idutente'}, getdate()]]>
+        </update>
+      </queries>
+    </form>
+    <import name="buttons"/>
+  </contents>
+</page>

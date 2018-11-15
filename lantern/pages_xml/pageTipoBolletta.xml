@@ -1,0 +1,59 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="tipo-bolletta" title="Tipo bolletta" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row>
+          <field>
+            <label text='Tipo Bolletta:'/>
+          </field>
+          <field colspan='2'>
+            <input field='tipobolletta' type='text' enabled='true' required='true' errField='Tipo Bolletta'/>
+          </field>
+        </row>
+        <row tooltip='anagrafica di default'>
+          <field>
+            <label text='Anagrafica:'/>
+          </field>
+          <field>
+            <combo field='idanagrafica' fielddes='anagrafica' select='anagrafiche' onsel_desfield='anagrafica' errField='Anagrafica' width='200px'/>
+          </field>
+          <field>
+            <input field='anagrafica' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text' enabled='true'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}">
+          <![CDATA[SELECT b.idtipobolletta, b.tipobolletta, b.note
+ , a.idanagrafica, a.anagrafica as anagrafica
+ from tipibolletta b
+ left join anagrafiche a on b.idanagrafica = a.idanagrafica
+ where b.idtipobolletta = {@qrykey='idtpbll'}]]>
+        </select>
+        <select name='anagrafiche' forcombos='idanagrafica, anagrafica, note'>
+          <![CDATA[select tbl.idanagrafica, tbl.anagrafica, tbl.note
+ from (select idanagrafica, anagrafica, note, idtags
+ , (select idtag from tags where tag = 'bollette') as idtag
+ from anagrafiche) tbl
+ where idtags like '%[' + cast(idtag as varchar) + ']%']]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update tipibolletta set tipobolletta = {@qryText='tipobolletta'}, idanagrafica = {@qryNumb='idanagrafica'}, [note] = {@qryText='note'}, dtupd = getdate()
+        where idtipobolletta = {@qrykey='idtpbll'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [tipibolletta] (tipobolletta, idanagrafica, note, dtins)       
+      select {@qryText='tipobolletta'}, {@qryNumb='idanagrafica'}, {@qryText='note'}, getdate()]]>
+        </update>
+      </queries>
+    </form>    <import name="buttons"/>
+  </contents>
+</page>

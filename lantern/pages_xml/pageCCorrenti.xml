@@ -1,0 +1,30 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-ccs" title="Elenco Conti Correnti" selects='load' pagesize='15'>
+      <cols key="idccorrente(idcc),idutente(idusr)">
+        <col title='N.ro C.Corrente' field='nroccorrente' des='n.ro conto corrente bancario' width='200'>
+          <refitem title="visualizza saldi" ref="{@pageref='saldiccorrente'}"/>
+        </col>
+        <col title='Note' field='note' des='note particolari' width='500'/>
+        <col title='Utente' field='utente' tooltipfld='noteutente' des='a chi risulta intestato o diretto responsabile del conto'>
+          <refitem ref="{@pagerefargs='utente','type=upd'}" usertypes="admin"/>
+        </col>
+        <action des='modifica informazioni conto...' icon='mif-pencil' pageref="{@pagerefargs='ccorrente','type=upd'}"/>
+        <action des='carica saldi da file esterno...' icon='mif-arrow-up' pageref="{@pagerefargs='import_csv','type=csv&amp;code=cc'}"/>
+        <action des='elimina c.corrente...' icon='mif-cross' primarykey='idccorrente' demand="Sei sicuro di voler cancellare il conto?"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi C.Corrente' ref="{@pagerefargs='ccorrente','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select c.idccorrente, c.nroccorrente, c.note, c.idutente
+   , u.nome as utente, u.note as noteutente
+  from [ccorrente] c
+  left join utenti u on u.idutente = c.idutente
+ where c.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

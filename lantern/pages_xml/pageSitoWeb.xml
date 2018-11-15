@@ -1,0 +1,163 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    
+    <tabs name="sitetabs">
+      <tab name="tabSito" title="Sito" des="anagrafica sito web"/>
+      <tab name="tabAccounts" title="Accounts" des="elenco degli accounts associati al sito"/>
+      <tab name="tabLinks" title="Web Links" des="elenco dei web links associati al sito"/>
+      <tab name="tabTags" title="Argomenti" des="elenco degli argomenti associati al sito"/>
+    </tabs>
+
+    <form name="sito-web" title="Sito web" tab="sitetabs.tabSito" selects="load" updates="update" width="600px" height="200px">
+      <contents>
+        <row tooltip='titolo sito web'>
+          <field>
+            <label text='Sito Web:'/>
+          </field>
+          <field colspan='2'>
+            <input field='titolo' type='text' required='true' errField='Titolo'/>
+          </field>
+        </row>
+        <row tooltip='note particolari'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text'/>
+          </field>
+        </row>
+        <row tooltip='indice di gradimento'>
+          <field>
+            <label text='Indice Gradimento:'/>
+          </field>
+          <field colspan='2'>
+            <combo field='idgradimento' fielddes='notegradimento' select='gradimento' errField='Indice Gradimento' width='200px'/>
+          </field>
+        </row>
+        <row tooltip='utente che usa il veicolo'>
+          <field>
+            <label text='Utente:'/>
+          </field>
+          <field>
+            <combo field='idutente' fielddes='utente' select='utenti' onsel_desfield='noteutente' required='true' errField='Utente' width='200px'/>
+          </field>
+          <field>
+            <input field='noteutente' type='text' enabled='false'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[select s.idsitoweb, s.titolo, s.note
+    , s.idutente, u.nome as utente, u.note as noteutente
+    , i.idgradimento, i.stelle, i.note as notegradimento
+  from [sitiweb] s
+  left join utenti u on u.idutente = s.idutente
+  left join indicegradimento i on s.idgradimento = i.idgradimento
+  where s.idsitoweb = {@qrykey='idsw'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL as idsitoweb, NULL as titolo, NULL as note
+       , u.idutente, u.nome as utente, u.note as noteutente
+       , NULL as idgradimento, NULL as stelle, NULL as notegradimento
+      from (select 1 as col) tbl
+      left join utenti u on ('{@property='userTypeLogged'}' <> 'admin' and u.idutente = '{@property='userId'}')
+    ]]>
+        </select>
+        <select name='utenti' forcombos='idutente, nome, note'>
+          <![CDATA[select u.idutente, u.nome, u.note from utenti u
+      join tipiutente t on u.idtipoutente = t.idtipoutente
+      where t.tipoutente <> 'admin' and u.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <select name='gradimento' forcombos='idgradimento, note'>
+          <![CDATA[select g.idgradimento, g.stelle, g.note from indicegradimento g]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update [sitiweb] set titolo = {@qryText='titolo'}, note = {@qryText='note'}, dtupd = getDate()
+         , idgradimento = {@qryNumb='idgradimento'}, idutente = {@qryNumb='idutente'}
+        where idsitoweb = {@qrykey='idsw'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [sitiweb] (titolo, note, idgradimento, idutente, dtins)
+      select {@qryText='titolo'}, {@qryText='note'}, {@qryNumb='idgradimento'}, {@qryNumb='idutente'}, getdate()]]>
+        </update>
+      </queries>
+    </form>
+    
+    <import name="buttons-noconfirm" tab="sitetabs.tabSito"/>
+
+    <grid name="sito-accounts" tab="sitetabs.tabAccounts" title="Elenco Accounts" selects='load' pagesize='15'>
+      <cols key="idsitoweb(idsw),idaccount(idacc),idutente(idusr)">
+        <col title='User' field='user' des="utente" width='150'/>
+        <col title='Password' field='password' des="password account" width='150'/>
+        <col title='Note' field='note' des='descrizione account' width='200'/>
+        <col title='Utente' field='utente' tooltipfld='desutente' des="utente associato all'account">
+          <refitem ref="{@pagerefargs='utente','type=upd'}" usertypes="admin"/>
+        </col>
+        <col title='File' type='link' fieldref='urlfile' field='filename' des='flie account' width='200'/>
+        <action des='modifica account...' icon='mif-pencil' pageref="{@pagerefargs='sitoaccount','type=upd'}"/>
+        <action des='elimina account...' icon='mif-cross' primarykey='idsitoweb' demand="Sei sicuro di voler cancellare l'account?"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi account' ref="{@pagerefargs='sitoaccount','type=ins&amp;idsw={@qrykey='idsw'}'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select a.idaccount, a.idsitoweb, a.[user], a.[password], a.note
+ , u.idutente, u.nome as utente, u.note as desutente 
+ , (select '{@var='filesUrl'}' + dbo.[getPathOfFolder](idfolder) + '/' + [filename] + '.' + isnull([ext], '') from files where idfile = a.idfile) as urlfile
+ , (select [filename] + '.' + isnull([ext], '') from files where idfile = a.idfile) as [filename]
+ from accounts a	
+ left join utenti u on u.idutente = a.idutente
+ where a.idsitoweb = {@qrykey='idsw'} and a.idutente in ({@method='info',string:userVisibility}) ]]>
+        </select>
+      </queries>
+    </grid>
+    
+    <grid name="sito-links" tab="sitetabs.tabLinks" title="Elenco Links" selects='load' pagesize='15'>
+      <cols key="idweblink(idwl)">
+        <col title='Web Link' field='weblink' fieldref='weblink' type='link' des="indirizzo web" width='200'/>
+        <col title='Principale' field='principale' type='check' des="indirizzo principale"/>
+        <col title='Note' field='note' des='descrizione account' width='200'/>
+        <!--<action des='modifica sito...' icon='mif-pencil' pageref="{@pagerefargs='sitoweb','type=upd'}"/>-->
+        <!--<action des='elimina evento...' icon='mif-cross' pagerequest="{@currurl}" demand="Sei sicuro di voler cancellare l'evento?" queries="delete"/>-->
+      </cols>
+      <buttons>
+        <!--<button text='Aggiungi sito' ref="{@pagerefargs='sitoweb','type=ins'}" shortkeys="ALT + A"/>-->
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select w.idweblink, w.weblink, w.note, sw.idsitoweb, sw.principale
+ from sitiweblinks sw	
+ join weblinks w on sw.idweblink = w.idweblink
+ where sw.idsitoweb = {@qrykey='idsw'} ]]>
+        </select>
+        <!--<update name='delete'>
+      <![CDATA[delete from eventi where idevento = {@qryNumb='idevento'}]]>
+    </update>-->
+      </queries>
+    </grid>
+    
+    <grid name="sito-tags" tab="sitetabs.tabTags" title="Elenco Argomenti" selects='load' pagesize='15'>
+      <cols key="idweblink(idwl)">
+        <col title='Tag' field='tag' des="argomento" width='200'/>
+        <col title='Note' field='note' des='descrizione argomento' width='200'/>
+        <!--<action des='modifica sito...' icon='mif-pencil' pageref="{@pagerefargs='sitoweb','type=upd'}"/>-->
+        <!--<action des='elimina evento...' icon='mif-cross' pagerequest="{@currurl}" demand="Sei sicuro di voler cancellare l'evento?" queries="delete"/>-->
+      </cols>
+      <buttons>
+        <!--<button text='Aggiungi sito' ref="{@pagerefargs='sitoweb','type=ins'}" shortkeys="ALT + A"/>-->
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select t.idtag, t.tag, t.note 
+ from [dbo].[getListOfTagsOfSitoTbl]({@qrykey='idsw'}) lst
+ join tags t on lst.idtag = t.idtag]]>
+        </select>
+        <!--<update name='delete'>
+      <![CDATA[delete from eventi where idevento = {@qryNumb='idevento'}]]>
+    </update>-->
+      </queries>
+    </grid>
+  </contents>
+</page>

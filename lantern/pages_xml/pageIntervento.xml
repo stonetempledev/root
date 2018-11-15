@@ -1,0 +1,39 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-intervento" title="Tipo Intervento" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row>
+          <field>
+            <label text='Tipo Intervento:'/>
+          </field>
+          <field colspan='2'>
+            <input field='operazioneauto' type='text' enabled='true' required='true' errField='Tipo intervento'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text' enabled='true'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}">
+          <![CDATA[SELECT o.idoperazioneauto, o.operazioneauto, o.note
+ from operazioniauto o
+ where o.idoperazioneauto = {@qrykey='idop'}]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update operazioniauto set operazioneauto = {@qryText='operazioneauto'}, [note] = {@qryText='note'}, dtupd = getdate()
+        where idoperazioneauto = {@qrykey='idop'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [operazioniauto] (operazioneauto, note, dtins)       
+      select {@qryText='operazioneauto'}, {@qryText='note'}, getdate()]]>
+        </update>
+      </queries>
+    </form>    <import name="buttons"/>
+  </contents>
+</page>

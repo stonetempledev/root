@@ -1,0 +1,39 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="tipo-utente" title="Tipo utente" selects="load" updates="update" width="400px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row>
+          <field>
+            <label text='Tipo utente:'/>
+          </field>
+          <field colspan='2'>
+            <input field='tipoutente' type='text' enabled='false' required='true' errField='Tipo Utente'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text' enabled='true'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}">
+          <![CDATA[SELECT t.idtipoutente, t.tipoutente, t.note
+ from tipiutente t
+ where t.idtipoutente = {@qrykey='idtpu'}]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update tipiutente set tipoutente = {@qryText='tipoutente'}, [note] = {@qryText='note'}, dtupd = getdate()
+        where idtipoutente = {@qrykey='idtpu'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [tipiutente] (tipoutente, note, dtins)       
+      select {@qryText='tipoutente'}, {@qryText='note'}, getdate()]]>
+        </update>
+      </queries>
+    </form>    <import name="buttons"/>
+  </contents>
+</page>

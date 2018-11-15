@@ -1,0 +1,30 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-auto" title="Elenco veicoli" selects='load' pagesize='15'>
+      <cols key="idauto(idat),idutente(idusr)">
+        <col title='Marca' field='marca' des='marca autovettura'/>
+        <col title='Modello' field='modello' des='modello autovettura'/>
+        <col title='Note' field='note' des='note particolari'/>
+        <col title='Tipo Alimentazione' field='tipoalimentazione' tooltipfld='notetipoalimentazione' des="tipo alimentazione autovettura" width="90"/>
+        <col title='Utente' field='utente' tooltipfld='noteutente' des='chi usa il veicolo'>
+          <refitem ref="{@pagerefargs='utente','type=upd'}" usertypes="admin"/>
+        </col>
+        <action des='modifica veicolo...' icon='mif-pencil' pageref="{@pagerefargs='auto','type=upd'}"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi veicolo' ref="{@pagerefargs='auto','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select a.idauto, a.marca, a.modello, a.note, a.idtipoalimentazione, a.idutente
+   , t.tipoalimentazione, t.note as notetipoalimentazione
+   , u.nome as utente, u.note as noteutente
+  from [auto] a
+  left join tipialimentazione t on a.idtipoalimentazione = t.idtipoalimentazione
+  left join utenti u on u.idutente = a.idutente
+ where a.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

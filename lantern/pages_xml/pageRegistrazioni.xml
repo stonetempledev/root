@@ -1,0 +1,34 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-registrazioni" title="Elenco registrazioni" selects='load' pagesize='15' top='100'>
+      <cols>
+        <col title='Tipo' field='tipospesa' width="150"/>
+        <col title='Evento' field='evento' width="200"/>
+        <col title='Dettagli' field='dettagli' width='200'/>
+        <col title='Quando' field='data' type='date' formatDate='dataEstesa' des='quando è stata fatta la spesa'/>
+        <!--<col title='Entrata' field='entrata' type='check' des="si tratta di un'entrata"/>-->
+        <col title='Totale' field='totale' type='euro' summary='SUM(totale * (case when isnull(entrata, 0) = 0 then -1 else 1 end))' des='prezzo totale spesa'/>
+        <col title='Utente' field='utente' tooltipfld='desutente' des='utente che ha inserito la spesa'/>
+      </cols>
+      <queries>
+        <select name='load'>
+          <![CDATA[select t.tipospesa, t.evento, t.dettagli, t.data, t.entrata, t.totale, u.nome as utente
+  from (select s.data, (s.prezzo * isnull(s.quantita, 1)) as totale, 'Scontrino' + ' - ' + isnull(t.tipospesa, '') as tipospesa, isnull(s.pezzo, '') as dettagli, isnull(t.entrata, 0) as entrata, isnull(e.evento, '') as evento, s.idutente
+    from spese s left join tipispesa t on t.idtipospesa = s.idtipospesa left join eventi e on e.idevento = s.idevento
+    union select b.data, isnull(b.prezzo, 0) - isnull(b.rimborso, 0) as totale, 'Bollette' as tipospesa, tb.tipobolletta as dettagli, 0 as entrata, '' as evento, b.IDUtente
+     from Bollette b join TipiBolletta tb on tb.IDTipoBolletta = b.idtipobolletta
+    union select r.data, prezzo, 'Rifornimenti Auto' as tipo, '' as dettagli, 0 as entrata, '' as evento, a.idutente
+     from RifornimentoAuto r join [auto] a on a.IDAuto = r.IDAuto
+    union select m.data, isnull(prezzo, 0) - isnull(rimborso, 0) as totale, 'Manutenzioni Auto' as tipospesa, oa.operazioneauto + isnull(' - ' + m.[note], '') as dettagli, 0 as entrata, '' as evento, a.idutente
+     from ManutenzioneAuto m join OperazioniAuto oa on oa.IDOperazioneAuto = m.IDOperazioneAuto join [auto] a on a.IDAuto = m.IDAuto) t
+    left join utenti u on u.idutente = t.idutente
+   where t.data is not null and isnull(t.totale, 0) <> 0
+    and t.idutente in ({@method='info',string:userVisibility})
+    and ('{@qrypar='neg'}' = '' or ('{@qrypar='neg'}' = '1' and t.entrata = 0))
+    and ('{@qrypar='from'}' = '' or ('{@qrypar='from'}' <> '' and t.data >= convert(datetime, '{@qrypar='from'}', 112)))
+    and ('{@qrypar='to'}' = '' or ('{@qrypar='to'}' <> '' and t.data <= convert(datetime, '{@qrypar='to'}', 112)))]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

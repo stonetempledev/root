@@ -1,0 +1,26 @@
+ <mm>: documento mind map
+  @title: titolo documento
+ 
+ <mm\types>: elenco tipi di elementi
+ 
+ <mm\types\type>: definizione tipo di elemento
+  @id: identificativo del tipo di elemento
+  @shape: forma del tipo elemento
+  @font_size: grandezza testo
+  @color_border, @color_bck: colori dell'elemento deselezionato
+  @color_high_border, @color_high_bck: colori dell'elemento selezionato
+ 
+ <mm\elements>: elenco elementi inseriti nella struttura
+ 
+ <mm\elements\ele>: definizione elemento da inserire nella struttura
+  @id: identificativo elemento
+  @title: titolo elemento
+  @type: identificativo del tipo di elemento
+ 
+ <mm\struct>: definizione della struttura degli elementi
+ 
+ <mm\struct\node>: elemento inserito nella struttura
+  @ele: identificativo elemento
+  @x, @y: coordinate del nodo nella struttura
+ 
+ <mm\struct\node\node>: elemento collegato 

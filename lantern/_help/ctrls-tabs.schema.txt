@@ -1,0 +1,13 @@
+xmlschema.tabs - derivato da xmlschema.ctrls
+
+definizione tabs
+
+<tabs>
+ @if (facoltativo) [espressione parsificata]: condizione da rispettare
+ @unload_key (facoltativo) [espressione parsificata]: chiave da utilizzare per la memorizzazione delle impostazioni utente della durata della sessione, se non specificata non viene gestito il salvataggio
+  || @unload_key_ever: variante sulla durata della variabile, che è per sempre e non per sessione
+ <tab>: linguetta aggiunta al tabulatore
+  @name: nome della linguetta
+  @title: titolo della linguetta	
+  @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare   
+  @des (facoltativo): 

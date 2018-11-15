@@ -1,0 +1,32 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-contatti" title="Contatti" selects='load' pagesize='15'>
+      <cols key="idcontatto(idcnt),idutente(idusr)">
+        <col title='Nome' field='nome' des="nome contatto" width="200"/>
+        <col title='Note' field='note' des='descrizione contatto' width='200'/>
+        <col title='Contatti' field='list_contatti' des='lista dei contatti' width='200'/>
+        <col title='Argomenti' field='tags' des="argomenti" width='250'/>
+        <col title='Utente' field='utente' tooltipfld='desutente' des="utente che ha inserito l'evento">
+          <refitem ref="{@pagerefargs='utente','type=upd'}" usertypes="admin"/>
+        </col>
+        <action des='modifica contatto...' icon='mif-pencil' pageref="{@pagerefargs='contatto','type=upd'}"/>
+        <action des='elimina contatto...' icon='mif-cross' primarykey='idcontatto' demand="Sei sicuro di voler cancellare il contatto?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi contatto' ref="{@pagerefargs='contatto','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select c.idcontatto, c.nome, c.note
+  , [dbo].[getListOfContatti](c.idcontatto) as list_contatti
+  , c.idtags, [dbo].[getListOfTags](idtags) as tags
+  , u.idutente, u.nome as utente, u.note as desutente 
+ from contatti c
+ left join utenti u on u.idutente = c.idutente
+ where c.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+      </queries>
+    </grid>
+
+  </contents>
+</page>

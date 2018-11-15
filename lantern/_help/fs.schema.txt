@@ -1,0 +1,16 @@
+xmlschema.fs
+
+descrizione file system
+
+<files>: elenco definizione files
+ @lasid: incrementale identificatore files
+ <file>: definizione singolo file
+  @idfile: identificativo file
+  @name: nome file
+  @title: titolo file
+  @des (facoltativo): descrizione file
+  @date: data relativa del file in formato: 'yyyy-mm-ddTHH:MM:SS'
+  @type: tipo file
+  <infos>: definizione variabili
+   <info>: informazione libera legata al file
+    @name: nome variabile

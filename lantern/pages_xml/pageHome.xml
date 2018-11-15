@@ -1,0 +1,43 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <tiles name="tiles" schema="xmlschema.ctrls">
+      <contents>
+        <flip  classes="green large-tile slide" delay='3000'>
+          <tile imgpage='spese' href="{@pageref='spese'}" title="{@pagetitle='spese'}" des="{@pagedes='spese'}"/>
+          <tile imgpage='bollette' href="{@pageref='bollette'}" title="{@pagetitle='bollette'}" des="{@pagedes='bollette'}"/>
+        </flip>
+        <flip href="{@pageref='ccorrenti'}" classes="green large-tile slide" onhover='true'>
+          <tile imgpage='ccorrenti' title="{@pagetitle='ccorrenti'}"/>
+          <tile imgpage='ccorrenti' title="{@pagetitle='ccorrenti'}" des="{@pagedes='ccorrenti'}"/>
+        </flip>
+        <flip classes="green large-tile slide" delay='3000'>
+          <tile href="{@pageref='rifornimenti'}" imgpage='rifornimenti' title="{@pagetitle='rifornimenti'}" des="{@pagedes='rifornimenti'}"/>
+          <tile href="{@pageref='manutenzioni'}" imgpage='manutenzioni' title="{@pagetitle='manutenzioni'}" des="{@pagedes='manutenzioni'}"/>
+        </flip>
+        <flip href="{@pageref='eventi'}" classes="blue large-tile slide" onhover='true'>
+          <tile imgpage='eventi' title="{@pagetitle='eventi'}"/>
+          <tile imgpage='eventi' title="{@pagetitle='eventi'}" des="{@pagedes='eventi'}"/>
+        </flip>
+        <flip href="{@pageref='contatti'}" classes="blue large-tile slide" onhover='true'>
+          <tile imgpage='contatti' title="{@pagetitle='contatti'}"/>
+          <tile imgpage='contatti' title="{@pagetitle='contatti'}" des="{@pagedes='contatti'}"/>
+        </flip>
+        <flip href="{@pageref='checks'}" classes="orange large-tile slide" onhover='true'>
+          <tile imgpage='checks' title="{@pagetitle='checks'}"/>
+          <tile imgpage='checks' title="{@pagetitle='checks'}" des="{@pagedes='checks'}"/>
+        </flip>
+        <flip classes="lime large-tile slide" delay='3000'>
+          <tile href="{@pageref='anagrafiche'}" imgpage='anagrafiche' title="{@pagetitle='anagrafiche'}" des="{@pagedes='anagrafiche'}"/>
+          <tile href="{@pageref='sitiweb'}" imgpage='sitiweb' title="{@pagetitle='sitiweb'}" des="{@pagedes='sitiweb'}"/>
+        </flip>
+        <mjcarousel classes="red large-tile slide" direction='vertical' slide-direction='backward' usertypes='admin' delay='1000'>
+          <tile imgpage='utenti' href="{@pageref='utenti'}" title="{@pagetitle='utenti'}" des="{@pagedes='utenti'}"/>
+          <tile imgpage='backups' href="{@pageref='backups'}" title="{@pagetitle='backups'}" des="{@pagedes='backups'}"/>
+          <tile imgpage='recovery' href="{@pageref='recovery'}" title="{@pagetitle='recovery'}" des="{@pagedes='recovery'}"/>
+          <tile imgpage='export' href="{@pageref='export'}" title="{@pagetitle='export'}" des="{@pagedes='export'}"/>
+          <tile imgpage='import' href="{@pageref='import'}" title="{@pagetitle='import'}" des="{@pagedes='import'}"/>
+        </mjcarousel>
+      </contents>
+    </tiles>
+  </contents>
+</page>

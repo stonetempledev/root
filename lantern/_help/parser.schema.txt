@@ -1,0 +1,76 @@
+ESPRESSIONI PARSIFICATE
+
+E' possibile all'interno dei documenti xml inserire delle espressioni che poi a codice verranno parsificate ed utilizzate 
+per l'esecuzione di queries, valutare condizioni e altre utilità.
+
+Ecco l'elenco delle parole chiave riconosciute ove disponibili:
+
+
+ ------- reflection
+
+ {@property='<PROPERTY NAME PAGE>'}: nome della proprietà della pagina da applicare
+ {@method='<METHOD NAME PAGE>',string:'',int:'',double:'',...}: nome del metodo da richiamare più i parametri
+   tipi parametri ammessi: string, int
+   valore restituito: string
+ {@cond_method='<METHOD NAME PAGE>',string:'',int:'',double:'',...}: nome del metodo da richiamare più i parametri
+   tipi parametri ammessi: string, int
+   valore restituito: bool
+ {@cond='<SCRIPT NAME>'}: nome scripts/condition da valutare (viene copiato li e poi valutato)
+
+ ------- fields
+
+ {@field='<FIELD NAME>'}, {@field='<FORM NAME.FIELD NAME>'}, {@datefld='<FIELD NAME>','<FORMAT>'}: il nome del campo può provenire da varie situazioni
+   - valore campo proveniente dalla form
+   - campo passato da codice in base alle varie casistiche
+   - campo chiave della griglia
+   - campo filtro di una griglia
+   - campo di un DataRow
+ {@qryText='<FIELD NAME>'}, {@qryVoid='<FIELD NAME>'}, {@qryNumb='<FIELD NAME>'}, {@qryEuro='<FIELD NAME>'}, {@qryMigl='<FIELD NAME>'}
+	, {@qryFlag='<FIELD NAME>'}, {@qryDate='<FIELD NAME>'}
+   simile alla {@field=''} ma con la differenza che il risultato viene adattato per l'inserimento del valore in una query 
+   d'aggiornamento o di selezione
+   {@qryFlag=''}: torna uno '0' se contiene 'falso', 'false', '0' altrimenti il valore '1' 
+   nota bene
+    1) se i campi sono vuoti viene inserito il valore NULL tranne che per {@qryVoid=''}
+    2) è possibile inserire una lista di campi i quali valgono (al primo campo valido), ad esempio così: {@qryEuro='campo,campo2,campo3'}
+ {@attr='<ATTRIBUTE NAME XML NODE>'}: nome attributo della riga xml
+ {@node='<NODE NAME XML NODE>'}: nome elemento della riga xml
+
+ ------- query string
+
+ {@qrypar='<QUERY STRING PARAMETER>'}: valore campo parametro query string da applicare alla query
+ {@qrykey='<QUERY STRING PARAMETER>'}: valore campo parametro query string da applicare alla query che dev'essere valorizzato
+ {@qryfields='<TABLE NAME>'}: elenco dei campi della tabella specificata, da usare per le queries particolari
+ 
+ ------- config
+
+ {@var='<NAME VAR>'}: nome della variabile del config al percorso /root/vars/var[@name='<NAME VAR>']
+ {@pageref='<PAGE NAME>'}: url pagina da applicare
+ {@pagerefargs='<PAGE NAME>','<PARAMETERS>'}: url pagina da applicare con lista di parametri annessi
+
+ ------- paths
+
+ {@approot}: percorso base del sito web
+ {@activepage}: url pagina attiva senza argomenti
+ {@currurl}: url pagina attiva 
+ {@currurlargs='<LIST ARGUMENTS>'}
+ {@siteurl='<SITE NAME>'}: url sito web con il nome specificato
+ {@siteurl}: url base del sito web attivo
+ {@imageurl='<IMAGE NAME>'}: url immagine
+
+ ------- page & controls
+
+ {@ctrlname}: nome del controllo che si sta generando
+ {@pagename}: nome della pagina attiva
+ {@pagetitle='<PAGE NAME>'}: titolo della pagina
+ {@pagedes='<PAGE NAME>'}: descrizione della pagina
+
+ ------- users
+
+ {@usr_type}: tipo di utente attivo
+ {@usr_childs}: numero di utenti 'figli' compreso quello loggato ed escluso gli anonimi
+
+ ------- queries
+
+ {@text_qry='<ID UNIVOCO QUERY>'}: inserimento del testo della query specificata
+ {@res_qry='<ID UNIVOCO QUERY>'}: inserimento di tipo testo del risultato della query specificata 

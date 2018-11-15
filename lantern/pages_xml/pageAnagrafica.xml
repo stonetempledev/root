@@ -1,0 +1,279 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+
+    <tabs name="sitetabs" >
+      <tab name="tabAnagrafica" title="Anagrafica" des="anagrafica"/>
+      <tab name="tabContatti" title="Contatti" des="contatti"/>
+      <tab name="tabLinks" title="Web Links" des="elenco dei web links associati all'anagrafica" if="{@cond='frm-upd'}"/>
+      <tab name="tabEventi" title="Eventi" des="elenco degli eventi associati all'anagrafica" if="{@cond='frm-upd'}"/>
+    </tabs>
+
+    <form name="an-web" title="Anagrafica" tab="sitetabs.tabAnagrafica" selects="load" updates="update" width="800px" height="200px" >
+      <contents>
+        <row tooltip='nome'>
+          <field>
+            <label text='Nome:'/>
+          </field>
+          <field>
+            <input field='anagrafica' type='text' required='true' errField='Nome' width='300px'/>
+          </field>
+          <field>
+            <label text='Provincia:'/>
+          </field>
+          <field colspan='3'>
+            <combo field='idprovincia' fielddes='provincia' select='province' errField='Provincia' width='100px'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Citta:'/>
+          </field>
+          <field>
+            <input field='citta' type='text' width='150px'/>
+          </field>
+          <field>
+            <label text='Indirizzo:'/>
+          </field>
+          <field>
+            <input field='indirizzo' type='text' width='250px'/>
+          </field>
+          <field>
+            <label text='CAP:'/>
+          </field>
+          <field>
+            <input field='cap' type='text' width='100px'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Telefono:'/>
+          </field>
+          <field>
+            <input field='telefono' type='text'/>
+          </field>
+          <field>
+            <label text='Email:'/>
+          </field>
+          <field colspan='3'>
+            <input field='email' type='text'/>
+          </field>
+        </row>
+        <row tooltip='indice di gradimento'>
+          <field>
+            <label text='Indice Gradimento:'/>
+          </field>
+          <field>
+            <combo field='idgradimento' fielddes='notegradimento' select='gradimento' errField='Indice Gradimento' width='200px'/>
+          </field>
+          <field>
+            <label text='Capitale Soc.:'/>
+          </field>
+          <field>
+            <input field='capitalesociale' type='euro'/>
+          </field>
+          <field>
+            <label text='N.ro dipendenti:'/>
+          </field>
+          <field>
+            <input field='nrodipendenti' type='int'/>
+          </field>
+        </row>
+        <row tooltip='lista argomenti'>
+          <field>
+            <label text='Argomenti:'/>
+          </field>
+          <field >
+            <list field='idtags' select='tags' width='300px'/>
+          </field>
+          <field colspan='4'>
+            <combo select='tags' tolist='idtags' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='note particolari'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='3'>
+            <input field='note' type='text'/>
+          </field>
+          <field>
+            <label text='Km distanza:'/>
+          </field>
+          <field>
+            <input field='distanza' type='int'/>
+          </field>
+        </row>
+        <row tooltip='utente di riferimento'>
+          <field>
+            <label text='Utente:'/>
+          </field>
+          <field>
+            <combo field='idutente' fielddes='utente' select='utenti' onsel_desfield='noteutente' required='true' errField='Utente' width='200px'/>
+          </field>
+          <field colspan='4'>
+            <input field='noteutente' type='text' enabled='false' width='200px'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[select a.idanagrafica, a.anagrafica, a.note, a.idtags
+    , a.citta, a.telefono, a.indirizzo, a.cap, a.email, a.capitalesociale, a.nrodipendenti
+    , a.distanza, a.idutente, u.nome as utente, u.note as noteutente
+    , i.idgradimento, i.stelle, i.note as notegradimento
+    , pr.idprovincia, pr.provincia, pr.citta as provinciacitta
+  from [anagrafiche] a
+  left join utenti u on u.idutente = a.idutente
+  left join indicegradimento i on a.idgradimento = i.idgradimento
+  left join province pr on a.idprovincia = pr.idprovincia
+  where a.idanagrafica = {@qrykey='idan'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL as idanagrafica, NULL as anagrafica, NULL as note, NULL as idtags
+       , NULL as citta, NULL as telefono, NULL as indirizzo, NULL as cap, NULL as email, NULL as capitalesociale, NULL as nrodipendenti
+       , NULL as distanza, u.idutente, u.nome as utente, u.note as noteutente
+       , NULL as idgradimento, NULL as stelle, NULL as notegradimento
+       , NULL as idprovincia, NULL as provincia, NULL as provinciacitta
+      from (select 1 as col) tbl
+      left join utenti u on ('{@property='userTypeLogged'}' <> 'admin' and u.idutente = '{@property='userId'}')
+    ]]>
+        </select>
+        <select name='utenti' forcombos='idutente, nome, note'>
+          <![CDATA[select u.idutente, u.nome, u.note from utenti u
+      join tipiutente t on u.idtipoutente = t.idtipoutente
+      where t.tipoutente <> 'admin' and u.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <select name='gradimento' forcombos='idgradimento, note'>
+          <![CDATA[select g.idgradimento, g.stelle, g.note from indicegradimento g]]>
+        </select>
+        <select name='province' forcombos='idprovincia, provincia, citta'>
+          <![CDATA[select pr.idprovincia, pr.provincia, pr.citta from province pr]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update [anagrafiche] set anagrafica = {@qryText='anagrafica'}, note = {@qryText='note'}, dtupd = getDate()
+         , citta = {@qryText='citta'}, telefono = {@qryText='telefono'}, indirizzo = {@qryText='indirizzo'}, cap = {@qryText='cap'}, email = {@qryText='email'}
+         , capitalesociale = {@qryEuro='capitalesociale'}, nrodipendenti = {@qryNumb='nrodipendenti'}, distanza = {@qryNumb='distanza'}
+         , idprovincia = {@qryNumb='idprovincia'}, idgradimento = {@qryNumb='idgradimento'}, idtags = {@qryText='idtags'}, idutente = {@qryNumb='idutente'}
+        where idanagrafica = {@qrykey='idan'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}" setkey="idan">
+          <![CDATA[insert into [anagrafiche] (anagrafica, note, idgradimento, idprovincia, citta
+          , telefono, email, indirizzo, capitalesociale, nrodipendenti, distanza
+          , cap, idtags, idutente, dtins)
+      select {@qryText='anagrafica'}, {@qryText='note'}, {@qryNumb='idgradimento'}, {@qryNumb='idprovincia'}, {@qryText='citta'}
+       , {@qryText='telefono'}, {@qryText='email'}, {@qryText='indirizzo'}, {@qryEuro='capitalesociale'}, {@qryNumb='nrodipendenti'}
+       , {@qryNumb='distanza'}, {@qryText='cap'}, {@qryText='idtags'}, {@qryNumb='idutente'}, getdate()]]>
+        </update>
+        <select name='tags' forcombos='idtag, tag, note'>
+          <![CDATA[select t.idtag, t.tag, t.note from tags t
+      order by t.tag]]>
+        </select>
+      </queries>
+    </form>
+
+    <!--<import name="buttons-noconfirm" tab="sitetabs.tabAnagrafica"/>-->
+
+    <form-attach name="buttons-noexit" schema="xmlschema.ctrls">
+      <contents>
+        <row>
+          <field class='footer' maxspan='true' right='true'>
+            <button name='update' type='submit' if="{@cond='frm-upd'}" value='Aggiorna' />
+            <button name='update' type='submit' if="{@cond='frm-ins'}" value='Aggiungi ed esci' />
+            <button name='update' type='submit' if="{@cond='frm-ins'}" value='Aggiungi' noexit='true' ref="{@pagerefargs='anagrafica','type=upd&amp;idan={@qrykey='idan'}&amp;idusr={@field='an-web.idutente'}'}" />
+            <button name='exit' type='exit' value='Annulla'/>
+          </field>
+        </row>
+      </contents>
+    </form-attach>
+
+    <grid name="gridAnagraficaContatti" tab="sitetabs.tabContatti" title="Contatti" selects='load' pagesize='15' if="{@cond='frm-upd'}">
+      <cols key="idanagraficacontatto(idancnt),idanagrafica(idan),idcontatto(idcnt),idutente(idusr)">
+        <col title='Nome' field='nome' des='contatto' width='200'/>
+        <col title='Contatti' field='list_contatti' des='lista dei contatti' width='200'/>
+        <col title='Argomenti' field='tags' des="argomenti" width='250'/>
+        <col title='Note' field='note' des='note contatto' width='200'/>
+        <action des='modifica contatto...' icon='mif-pencil' pageref="{@pagerefargs='contatto','type=upd'}"/>
+        <action des="togli il contatto dall'anagrafica..." icon='icon-cancel-2' primarykey='idanagraficacontatto' demand="Sei sicuro di voler togliere il contatto?" />
+        <action des="cancella il contatto..." icon='mif-cross' primarykey='idcontatto' force='true' demand="Sei sicuro di voler cancellare il contatto?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi contatto' ref="{@pagerefargs='contatto','type=insan&amp;idan={@qrykey='idan'}&amp;idusr={@qrykey='idusr'}'}" shortkeys="ALT + A"/>
+        <button text='Seleziona contatto' ref="{@pagerefargs='contattoanagrafica','type=selan&amp;idcnt=-1&amp;idan={@qrykey='idan'}&amp;idusr={@qrykey='idusr'}'}" shortkeys="ALT + S"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select ac.idanagrafica, ac.idanagraficacontatto, c.idcontatto, c.nome, c.note
+  , [dbo].[getListOfContatti](c.idcontatto) as list_contatti
+  , c.idtags, [dbo].[getListOfTags](idtags) as tags
+  , u.idutente, u.nome as utente, u.note as desutente 
+  from anagrafichecontatti ac
+ inner join contatti c on c.idcontatto = ac.idcontatto
+ left join utenti u on u.idutente = c.idutente
+ where ac.idanagrafica = {@qrykey='idan'} and c.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+      </queries>
+    </grid>
+
+    <grid name="an-links" tab="sitetabs.tabLinks" title="Elenco Links" selects='load' pagesize='15'>
+      <cols key="idweblink(idwl)">
+        <col title='Web Link' field='weblink' fieldref='weblink' type='link' des="indirizzo web" width='200'/>
+        <col title='Principale' field='principale' type='check' des="indirizzo principale"/>
+        <col title='Note' field='note' des='descrizione account' width='200'/>
+        <!--<action des='modifica sito...' icon='mif-pencil' pageref="{@pagerefargs='sitoweb','type=upd'}"/>-->
+        <!--<action des='elimina evento...' icon='mif-cross' pagerequest="{@currurl}" demand="Sei sicuro di voler cancellare l'evento?" queries="delete"/>-->
+      </cols>
+      <buttons>
+        <!--<button text='Aggiungi sito' ref="{@pagerefargs='sitoweb','type=ins'}" shortkeys="ALT + A"/>-->
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select w.idweblink, w.weblink, w.note, aw.idanagrafica, aw.principale
+ from anagraficheweblinks aw	
+ join weblinks w on aw.idweblink = w.idweblink
+ where aw.idanagrafica = {@qrykey='idan'}]]>
+        </select>
+        <!--<update name='delete'>
+      <![CDATA[delete from eventi where idevento = {@qryNumb='idevento'}]]>
+    </update>-->
+      </queries>
+    </grid>
+
+    <grid name="an-eventi" tab="sitetabs.tabEventi" title="Eventi" selects='load' pagesize='15' >
+      <cols key="idevento(idev),idutente(idusr),idtipoevento(idte)">
+        <col title='Tipo Evento' field='tipoevento' tooltipfld='notetipoevento' des="tipo evento" width="150">
+          <refitem ref="{@pagerefargs='tipoEvento','type=upd'}"/>
+          <refheader ref="{@pageref='tipiEvento'}" title="elenco dei tipi evento disponibili"/>
+        </col>
+        <col title='Evento' field='evento' des="titolo evento" width="200">
+          <refitem ref="{@pagerefargs='evento','type=upd'}"/>
+        </col>
+        <col title='Note' field='note' des='descrizione evento' width='200'/>
+        <col title='Da' field='datada' type='date' formatDate='dataEstesa' des="da quando è partito l'evento"/>
+        <col title='A' field='dataa' type='date' formatDate='dataEstesa' des="quando è finito l'evento"/>
+        <col title='Utente' field='utente' tooltipfld='desutente' des="utente che ha inserito l'evento">
+          <refitem ref="{@pagerefargs='utente','type=upd'}" usertypes="admin"/>
+        </col>
+        <action des='modifica evento...' icon='mif-pencil' pageref="{@pagerefargs='evento','type=upd'}"/>
+        <action des="togli evento dall'anagrafica..." icon='icon-cancel-2' primarykey='idanagraficaevento' demand="Sei sicuro di voler togliere l'evento?" />
+        <action des="cancella l'evento..." icon='mif-cross' primarykey='idevento' force='true' demand="Sei sicuro di voler cancellare l'evento?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi evento' ref="{@pagerefargs='evento','type=insan&amp;idan={@qrykey='idan'}&amp;idusr={@qrykey='idusr'}'}" shortkeys="ALT + A"/>
+        <button text='Seleziona evento' ref="{@pagerefargs='eventoanagrafica','type=selan&amp;idev=-1&amp;idan={@qrykey='idan'}&amp;idusr={@qrykey='idusr'}'}" shortkeys="ALT + S"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select ae.idanagraficaevento, e.idevento, e.evento, e.datada, e.dataa, e.note 
+ , t.idtipoevento, t.tipoevento, t.note as notetipoevento, t.principale
+ , u.idutente, u.nome as utente, u.note as desutente 
+ from anagraficheeventi ae	
+ join eventi e on ae.idevento = e.idevento
+ left join tipieventi t on t.idtipoevento = e.idtipoevento
+ left join utenti u on u.idutente = e.idutente
+ where ae.idanagrafica = {@qrykey='idan'} and e.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+      </queries>
+    </grid>
+
+  </contents>
+</page>

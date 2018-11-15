@@ -1,0 +1,156 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-evento" title="Evento" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="50">
+      <contents>
+        <row>
+          <field>
+            <label text='Tipo evento:' ref="{@pageref='tipiEvento'}"/>
+          </field>
+          <field>
+            <combo field='idtipoevento' fielddes='tipoevento' select='tipiEventi' onsel_desfield='notetipoevento' required='true' errField='Tipo Evento' width='200px'/>
+          </field>
+          <field>
+            <input field='notetipoevento' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row if="{@cond='frm-upd'} or {@cond='frm-ins'} or {@cond='frm-ins-an'}">
+          <field>
+            <label text='Titolo:'/>
+          </field>
+          <field colspan='2'>
+            <input field='evento' type='text' required='true' enabled='true' errField='Evento'/>
+          </field>
+        </row>
+        <row tooltip="scegli l'evento" if="frm-sel-an">
+          <field>
+            <label text='Titolo:'/>
+          </field>
+          <field colspan='2'>
+            <combo field='idevento' fielddes='evento' select='eventi' onsel_reloadkey='idev' required='true' errField='Evento' width='200px'/>
+          </field>
+        </row>
+        <row tooltip='breve descrizione'>
+          <field>
+            <label text='Sottotitolo:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Da:'/>
+          </field>
+          <field colspan='2'>
+            <input field='datada' type='date' enabled='true' formatDate='dataEstesa' required='true' errField='Da' width='250px'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='A:'/>
+          </field>
+          <field colspan='2'>
+            <input field='dataa' type='date' enabled='true' formatDate='dataEstesa' required='true' errField='A' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='utente che inserisce i dati'>
+          <field>
+            <label text='Utente:'/>
+          </field>
+          <field>
+            <combo field='idutente' fielddes='utente' select='utenti' onsel_desfield='desutente' required='true' errField='Utente' width='200px'/>
+          </field>
+          <field>
+            <input field='desutente' type='text' enabled='false'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[select e.idevento, e.evento, e.datada, e.dataa, e.note
+            , t.idtipoevento, t.tipoevento, t.note as notetipoevento
+            , u.idutente, u.nome as utente, u.note as desutente 
+           from eventi e
+           left join tipieventi t on t.idtipoevento = e.idtipoevento
+           left join utenti u on u.idutente = e.idutente
+           where e.idevento = {@qrykey='idev'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'} or {@cond='frm-ins-an'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL as evento, NULL as datada, NULL as dataa, NULL as note
+     , NULL as idtipoevento, NULL as tipoevento, NULL as notetipoevento
+     , u.idutente, u.nome as utente, u.note as desutente
+     from (select 1 as col) tbl
+     left join utenti u on ('{@property='userTypeLogged'}' <> 'admin' and u.idutente = '{@property='userId'}')]]>
+        </select>
+        <select name='load' if="frm-sel-an" des="caricamento record in base alla selezione della combo principale">
+          <![CDATA[select e.idevento, e.evento, e.datada, e.dataa, e.note 
+            , t.idtipoevento, t.tipoevento, t.note as notetipoevento
+            , u.idutente, u.nome as utente, u.note as desutente 
+           from (select 1 as col) tbl
+           left join eventi e on e.idevento = {@qrykey='idev'}
+           left join tipieventi t on t.idtipoevento = e.idtipoevento
+           left join utenti u on u.idutente = e.idutente]]>
+        </select>
+        <select name='tipiEventi' forcombos='idtipoevento, tipoevento, note' des='caricamento tipi evento'>
+          <![CDATA[select tp.idtipoevento, tp.tipoevento, tp.note
+  from tipieventi tp
+  order by tp.tipoevento desc]]>
+        </select>
+        <select name='utenti' forcombos='idutente, nome, note'>
+          <![CDATA[select u.idutente, u.nome, u.note from utenti u
+      join tipiutente t on u.idtipoutente = t.idtipoutente
+      where t.tipoutente <> 'admin' and u.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <select name='eventi' forcombos='idevento, evento, note'>
+          <![CDATA[select e.idevento, e.evento, e.note from eventi e
+      where e.idutente in ({@method='info',string:userVisibility})
+       and not exists (select * from anagraficheeventi where idanagrafica = {@qrykey='idan'} and idevento = e.idevento)
+      ]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update eventi set idtipoevento = {@qryNumb='idtipoevento'}, evento = {@qryText='evento'}
+      , note = {@qryText='note'}, datada = {@qryDate='datada'}, dataa = {@qryDate='dataa'}, dtupd = getDate()
+      , idutente = {@qryNumb='idutente'}
+        where idevento = {@qrykey='idev'}]]>
+        </update>
+        <updates name='update' if="{@cond='frm-ins'} or {@cond='frm-ins-an'}">
+          <update name="update" setkey="idev">
+            <![CDATA[insert into eventi (idtipoevento, evento, note, datada, dataa, idutente, dtins) values({@qryNumb='idtipoevento'}, {@qryText='evento'}
+      , {@qryText='note'}, {@qryDate='datada'}, {@qryDate='dataa'}, {@qryNumb='idutente'}, getdate())]]>
+          </update>
+          <update name="update" if="{@cond='frm-ins-an'}">
+            <![CDATA[insert into anagraficheeventi (idevento, idanagrafica, dtins) 
+          values({@qrykey='idev'}, {@qrykey='idan'}, getdate())]]>
+          </update>
+        </updates>
+        <update name="update" if="{@cond='frm-sel-an'}" setkey="idev">
+          <![CDATA[insert into anagraficheeventi (idevento, idanagrafica, dtins) 
+          values({@qrykey='idev'}, {@qrykey='idan'}, getdate())]]>
+        </update>
+      </queries>
+    </form>
+   
+    <form-attach name="buttons-sel" schema="xmlschema.ctrls" if="{@cond='frm-upd'} or {@cond='frm-ins'} or {@cond='frm-ins-an'}">
+      <contents>
+        <row>
+          <field class='footer' maxspan='true' right='true'>
+            <button name='update' type='submit' if="{@cond='frm-upd'}" value='Aggiorna' />
+            <button name='update' type='submit' if="{@cond='frm-ins'} or {@cond='frm-ins-an'}" value='Aggiungi' />
+            <button name='exit' type='exit' value='Annulla'/>
+          </field>
+        </row>
+      </contents>
+    </form-attach>
+    
+    <form-attach name="buttons-sel-ins" schema="xmlschema.ctrls" if="{@cond='frm-sel-an'}">
+      <contents>
+        <row>
+          <field class='footer' maxspan='true' right='true'>
+            <button name='update' type='submit' value='Seleziona' ref="{@pagerefargs='anagrafica','type=upd&amp;idan={@qrykey='idan'}&amp;idusr={@qrykey='idusr'}'}" />
+            <button name='exit' type='exit' value='Annulla'/>
+          </field>
+        </row>
+      </contents>
+    </form-attach>
+  </contents>
+</page>

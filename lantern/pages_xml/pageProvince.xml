@@ -1,0 +1,21 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-province" title="Elenco Province" selects='load' pagesize='15'>
+      <cols key="idprovincia(idpr)">
+        <col title='Citta' field='citta'/>
+        <col title='Provincia' field='provincia' des="codice provincia" width="200"/>
+        <action des='modifica provincia...' icon='mif-pencil' pageref="{@pagerefargs='provincia','type=upd'}"/>
+        <action des='elimina provincia...' icon='mif-cross' primarykey='idprovincia' demand="Sei sicuro di voler cancellare la provincia?"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi provincia' ref="{@pagerefargs='provincia','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select p.idprovincia, p.citta, p.provincia
+ from province p]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

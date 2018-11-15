@@ -1,0 +1,54 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-bollette" title="Elenco bollette" selects='load' pagesize='15'>
+      <cols key="idbolletta(idbll),idtipobolletta(idtpbll),idutente(idusr),iddurata(iddr)">
+        <col title='Tipo Bolletta' field='tipobolletta' tooltipfld='destipobolletta' des="tipo bolletta" width="90">
+          <refitem ref="{@pagerefargs='tipoBolletta','type=upd'}"/>
+          <refheader title="elenco dei tipi bolletta disponibili" ref="{@pageref='tipiBolletta'}"/>
+        </col>
+        <col title='Prezzo' field='prezzo' type='euro' summary='SUM(prezzo)' des='prezzo bolletta' width="80"/>
+        <col title='Rimborso' field='rimborso' type='euro' summary='SUM(rimborso)' des='rimborso' width="80"/>
+        <col title='Quantita' field='quantita' des='dettaglio quantita'>
+          <refheader title="elenco delle unita di misura" ref="{@pageref='ums'}"/>
+        </col>
+        <col title='Compagnia' field='anagrafica' des='compagnia di fatturazione' width='150'/>
+        <col title='Telefono' field='telefono' des='telefono compagnia di fatturazione'/>
+        <col title='Note' field='note' des='note particolari'/>
+        <col title='Emissione' field='data' type='date' formatDate='dataEstesa' des='data emissione della bolletta'/>
+        <col title='Riferimento' field='datariferimento' type='date' formatDate='dataEstesa' des='periodo di riferimento della bolletta'/>
+        <col title='Durata' field='durata' tooltipfld='desdurata' des='durata della bolletta'>
+          <refitem ref="{@pagerefargs='durata','type=upd'}"/>
+          <refheader ref="{@pageref='durate'}" title="elenco delle durate disponibili"/>
+        </col>
+        <col title='Scadenza' field='datascadenza' type='date' formatDate='dataEstesa' des='scadenza'/>
+        <col title='Utente' field='utente' tooltipfld='desutente' des='utente che ha inserito la spesa'>
+          <refitem ref="{@pagerefargs='utente','type=upd'}" usertypes="admin"/>
+        </col>
+        <action des='modifica bolletta...' icon='mif-pencil' pageref="{@pagerefargs='bolletta','type=upd'}"/>
+        <action des='elimina bolletta...' icon='mif-cross' primarykey='idbolletta' demand="Sei sicuro di voler cancellare la bolletta?"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi bolletta' ref="{@pagerefargs='bolletta','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[SELECT b.idbolletta, b.prezzo, b.rimborso, cast(b.quantita as varchar) + ' ' + um.unitamisura as quantita, b.data, b.datariferimento, b.datascadenza, b.note
+ , a.idanagrafica, a.anagrafica, a.telefono
+ , tb.idtipobolletta, tb.tipobolletta, tb.note as destipobolletta
+ , d.iddurata, d.durata, d.note as desdurata
+ , um.idunitamisura, um.unitamisura, um.note as desunitamisura
+ , u.idutente, u.nome as utente, u.note as desutente
+  from bollette b
+  left join utenti u on u.idutente = b.idutente
+  left join anagrafiche a on a.idanagrafica = b.idanagrafica
+  left join tipibolletta tb on tb.idtipobolletta = b.idtipobolletta
+  left join durate d on d.iddurata = b.iddurata
+  left join unitamisura um on um.idunitamisura = b.idunitamisura
+ where b.idutente in ({@method='info',string:userVisibility})
+  and ('{@qrypar='from'}' = '' or ('{@qrypar='from'}' <> '' and b.data >= convert(datetime, '{@qrypar='from'}', 112)))
+  and ('{@qrypar='to'}' = '' or ('{@qrypar='to'}' <> '' and b.data <= convert(datetime, '{@qrypar='to'}', 112)))]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

@@ -1,0 +1,8 @@
+<page schema="xmlschema.ctrls">
+  <include>
+    <module type='script' href="{@siteurl}/pages_js/login.js"/>
+  </include>
+  <contents>
+    <import name="frm-login" hcenter="true" topmargin="100"/>
+  </contents>
+</page>

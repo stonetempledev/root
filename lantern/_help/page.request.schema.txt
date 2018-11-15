@@ -1,0 +1,10 @@
+xml inviato alla pagina per effettuare delle operazioni
+
+<request>
+ @action: codice azione da eseguire
+
+<request/pars>: parametri richiesta
+
+<request/pars/par> (facoltativo) [multiple]: parametro usato per eseguire l'azione
+ @name: nome parametro
+

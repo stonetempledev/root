@@ -1,0 +1,40 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-utenti" title="Elenco utenti" selects='load' pagesize='15'>
+      <cols key="idutente(idusr),idtipoutente(idtpu)">
+        <col title='Nome' field='nome' des="nome utente" width="150"/>
+        <col title='Descrizione' field='note' des="descrizione utente" width="200"/>
+        <col title='Tipo Utente' field='tipoutente' tooltipfld='notetipoutente' des="tipo utente" width="100">
+          <refitem ref="{@pagerefargs='tipoUtente','type=upd'}"/>
+          <refheader title="elenco dei tipi utente disponibili" ref="{@pageref='tipiUtente'}"/>
+        </col>
+        <col title='Reset Password' field='resetpwd' type='check' des="reset password"/>
+        <col title='Connessione' field='conn_des' des="codice connessione al database" width="250"/>
+        <col title='Visibilita Diretta' field='visibilita' des="utenti visibili" width="200">
+          <refitem ref="{@pageref='utentivs'}" usertypes="admin"/>
+        </col>
+        <col title='Visibilita Completa' field='visibilita_ind' des="utenti visibili indiretti" width="200"/>
+        <action des='modifica utente...' icon='mif-pencil' pageref="{@pagerefargs='utente','type=upd'}"/>
+        <action des='elimina utente...' icon='mif-cross' primarykey="idutente" demand="Sei sicuro di voler rimuovere l'utente?" />
+        <action des='elementi correlati ed eventuale sostituzione...' icon='mif-arrow-right' type='linked' primarykey="idutente"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi utente' ref="{@pagerefargs='utente','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load' from='utenti u' join='connessioni c on conn'>
+          <![CDATA[u.*, c.conn_des]]>
+        </select>
+        <select name='utenti'>
+          <![CDATA[select u.idutente, u.nome, u.note, u.idtipoutente 
+       , t.tipoutente, t.note as notetipoutente, u.resetpwd, u.conn
+       , dbo.getUtenteVisibility(u.idutente, 1) as visibilita 
+       , dbo.getUtenteChilds(u.idutente, 0) as visibilita_ind
+      from utenti u
+      left join tipiutente t on t.idtipoutente = u.idtipoutente]]>
+        </select>
+        <select name='connessioni' des='caricamento codici connessioni disponibili' script='load_conns'/>
+      </queries>
+    </grid>
+  </contents>
+</page>

@@ -1,0 +1,74 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form schema="xmlschema.ctrls" title="Dettaglio contatto" selects="load" updates="update" width="600px" height="200px">
+      <contents>
+        <row tooltip='contatto'>
+          <field>
+            <label text='Nome Contatto:'/>
+          </field>
+          <field colspan='2'>
+            <input field='nome' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='tipo contatto effettuata'>
+          <field>
+            <label text='Tipo contatto:' ref="{@pageref='tipiContatto'}" />
+          </field>
+          <field>
+            <combo field='idtipocontatto' fielddes='tipocontatto' select='tipiContatti' onsel_desfield='notetipocontatto' required='true' errField='Tipo Contatto' width='200px'/>
+          </field>
+          <field>
+            <input field='notetipocontatto' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='contatto'>
+          <field>
+            <label text='Contatto:'/>
+          </field>
+          <field colspan='2'>
+            <input field='contatto' type='text' required='true' errField='Contatto'/>
+          </field>
+        </row>
+        <row tooltip='breve descrizione'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text' required='false'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[select c.nome, dt.idcontattodettagli, dt.contatto, dt.note
+      , t.idtipocontatto, t.tipocontatto, t.note as notetipocontatto
+ from contattidettagli dt
+ join contatti c on dt.idcontatto = c.idcontatto
+ join tipicontatto t on dt.idtipocontatto = t.idtipocontatto
+ where dt.idcontattodettagli = {@qrykey='idcntdt'}]]>
+        </select>
+        <select name='tipiContatti' forcombos='idtipocontatto, tipocontatto, note' des='caricamento tipi contatti'>
+          <![CDATA[select tp.idtipocontatto, tp.tipocontatto, tp.note
+  from tipicontatto tp
+  order by tp.tipocontatto desc]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT (select nome from contatti where idcontatto = {@qrykey='idcnt'}) as nome
+      , NULL as idcontattodettagli, NULL as note, NULL as contatto
+      , NULL AS idtipocontatto, NULL as tipocontatto, NULL as notetipocontatto
+     from (select 1 as col) tbl]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update contattidettagli set contatto = {@qryText='contatto'}
+      , note = {@qryText='note'}, idtipocontatto = {@qryNumb='idtipocontatto'}, dtupd = getDate()
+        where idcontattodettagli = {@qrykey='idcntdt'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into contattidettagli ( idcontatto, idtipocontatto, contatto, note, dtins) values({@qrykey='idcnt'}, {@qryNumb='idtipocontatto'}
+      , {@qryText='contatto'}, {@qryText='note'}, getdate())]]>
+        </update>
+      </queries>
+    </form>
+    <import name="buttons"/>
+  </contents>
+</page>

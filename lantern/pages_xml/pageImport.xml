@@ -1,0 +1,22 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-import" title="Dati" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row tooltip='file dati xml'>
+          <field width='150px'>
+            <label text='File da caricare:'/>
+          </field>
+          <field>
+            <input field='fileXml' type='upload' required='true' errField='File da caricare'/>
+          </field>
+        </row>
+        <row  >
+          <field class='footer' maxspan='true' right='true'>
+            <button type='submit' value='Importa'/>
+            <button type='exit' value='Annulla'/>
+          </field>
+        </row>
+      </contents>
+    </form>
+  </contents>
+</page>

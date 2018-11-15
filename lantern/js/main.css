@@ -1,0 +1,21 @@
+﻿body
+{
+	overflow: auto;
+	padding: 5px;
+}
+.msgErr
+{
+	color: tomato;
+}
+a.linkNoRef
+{
+	text-decoration: none;
+	color: Black;
+}
+a.linkOpen
+{
+    color:Red;
+	cursor: pointer;
+}
+/* jquery ui */
+.no-close .ui-dialog-titlebar-close {display: none }

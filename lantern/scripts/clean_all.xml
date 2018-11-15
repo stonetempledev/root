@@ -1,0 +1,8 @@
+<root schema="xmlschema.script" title='rimozione dati sulle tabelle' des='ripulita tabelle (tranne quella utenti)'>
+  <script>
+    <for_each_table filter_type='data,history' exclude='utenti,utentivisibility,tipiutente' exclude_enums='true'>
+      <delete_data/>
+    </for_each_table>
+  </script>
+</root>
+

@@ -1,0 +1,18 @@
+<root schema="xmlschema.script" title='inizializzazione tipi utenti' des='inizializzazione dei tipi utente'>
+  <script>
+    <init_table table='tipiutente'/>
+    <sql>
+      insert into tipiutente (idtipoutente, tipoutente, note, dtins)
+      select 0, 'admin', 'amministratore', '2010-01-01 00:00:00.001'
+    </sql>
+    <sql>
+      insert into tipiutente (idtipoutente, tipoutente, note, dtins)
+      select 1, 'user', 'utente normale', '2010-01-01 00:00:00.002'
+    </sql>
+    <sql>
+      insert into tipiutente (idtipoutente, tipoutente, note, dtins)
+      select 2, 'anonimo', 'utente anonimo', '2010-01-01 00:00:00.003'
+    </sql>
+  </script>
+</root>
+

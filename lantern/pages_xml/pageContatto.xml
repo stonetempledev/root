@@ -1,0 +1,156 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-contatto" title="Contatto" selects="load" updates="update" width="600px" height="200px">
+      <contents>
+        <row if="{@cond='frm-upd'} or {@cond='frm-ins'} or {@cond='frm-ins-an'}">
+          <field>
+            <label text='Nome:'/>
+          </field>
+          <field colspan='2'>
+            <input field='nome' type='text' required='true' enabled='true' errField='Nome Contatto'/>
+          </field>
+        </row>
+        <row tooltip='scegli il contatto' if="{@cond='frm-sel-an'}">
+          <field>
+            <label text='Nome:'/>
+          </field>
+          <field colspan='2'>
+            <combo field='idcontatto' fielddes='nome' select='contatti' onsel_reloadkey='idcnt' required='true' errField='Nome' width='200px'/>
+          </field>
+        </row>
+        <row tooltip='breve descrizione'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text' required='false'/>
+          </field>
+        </row>
+        <row tooltip='lista argomenti'>
+          <field>
+            <label text='Argomenti:'/>
+          </field>
+          <field>
+            <list field='idtags' select='tags'/>
+          </field>
+          <field>
+            <combo select='tags' tolist='idtags'/>
+          </field>
+        </row>
+        <row tooltip='utente che inserisce i dati' if="{@cond='frm-upd'} or {@cond='frm-ins'} or {@cond='frm-ins-an'}">
+          <field>
+            <label text='Utente:'/>
+          </field>
+          <field>
+            <combo field='idutente' fielddes='utente' select='utenti' onsel_desfield='desutente' required='true' errField='Utente' width='200px'/>
+          </field>
+          <field>
+            <input field='desutente' type='text' enabled='false'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[select c.idcontatto, c.nome, c.note, c.idtags
+ , u.idutente, u.nome as utente, u.note as desutente 
+ from contatti c
+ left join utenti u on u.idutente = c.idutente
+ where c.idcontatto = {@qrykey='idcnt'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'} or {@cond='frm-ins-an'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL as nome, NULL as note, NULL as tags, NULL as idtags
+     , u.idutente, u.nome as utente, u.note as desutente
+     from (select 1 as col) tbl
+     left join utenti u on ('{@property='userTypeLogged'}' <> 'admin' and u.idutente = '{@property='userId'}')]]>
+        </select>
+        <select name='load' if="{@cond='frm-sel-an'}" des="caricamento record in base alla selezione della combo principale">
+          <![CDATA[SELECT c.idcontatto, c.nome, c.note, c.idtags
+        , u.idutente, u.nome as utente, u.note as desutente
+        from (select 1 as col) tbl
+        left join utenti u on ('{@property='userTypeLogged'}' <> 'admin' and u.idutente = '{@property='userId'}')
+        left join contatti c on c.idcontatto = {@qrykey='idcnt'}]]>
+        </select>
+        <select name='utenti' forcombos='idutente, nome, note'>
+          <![CDATA[select u.idutente, u.nome, u.note from utenti u
+      join tipiutente t on u.idtipoutente = t.idtipoutente
+      where t.tipoutente <> 'admin' and u.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <select name='contatti' forcombos='idcontatto, nome, note'>
+          <![CDATA[select c.idcontatto, c.nome, c.note from contatti c
+      where c.idutente in ({@method='info',string:userVisibility})
+       and not exists (select * from anagrafichecontatti where idanagrafica = {@qrykey='idan'} and idcontatto = c.idcontatto)
+      ]]>
+        </select>
+        <select name='tags' forcombos='idtag, tag, note'>
+          <![CDATA[select t.idtag, t.tag, t.note from tags t
+      order by t.tag]]>
+        </select>
+        <updates name='update' if="{@cond='frm-ins'} or {@cond='frm-ins-an'}">
+          <update name="update" setkey="idcnt">
+            <![CDATA[insert into contatti (nome, note, idtags, idutente, dtins) 
+          values({@qryText='nome'}, {@qryText='note'}, {@qryText='idtags'}, {@qryNumb='idutente'}, getDate())]]>
+          </update>
+          <update name="update" if="{@cond='frm-ins-an'}">
+            <![CDATA[insert into anagrafichecontatti (idcontatto, idanagrafica, dtins) 
+          values({@qrykey='idcnt'}, {@qrykey='idan'}, getdate())]]>
+          </update>
+        </updates>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update contatti set nome = {@qryText='nome'}
+      , note = {@qryText='note'}, idtags = {@qryText='idtags'}, dtupd = getDate()
+      , idutente = {@qryNumb='idutente'}
+        where idcontatto = {@qrykey='idcnt'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-sel-an'}" setkey="idcnt">
+          <![CDATA[insert into anagrafichecontatti (idcontatto, idanagrafica, dtins) 
+          values({@qrykey='idcnt'}, {@qrykey='idan'}, getdate())]]>
+        </update>
+      </queries>
+    </form>
+
+    <form-attach name="buttons-noexit" schema="xmlschema.ctrls" if="{@cond='frm-upd'} or {@cond='frm-ins'} or {@cond='frm-ins-an'}">
+      <contents>
+        <row>
+          <field class='footer' maxspan='true' right='true'>
+            <button name='update' type='submit' if="{@cond='frm-upd'}" value='Aggiorna' />
+            <button name='update' type='submit' if="{@cond='frm-ins'} or {@cond='frm-ins-an'}" value='Aggiungi ed esci' />
+            <button name='update' type='submit' if="{@cond='frm-ins'} or {@cond='frm-ins-an'}" value='Aggiungi' ref="{@pagerefargs='contatto','type=upd&amp;idcnt={@qrykey='idcnt'}&amp;idusr={@field='contatto.idutente'}'}" />
+            <button name='exit' type='exit' value='Annulla'/>
+          </field>
+        </row>
+      </contents>
+    </form-attach>
+
+    <form-attach name="buttons-sel" schema="xmlschema.ctrls" if="{@cond='frm-sel-an'}">
+      <contents>
+        <row>
+          <field class='footer' maxspan='true' right='true'>
+            <button name='update' type='submit' value='Seleziona' ref="{@pagerefargs='anagrafica','type=upd&amp;idan={@qrykey='idan'}&amp;idusr={@qrykey='idusr'}'}" />
+            <button name='exit' type='exit' value='Annulla'/>
+          </field>
+        </row>
+      </contents>
+    </form-attach>
+
+    <grid name="gridContattiDettagli" title="Contatto Dettagli" selects='load' pagesize='15' if="{@cond='frm-upd'}">
+      <cols key="idcontattodettagli(idcntdt)">
+        <col title='Tipo Contatto' field='tipocontatto' des="tipo di contatto" width="200"/>
+        <col title='Contatto' field='contatto' des='contatto' width='200'/>
+        <col title='Note' field='note' des='note contatto' width='200'/>
+        <action des='modifica contatto...' icon='mif-pencil' pageref="{@pagerefargs='contattodettagli','type=upd&amp;idcnt={@qrykey='idcnt'}'}"/>
+        <action des='elimina contatto...' icon='mif-cross' primarykey='idcontattodettagli' demand="Sei sicuro di voler cancellare il contatto?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi contatto' ref="{@pagerefargs='contattodettagli','type=ins&amp;idcnt={@qrykey='idcnt'}'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select dt.idcontattodettagli, t.tipocontatto, dt.contatto, dt.note
+ from contattidettagli dt
+ join tipicontatto t on dt.idtipocontatto = t.idtipocontatto
+ where dt.idcontatto = {@qrykey='idcnt'}]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

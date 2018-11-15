@@ -1,0 +1,16 @@
+\.vscode
+\_backups 
+\_examples
+\_files 
+\_log 
+\_setup 
+\_test 
+\_tmp 
+\_refs
+\_schemas
+\app_data
+\lib
+\libjs
+\deeper.sln
+\i.txt
+\stack.txt

@@ -1,0 +1,40 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-durata" title="Durata" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row>
+          <field>
+            <label text='Durata:'/>
+          </field>
+          <field colspan='2'>
+            <input field='durata' type='text' enabled='true' required='true' errField='Durata'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text' enabled='true'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}">
+          <![CDATA[SELECT d.iddurata, d.durata, d.note
+ from durate d
+ where d.iddurata = {@qrykey='iddr'}]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update durate set durata = {@qryText='durata'}, [note] = {@qryText='note'}, dtupd = getdate()
+        where iddurata = {@qrykey='iddr'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [durate] (durata, note, dtins)       
+      select {@qryText='durata'}, {@qryText='note'}, getdate()]]>
+        </update>
+      </queries>
+    </form>
+    <import name="buttons"/>
+  </contents>
+</page>

@@ -1,0 +1,170 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-bolletta" title="Bolletta" selects="load" updates="update" width="600px" height="200px" hcenter="true">
+      <contents>
+        <row tooltip='tipo bolletta'>
+          <field>
+            <label text='Tipo bolletta:' ref="{@pageref='tipiBolletta'}"/>
+          </field>
+          <field>
+            <combo field='idtipobolletta' fielddes='tipobolletta' select='tipiBolletta' onsel_desfield='destipobolletta' required='true' errField='Tipo Bolletta' width='200px'/>
+          </field>
+          <field>
+            <input field='destipobolletta' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='prezzo bolletta'>
+          <field>
+            <label text='Prezzo:'/>
+          </field>
+          <field colspan='2'>
+            <input field='prezzo' type='euro' required='true' errField='Prezzo' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='rimborso bolletta'>
+          <field>
+            <label text='Rimborso:'/>
+          </field>
+          <field colspan='2'>
+            <input field='rimborso' type='euro' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='quantita'>
+          <field>
+            <label text='Quantita:' ref="{@pageref='ums'}"/>
+          </field>
+          <field>
+            <input field='quantita' type='real' required='true' errField='Quantita' width='250px'/>
+          </field>
+          <field>
+            <combo field='idunitamisura' fielddes='unitamisura' select='unitamisura' required='true' errField='Unita di Misura'/>
+          </field>
+        </row>
+        <row tooltip='data emissione fattura'>
+          <field>
+            <label text='Data Emissione:'/>
+          </field>
+          <field colspan='2'>
+            <input field='data' type='date' enabled='true' formatDate='dataEstesa' required='true' errField='Data Emissione' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='periodo di riferimento della bolletta'>
+          <field>
+            <label text='Data Riferimento:' ref="{@pageref='durate'}"/>
+          </field>
+          <field>
+            <input field='datariferimento' type='date' enabled='true' formatDate='dataEstesa' required='true' errField='Quando' width='250px'/>
+          </field>
+          <field>
+            <combo field='iddurata' fielddes='durata' select='durate' required='true' errField='Durata' width='200px'/>
+          </field>
+        </row>
+        <row tooltip='data scadenza della bolletta'>
+          <field>
+            <label text='Data Scadenza:'/>
+          </field>
+          <field colspan='2'>
+            <input field='datascadenza' type='date' enabled='true' formatDate='dataEstesa' required='true' errField='Data Scadenza' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='compagnia che ha fatturato' if="{@cond='frm-upd'}">
+          <field>
+            <label text='Compagnia:'/>
+          </field>
+          <field>
+            <combo field='idanagrafica' fielddes='anagrafica' select='anagrafiche' onsel_desfield='anagrafica' required='true' errField='Compagnia' width='200px'/>
+          </field>
+          <field>
+            <input field='anagrafica' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='note particolari'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text'/>
+          </field>
+        </row>
+        <row tooltip='utente che inserisce i dati'>
+          <field>
+            <label text='Utente:'/>
+          </field>
+          <field>
+            <combo field='idutente' fielddes='utente' select='utenti' onsel_desfield='desutente' required='true' errField='Utente' width='200px'/>
+          </field>
+          <field>
+            <input field='desutente' type='text' enabled='false'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[SELECT b.idbolletta, b.prezzo, b.rimborso, b.quantita, b.data, b.datariferimento, b.datascadenza, b.note
+ , a.idanagrafica, a.anagrafica, a.telefono
+ , tb.idtipobolletta, tb.tipobolletta, tb.note as destipobolletta
+ , d.iddurata, d.durata, d.note as desdurata
+ , um.idunitamisura, um.unitamisura, um.note as desunitamisura
+ , u.idutente, u.nome as utente, u.note as desutente
+  from bollette b
+  left join utenti u on (('{@property='userTypeLogged'}' = 'admin' and u.idutente = b.idutente) or ('{@property='userTypeLogged'}' <> 'admin' and u.idutente = '{@property='userId'}'))
+  left join anagrafiche a on a.idanagrafica = b.idanagrafica
+  left join tipibolletta tb on tb.idtipobolletta = b.idtipobolletta
+  left join durate d on d.iddurata = b.iddurata
+  left join unitamisura um on um.idunitamisura = b.idunitamisura
+   where b.idbolletta = {@qrykey='idbll'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL as idtipobolletta, NULL as tipobolletta, NULL as destipobolletta, NULL as quantita
+       , NULL as prezzo, NULL as rimborso, NULL as data, NULL as datariferimento, NULL as datascadenza, NULL as iddurata, NULL as durata
+       , NULL as idunitamisura, NULL as unitamisura, NULL as note, NULL as idanagrafica, NULL as anagrafica
+       , u.idutente, u.nome as utente, u.note as desutente
+      from (select 1 as col) tbl
+     left join utenti u on ('{@property='userTypeLogged'}' <> 'admin' and u.idutente = '{@property='userId'}')      
+    ]]>
+        </select>
+        <select name='tipiBolletta' forcombos='idtipobolletta, tipobolletta, note' des='caricamento tipi bolletta in ordine di utilizzo'>
+          <![CDATA[select tbl.* 
+ from (select tp.idtipobolletta, tp.tipobolletta, tp.note
+  , (select count(*) from bollette b where b.idtipobolletta = tp.idtipobolletta) as conteggio
+  from tipibolletta tp) tbl
+  order by tbl.conteggio desc]]>
+        </select>
+        <select name='durate' forcombos='iddurata, durata, note' des='caricamento durate bollette'>
+          <![CDATA[select iddurata, durata, note 
+ from durate order by durata]]>
+        </select>
+        <select name='unitamisura' forcombos='idunitamisura, unitamisura, note' des='unita di misura'>
+          <![CDATA[select idunitamisura, unitamisura, note 
+ from unitamisura order by idunitamisura]]>
+        </select>
+        <select name='anagrafiche' forcombos='idanagrafica, anagrafica, note'>
+          <![CDATA[select tbl.idanagrafica, tbl.anagrafica, tbl.note
+ from (select idanagrafica, anagrafica, note, idtags
+ , (select idtag from tags where tag = 'bollette') as idtag
+ from anagrafiche) tbl
+ where idtags like '%[' + cast(idtag as varchar) + ']%']]>
+        </select>
+        <select name='utenti' forcombos='idutente, nome, note'>
+          <![CDATA[select u.idutente, u.nome, u.note from utenti u
+      join tipiutente t on u.idtipoutente = t.idtipoutente
+      where t.tipoutente <> 'admin' and u.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update bollette set idtipobolletta = {@qryNumb='idtipobolletta'}
+       , prezzo = {@qryEuro='prezzo'}, rimborso = {@qryEuro='rimborso'}, data = {@qryDate='data'}, datascadenza = {@qryDate='datascadenza'}
+       , quantita = {@qryEuro='quantita'}, idunitamisura = {@qryNumb='idunitamisura'}, idanagrafica = {@qryNumb='idanagrafica'}
+       , iddurata = {@qryNumb='iddurata'}, note = {@qryText='note'}, idutente = {@qryNumb='idutente'}, dtupd = getDate()
+        where idbolletta = {@qrykey='idbll'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into bollette (idtipobolletta, prezzo, rimborso, data, datariferimento, datascadenza, idanagrafica, quantita, idunitamisura, iddurata, note, idutente, dtins)       
+      select {@qryNumb='idtipobolletta'}, {@qryEuro='prezzo'}, {@qryEuro='rimborso'}, {@qryDate='data'}, {@qryDate='datariferimento'}, {@qryDate='datascadenza'}
+       , (select idanagrafica from tipibolletta where idtipobolletta = {@qryNumb='idtipobolletta'}) as idanagrafica
+       , {@qryReal='quantita'}, {@qryNumb='idunitamisura'}, {@qryNumb='iddurata'}, {@qryText='note'}, {@qryNumb='idutente'}, getdate()]]>
+        </update>
+      </queries>
+    </form>
+    <import name="buttons"/>
+  </contents>
+</page>

@@ -1,0 +1,10 @@
+<menu schema="xmlschema.ctrls" page="home" page_args="clrhis=1" style="fixed-top">
+  <voice title="help" if="{@cond='usr-admin'}">
+    <voice title="riferimenti" page="rifs" sep="true"/>
+    <voice page="servervars"/>
+  </voice>
+  <icon name="mif-user" right="true" text="utente: {@property='userLogged'}" title="{@property='userTypeDesLogged'}">
+    <voice page="login" title="esci..."/>
+  </icon>
+  <icon name="mif-enter" right="true" text="base dati: {@property='userConnMenu'}" title="{@property='userConnDes'}"/>
+</menu>

@@ -1,0 +1,384 @@
+﻿
+.metroGrid
+{
+    margin: 5px 0 10px 0;
+    border: solid 1px lightgray;
+    table-layout: fixed;
+    min-width: 250px;
+}
+
+.metroGrid td.item-tbl
+{
+    padding: 2px;
+    border-right: 1pt solid lightgray;
+    height:30px;
+}
+
+.metroGrid td.item-action
+{
+    padding: 2px;
+    border: 0px;
+}
+
+.metroGrid .item-edit
+{
+    background: url(../images/edit.png) no-repeat;
+    background-position: center center;
+}
+
+.metroGrid .item-del
+{
+    background: url(../images/delete.png) no-repeat;
+    background-position: center center;
+}
+
+.metroGrid caption
+{
+    font-size: 16px;
+    text-align: left;
+    padding: 5px;
+}
+.metroGrid td
+{
+    font-size: 11px;
+    color: #717171;
+    height: 22px;
+    white-space: nowrap;
+}
+.metroGrid input.filter-fld
+{
+    border: solid 1pt lightgrey;
+    color: gray;
+}
+.metroGrid td input
+{
+    font-size: 11px;
+    color: #313131;
+    white-space: nowrap;
+    border: 0px;
+    margin: 0px;
+}
+.metroGrid th
+{
+    font-size: 12px;
+    font-weight: normal;
+    padding: 3px;
+}
+.metroGrid th a
+{
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.metroGrid .arrow-col
+{
+    color:#e0e0e0;
+}
+.metroGrid th a:hover
+{
+    text-decoration: none;
+    white-space: nowrap;
+}
+.metroGrid .icon-btn
+{
+    padding: 5px;
+    border-radius: 50%;
+    font-size: 11pt;
+    width: 25px !important;
+}
+.metroGrid .icon-btn:hover
+{
+    color: yellow;
+}
+.metroGrid .alt
+{
+    background-color: #f0f0ff;
+}
+.metroGrid .pager
+{
+}
+.metroGrid .pager table
+{
+    margin-left: 10px;
+    width: 90%;
+}
+.metroGrid .pager td
+{
+    border-width: 0;
+    color: #fff;
+    background-color: gray;
+}
+.metroGrid .pager a
+{
+    color: #fff;
+    font-size:10pt;
+}
+.metroGrid .pager span
+{
+    font-size:10pt;
+}
+.metroGrid .pager .middle-link
+{
+    margin-right:5px;
+    margin-left:5px;
+}
+.metroGrid .pager .add-record
+{
+    margin-left: 20px;
+    margin-right: 20px;
+}
+.metroGrid .pager a:hover
+{
+    color: yellow;
+}
+.metroGrid .pager a.active-page
+{
+    text-decoration: underline;
+    padding-left:3pt;
+    padding-right:3pt;
+}
+.metroGrid .pager span.stanghetta
+{
+    margin-right:2pt;
+    margin-left:2pt;
+    cursor:default;
+}
+.metroGrid .pager a.unactive-page
+{
+    padding-left:3pt;
+    padding-right:3pt;
+}
+.metroGrid th.header-tbl
+{   
+    padding: 0px;
+    border-bottom: 1px solid lightgray;
+    text-align: center;    
+}
+.metroGrid th.header-action
+{   
+    width:30px;
+    padding: 0px;
+    border-bottom: 1px solid lightgray;
+    text-align: center;    
+}
+
+.metroGrid div.header-col
+{
+    display: table-row;    
+    height: 30px;
+}
+
+.metroGrid .title-col
+{
+    display: table-cell;        
+    width: 100%; 
+    vertical-align:middle;
+    padding-top:5px;padding-bottom:5px;
+}
+
+.metroGrid span.title-col
+{
+    font-size:9pt;
+    color: #383838;
+}
+
+.metroGrid a.title-col
+{
+    text-decoration: underline;
+}
+
+.metroGrid a.title-col:hover
+{
+    text-decoration: underline;
+}
+.metroGrid .arrows
+{
+    display: table-cell;        
+    float: right;
+    position:relative;top:5px;
+    border: 1px solid lightgray;    
+    border-radius: 30px 30px 30px 30px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+.metroGrid .arrow-col
+{
+    margin: 2px;
+    margin-right: 8px;
+    cursor: pointer;
+    font-size: 10pt;
+    width: 6px;
+    height: 5px;
+}
+.metroGrid .arrow-col-active
+{
+    bottom:0;
+    margin: 2px;
+    margin-right: 9px;
+    float: right;
+    font-size: 10pt;
+    width: 6px;
+    height: 5px;
+}
+
+/*arrow-col color:tomato
+color:white;
+style='bottom:0;'
+style='bottom:0;'
+*/
+
+.metroGridFilters
+{
+    font-size: 11px;
+    margin-bottom: 20px;
+}
+.metroGridFilters td
+{
+    padding: 5px;
+    vertical-align: top;
+    text-align: right;
+    background-color: #eeeeee;
+}
+.metroGridFilters input.filter-grid
+{
+    width: 50px;
+}
+.metroGridFilters span.filter-grid
+{
+}
+.metroGridFilters span.filter-title
+{
+    margin: 15px;
+    font-weight: bold;
+}
+.metroGrid .footer
+{
+}
+.metroGrid .footer table
+{
+    margin-left: 10px;
+    width: 90%;
+}
+.metroGrid .footer td
+{
+    border-width: 0;
+    color: gray;
+    background-color: lightgray;
+}
+.metroGrid input.filter-fld
+{
+    border-width: 0pt;
+}
+.tooltip-grid{ font-size:9pt;}
+/* red */
+.metroGrid.red .arrow-col
+{
+    color:tomato;
+}
+.metroGrid.red .footer td
+{
+    color: #fff;
+    background-color: #dd7777;
+}
+.metroGrid.red .pager td
+{
+    background-color: #dd5555;
+}
+.metroGrid.red caption
+{
+    color: white;
+    background-color: #cc0000;
+}
+.metroGrid.red th
+{
+    color: #fff;
+    background-color: #dd5555;
+}
+.metroGrid.red th a
+{
+    color: #fff;
+}
+.metroGrid.red .icon-btn
+{
+    background: tomato;
+    color: white;
+}
+.metroGrid.red th a
+{
+    color:White;
+}
+.metroGrid.red th a:hover
+{
+    color: yellow;
+}
+.metroGrid.red .title-col
+{
+    color:White;
+}
+.metroGrid.red .title-col-ref
+{
+    color: White;
+}
+.metroGrid.red th.header-tbl
+{
+    border-bottom: 0px;
+}
+.metroGrid.red th.header-action
+{
+    border-bottom:0px;
+}
+
+/* blue */
+.metroGrid.blue .arrow-col
+{
+    color:#0066dd;
+}
+.metroGrid.blue .footer td
+{
+    color: #fff;
+    background-color: #7777dd;
+}
+.metroGrid.blue .pager td
+{
+    background-color: #7777dd;
+}
+.metroGrid.blue caption
+{
+    color: white;
+    background-color: #0000ff;
+}
+.metroGrid.blue th
+{
+    color: #fff;
+    background-color: #7777dd;
+}
+.metroGrid.blue .icon-btn
+{
+    color:#0099ff;
+    background: lightgray;
+}
+.metroGrid.blue th a
+{
+    color:White;
+}
+.metroGrid.blue th a:hover
+{
+    color: yellow;
+}
+.metroGrid.blue .title-col
+{
+    color:White;
+}
+.metroGrid.blue .title-col-ref
+{
+    color: White;
+}
+.metroGrid.blue th.header-tbl
+{
+    border-bottom: 0px;
+}
+.metroGrid.blue th.header-action
+{
+    border-bottom:0px;
+}

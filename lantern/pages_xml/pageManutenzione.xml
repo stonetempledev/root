@@ -1,0 +1,117 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-manutenzione" title="Manutenzione" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row tooltip='auto interessata'>
+          <field>
+            <label text='Auto:' ref="{@pageref='autos'}"/>
+          </field>
+          <field>
+            <combo field='idauto' fielddes='auto' select='modelliAuto' onsel_desfield='noteauto' required='true' errField='Auto' width='200px'/>
+          </field>
+          <field>
+            <input field='noteauto' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='tipo intervento'>
+          <field>
+            <label text='Tipo intervento:' ref="{@pageref='interventi'}"/>
+          </field>
+          <field>
+            <combo field='idoperazioneauto' fielddes='operazioneauto' select='operazioniAuto' onsel_desfield='noteoperazioneauto' required='true' errField='Tipo intervento' width='200px'/>
+          </field>
+          <field>
+            <input field='noteoperazioneauto' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='chilometraggio'>
+          <field>
+            <label text='Km:'/>
+          </field>
+          <field colspan='2'>
+            <input field='km' type='int' required='true' errField='Km' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='costo manutenzione'>
+          <field>
+            <label text='Importo manutenzione:'/>
+          </field>
+          <field colspan='2'>
+            <input field='prezzo' type='euro' required='true' errField='Importo manutenzione' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='rimborso manutenzione'>
+          <field>
+            <label text='Rimborso manutenzione:'/>
+          </field>
+          <field colspan='2'>
+            <input field='rimborso' type='euro' errField='Rimborso manutenzione' width='250px'/>
+          </field>
+        </row>
+        <row tooltip="quando è stato effettuato l'intervento">
+          <field>
+            <label text='Quando:'/>
+          </field>
+          <field colspan='2'>
+            <input field='data' type='date' enabled='true' formatDate='dataEstesa' required='true' errField='Quando' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='note particolari'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[select m.idmanutenzioneauto, m.km, m.data, m.prezzo, m.rimborso, m.note
+  , o.idoperazioneauto, o.operazioneauto, o.note as noteoperazioneauto
+  , a.idauto, a.marca + ' - ' + a.modello as auto, a.note as noteauto
+  , t.tipoalimentazione, t.note as notetipoalimentazione
+  , u.nome, u.note as noteutente
+ from [manutenzioneauto] m
+ left join operazioniauto o on o.idoperazioneauto = m.idoperazioneauto
+ left join [auto] a on a.idauto = m.idauto
+ left join tipialimentazione t on t.idtipoalimentazione = a.idtipoalimentazione
+ left join utenti u on u.idutente = a.idutente  
+ where m.idmanutenzioneauto = {@qrykey='idman'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[select NULL as idmanutenzioneauto, NULL as km, NULL as data, NULL as prezzo, NULL as rimborso, NULL as note
+  , NULL as idoperazioneauto, NULL as operazioneauto, NULL as noteoperazioneauto
+  , NULL as idauto, NULL as auto, NULL as noteauto
+  , NULL as tipoalimentazione, NULL as notetipoalimentazione
+  , NULL as nome, NULL as noteutente
+      from (select 1 as col) tbl]]>
+        </select>
+        <select name='modelliAuto' forcombos='idauto, modello, note' des='caricamento auto disponibili'>
+          <![CDATA[select tbl.* 
+ from (select a.idauto, a.marca + ' - ' + a.modello as modello, a.note
+  , (select count(*) from rifornimentoauto b where b.idauto = a.idauto) as conteggio
+  from [auto] a
+  where a.idutente in ({@method='info',string:userVisibility})) tbl
+  order by tbl.conteggio desc]]>
+        </select>
+        <select name='operazioniAuto' forcombos='idoperazioneauto, operazioneauto, note'>
+          <![CDATA[select o.idoperazioneauto, o.operazioneauto, o.note
+      from operazioniauto o]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update manutenzioneauto set idauto = {@qryNumb='idauto'}, idoperazioneauto = {@qryNumb='idoperazioneauto'}
+         , rimborso = {@qryEuro='rimborso'}, prezzo = {@qryEuro='prezzo'}, data = {@qryDate='data'}
+         , km = {@qryNumb='km'}, note = {@qryText='note'}, dtupd = getDate()
+        where idmanutenzioneauto = {@qrykey='idman'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into manutenzioneauto (idauto, idoperazioneauto, rimborso, prezzo, data, km, note, dtins)       
+      select {@qryNumb='idauto'}, {@qryNumb='idoperazioneauto'}, {@qryEuro='rimborso'}, {@qryEuro='prezzo'}
+       , {@qryDate='data'}, {@qryNumb='km'}, {@qryText='note'}, getdate()]]>
+        </update>
+      </queries>
+    </form>
+    <import name="buttons"/>
+  </contents>
+</page>

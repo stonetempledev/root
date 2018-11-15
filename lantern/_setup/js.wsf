@@ -1,0 +1,248 @@
+<Job id="scripting">
+<script language="JScript">
+
+// arguments: "<xml path>"
+
+try{
+
+	if(WScript.Arguments.Item(0) == "setNodeXml")
+		setNodeXml(WScript.Arguments.Item(1), WScript.Arguments.Item(2), WScript.Arguments.Item(3));
+	else if(WScript.Arguments.Item(0) == "removeChildsNode")
+		removeChildsNode(WScript.Arguments.Item(1), WScript.Arguments.Item(2));
+	else if(WScript.Arguments.Item(0) == "setAttrXml")
+		setAttrXml(WScript.Arguments.Item(1), WScript.Arguments.Item(2), WScript.Arguments.Item(3), parseValue(WScript.Arguments.Item(4)));
+	else if(WScript.Arguments.Item(0) == "setAttrXmlObb")
+		setAttrXml(WScript.Arguments.Item(1), WScript.Arguments.Item(2), WScript.Arguments.Item(3), parseValue(WScript.Arguments.Item(4)), false);
+	else if(WScript.Arguments.Item(0) == "getLocalIP")
+		setTxtFile(WScript.Arguments.Item(1), getLocalIP());
+	else if(WScript.Arguments.Item(0) == "genMinifyXml")
+		genMinifyXml(WScript.Arguments.Item(1), WScript.Arguments.Item(2), WScript.Arguments.Item(3), WScript.Arguments.Item(4), WScript.Arguments.Item(5));
+	else if(WScript.Arguments.Item(0) == "removeNodes")
+		removeNodes(WScript.Arguments.Item(1), WScript.Arguments.Item(2));
+	else if(WScript.Arguments.Item(0) == "addNode")
+		addNode(WScript.Arguments.Item(1), WScript.Arguments.Item(2), WScript.Arguments.Item(3), WScript.Arguments.Item(4));
+	else if(WScript.Arguments.Item(0) == "getAttrXml")
+	    setTxtFile(WScript.Arguments.Item(4), getAttrXml(WScript.Arguments.Item(1), WScript.Arguments.Item(2), WScript.Arguments.Item(3)));
+	else if(WScript.Arguments.Item(0) == "getAttrXmlNoErr")
+	    setTxtFile(WScript.Arguments.Item(5), getAttrXmlNoErr(WScript.Arguments.Item(1), WScript.Arguments.Item(2), WScript.Arguments.Item(3), WScript.Arguments.Item(4)));
+	else if(WScript.Arguments.Item(0) == "cNodesXml")
+		setTxtFile(WScript.Arguments.Item(3), cNodesXml(WScript.Arguments.Item(1), WScript.Arguments.Item(2)));
+	else
+		throw new Error("la funzione '" + WScript.Arguments.Item(0) + "' non è gestita!");
+
+	WScript.Quit(1); 
+
+} catch(e) {
+	WScript.Echo(e.message);
+	WScript.Quit(-1); 
+}
+
+function parseValue(value)
+{
+	var parsed = new String(value);
+	
+	return parsed.replace(/@perc;/g, "%")
+}
+
+function setNodeXml(pathxml, pathnode, value)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml))
+		throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+
+	if(doc.selectSingleNode(pathnode) == null)
+		throw new Error ("il nodo '" + pathnode + "' non esiste!");
+	 
+	doc.selectSingleNode(pathnode).text = value;
+
+	doc.save(pathxml);
+}
+
+function removeChildsNode(pathxml, pathnode)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml))
+		throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+	
+	if(doc.selectSingleNode(pathnode) == null)
+		throw new Error ("il nodo '" + pathnode + "' non esiste!");
+
+	while(doc.selectSingleNode(pathnode).childNodes.length > 0)
+		doc.selectSingleNode(pathnode).removeChild(doc.selectSingleNode(pathnode).childNodes[0]);
+	
+	doc.save(pathxml);
+}
+
+function genMinifyXml(local_path, pathxml, out_xml, path_nodes, out_minify)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml))
+		throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+
+	var out = WScript.CreateObject("Microsoft.XMLDOM");
+	out.loadXML("<?xml version=\"1.0\" encoding=\"utf-8\"?><root><output path=''/></root>");
+	out.selectSingleNode("/root/output").attributes.getNamedItem("path").text = out_minify;
+		
+	var nodes = doc.selectNodes(path_nodes);
+	for (var tmp = null; tmp = nodes.nextNode(); )
+	{
+		var i_node = out.selectSingleNode("/root/output").appendChild(out.createElement("input"));
+		var attr = out.createAttribute("path");
+		attr.text = tmp.attributes.getNamedItem("href").text.replace(new RegExp("/", "g"), "\\").replace(/{@siteurl}/g, local_path);		
+		i_node.attributes.setNamedItem(attr);
+	}
+	
+	out.save(out_xml);
+}
+
+/*function removeDestModules(pathxml, path_nodes, site_path)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml))
+		throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+
+	var fs = WScript.CreateObject("Scripting.FileSystemObject");
+
+	var nodes = doc.selectNodes(path_nodes);
+	for (var tmp = null; tmp = nodes.nextNode(); )
+	{
+		var path_file = tmp.attributes.getNamedItem("href").text.replace(new RegExp("/", "g"), "\\").replace(/{@siteurl}/g, site_path);
+		if(fs.FileExists(path_file)) fs.DeleteFile(path_file);
+	}
+}*/
+
+function removeNodes(pathxml, path_nodes)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml))
+		throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+
+	while(doc.selectSingleNode(path_nodes) != null)
+	{
+		var nd = doc.selectSingleNode(path_nodes);
+		nd.parentNode.removeChild(nd);
+	}
+
+	doc.save(pathxml);
+}
+
+function addNode(pathxml, path_node, element, attrs)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml))
+		throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+		
+	if(doc.selectSingleNode(path_node))
+	{
+		var nd = doc.createElement(element);
+		var lst = attrs.split(";");
+		for (i = 0; i < lst.length - 1; i++) {
+			var nm = lst[i].split(":")[0];
+			
+			nd.attributes.setNamedItem(doc.createAttribute(nm));		
+			nd.selectSingleNode("@" + nm).text = lst[i].split(":")[1];
+		}
+		
+		doc.selectSingleNode(path_node).appendChild(nd);
+	}
+
+	doc.save(pathxml);
+}
+
+function getAttrXml(pathxml, pathnode, attr) {
+
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml)) throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+
+	var node = doc.selectSingleNode(pathnode);
+	if(node == null) throw new Error ("il nodo '" + pathnode + "' non esiste!");
+
+	return node.selectSingleNode("@" + attr).text;
+}
+
+function getAttrXmlNoErr(pathxml, pathnode, attr,  def) {
+
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml)) return def;
+
+	var node = doc.selectSingleNode(pathnode);
+	if(node == null || node.selectSingleNode("@" + attr) == null) return def;
+	
+	return node.selectSingleNode("@" + attr).text;
+}
+
+function cNodesXml(pathxml, pathnodes)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml)) throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+	
+	return doc.selectNodes(pathnodes).length;
+}
+
+function setAttrXml(pathxml, pathnode, attr, value, facoltativo)
+{
+	var doc = WScript.CreateObject("Microsoft.XMLDOM");
+	if(!doc.load(pathxml))
+		throw new Error ("il formato dell'xml non è corretto oppure non esiste il file '" + pathxml + "'");
+
+	var node = doc.selectSingleNode(pathnode);
+	if(node == null)
+		throw new Error ("il nodo '" + pathnode + "' non esiste!");	 
+	
+	if(value != null && value != "")
+	{
+		if(node.selectSingleNode("@" + attr) == null)
+			node.attributes.setNamedItem(node.ownerDocument.createAttribute(attr));
+					
+		node.selectSingleNode("@" + attr).text = value;
+	}
+	else
+	{
+		if(facoltativo == null || facoltativo)
+		{
+			if(node.selectSingleNode("@" + attr) != null)
+				node.attributes.removeNamedItem(attr);
+		}
+		else
+		{
+			if(node.selectSingleNode("@" + attr) == null)
+				node.attributes.setNamedItem(node.ownerDocument.createAttribute(attr));
+				
+			node.selectSingleNode("@" + attr).text = "";
+		}
+	}
+	
+	doc.save(pathxml);
+}
+
+function setTxtFile(filepath, text) {
+	var fs = WScript.CreateObject("Scripting.FileSystemObject");
+	var txt = fs.CreateTextFile(filepath, true);
+	txt.WriteLine (text);
+	txt.Close();
+}
+
+function getLocalIP()
+{
+	// create shell 
+	var ws = WScript.createobject ("WScript.shell");
+	var objWshScriptExec = ws.Exec("ipconfig");
+	var objStdOut = objWshScriptExec.StdOut;
+
+	var ip = "";
+	while(!objStdOut.AtEndOfStream)
+	{	
+		var line = objStdOut.ReadLine();
+		if(line.indexOf("Indirizzo IPv4") > 0)
+		{ 
+			var start = line.indexOf(":") + 2;
+			ip = line.substr(start, line.length);
+			break;
+		}
+	}
+	
+	return ip;
+}
+
+</script>
+</Job>

@@ -1,0 +1,202 @@
+<root schema="xmlschema.db.meta" des="informazioni aggiuntive sul database e le sue tabelle" ver="2014.11.01" group="web">
+  <tables prefix_sys="__" prefix_del="zz_" prefix_tmp="xx_" fieldins="DtIns" fieldupd="DtUpd" fielddel="DtDel">
+    <table nameupper="ACCOUNTS" title="Accounts" single="Account" fields-info="user,note,idsitoweb">
+      <links>
+        <link tableupper="SITIWEB" fieldupper="IDSITOWEB" />
+        <link tableupper="FILES" fieldupper="IDFILE" />
+        <link tableupper="UTENTI" fieldupper="IDUTENTE" />
+      </links>
+    </table>
+    <table nameupper="ANAGRAFICHE" title="Anagrafiche" single="Anagrafica" fields-info="anagrafica,citta,indirizzo,idprovincia,note">
+      <links>
+        <link tableupper="PROVINCE" fieldupper="IDPROVINCIA" />
+        <link tableupper="TAGS" fieldupper="IDTAGS" type="list" />
+        <link tableupper="UTENTI" fieldupper="IDUTENTE" />
+        <link tableupper="FILES" fieldupper="IDFILE" />
+        <link tableupper="INDICEGRADIMENTO" fieldupper="IDGRADIMENTO" />
+      </links>
+    </table>
+    <table nameupper="ANAGRAFICHEWEBLINKS" title="Web Links Anagrafiche" single="Web Link" fields-info="idweblink">
+      <links>
+        <link tableupper="WEBLINKS" fieldupper="IDWEBLINK" basic="true" />
+        <link tableupper="ANAGRAFICHE" fieldupper="IDANAGRAFICA" basic="true" />
+      </links>
+    </table>
+    <table nameupper="ANAGRAFICHECONTATTI" title="Contatti Anagrafiche" single="Contatto Anagrafica" fields-info="idanagrafica,idcontatto">
+      <links>
+        <link tableupper="CONTATTI" fieldupper="IDCONTATTO" basic="true" />
+        <link tableupper="ANAGRAFICHE" fieldupper="IDANAGRAFICA" basic="true" />
+      </links>
+    </table>
+    <table nameupper="ANAGRAFICHEEVENTI" title="Eventi Anagrafiche" single="Evento Anagrafica" fields-info="idanagrafica,idevento">
+      <links>
+        <link tableupper="EVENTI" fieldupper="IDEVENTO" basic="true" />
+        <link tableupper="ANAGRAFICHE" fieldupper="IDANAGRAFICA" basic="true" />
+      </links>
+    </table>
+    <table nameupper="AUTO" title="Automobili" single="Automobile" fields-info="marca,modello,note">
+      <links>
+        <link tableupper="TIPIALIMENTAZIONE" fieldupper="IDTIPOALIMENTAZIONE" />
+        <link tableupper="UTENTI" fieldupper="IDUTENTE" />
+      </links>
+    </table>
+    <table nameupper="BOLLETTE" title="Bollette" single="Bolletta" fields-info="idtipobolletta,datariferimento,iddurata,idunitamisura,quantita,datascadenza">
+      <links>
+        <link tableupper="TIPIBOLLETTA" fieldupper="IDTIPOBOLLETTA" />
+        <link tableupper="ANAGRAFICHE" fieldupper="IDANAGRAFICA" />
+        <link tableupper="DURATE" fieldupper="IDDURATA" />
+        <link tableupper="UNITAMISURA" fieldupper="IDUNITAMISURA" />
+        <link tableupper="UTENTI" fieldupper="IDUTENTE" />
+      </links>
+    </table>
+    <table nameupper="CONTATTI" title="Contatti" single="Contatto" fields-info="nome,idutente,idtags">
+      <links>
+        <link tableupper="TAGS" fieldupper="IDTAGS" type="list" />
+        <link tableupper="UTENTI" fieldupper="IDUTENTE" />
+      </links>
+    </table>
+    <table nameupper="CONTATTIDETTAGLI" title="Dettagli Contatto" single="Dettaglio Contatto" fields-info="idcontatto,idtipocontatto,contatto">
+      <links>
+        <link tableupper="CONTATTI" fieldupper="IDCONTATTO" basic="true" />
+        <link tableupper="TIPICONTATTO" fieldupper="IDTIPOCONTATTO" />
+      </links>
+    </table>
+    <table nameupper="DURATE" title="Durate" single="Durata" fields-info="durata" />
+    <table nameupper="EVENTI" title="Eventi" single="Evento" fields-info="idtipoevento,evento,datada">
+      <links>
+        <link tableupper="TIPIEVENTI" fieldupper="IDTIPOEVENTO" />
+        <link tableupper="UTENTI" fieldupper="IDUTENTE" />
+      </links>
+    </table>
+    <table nameupper="FILES" title="Files" single="File" fields-info="filename,ext,idfolder" align_code="files">
+      <links>
+        <link tableupper="FOLDERS" fieldupper="IDFOLDER" basic="true" />
+      </links>
+    </table>
+    <table nameupper="FOLDERS" title="Folders" single="Folder" fields-info="foldername,idfolderpadre" align_code="folders">
+      <links>
+        <link tableupper="FOLDERS" fieldupper="IDFOLDERPADRE" basic="true" />
+      </links>
+    </table>
+    <table nameupper="INDICEGRADIMENTO" title="Indici Gradimento" single="Indice Gradimento" fields-info="stelle,note" />
+    <table nameupper="MANUTENZIONEAUTO" title="Manutenzioni Auto" single="Manutenzione Auto" fields-info="idauto,idoperazioneauto,km,data,note">
+      <links>
+        <link tableupper="AUTO" fieldupper="IDAUTO" basic="true" />
+        <link tableupper="OPERAZIONIAUTO" fieldupper="IDOPERAZIONEAUTO" />
+      </links>
+    </table>
+    <table nameupper="OPERAZIONIAUTO" title="Operazioni Auto" single="Operazione Auto" fields-info="operazioneauto" />
+    <table nameupper="PROVINCE" title="Province" single="Provincia" fields-info="citta,provincia" />
+    <table nameupper="RIFORNIMENTOAUTO" title="Rifornimenti Auto" single="Rifornimento Auto" fields-info="idauto,idevento,km,data">
+      <links>
+        <link tableupper="AUTO" fieldupper="IDAUTO" basic="true" />
+        <link tableupper="EVENTI" fieldupper="IDEVENTO" />
+      </links>
+    </table>
+    <table nameupper="SITIWEB" title="Siti Web" single="Sito Web" fields-info="titolo,idtags">
+      <links>
+        <link tableupper="INDICEGRADIMENTO" fieldupper="IDGRADIMENTO" />
+        <link tableupper="TAGS" fieldupper="IDTAGS" type="list" />
+        <link tableupper="UTENTI" fieldupper="IDUTENTE" />
+      </links>
+    </table>
+    <table nameupper="SITIWEBLINKS" title="Web Links Siti Web" single="Web Link" fields-info="idsitoweb,idweblink,principale">
+      <links>
+        <link tableupper="SITIWEB" fieldupper="IDSITOWEB" basic="true" />
+        <link tableupper="WEBLINKS" fieldupper="IDWEBLINK" basic="true" />
+      </links>
+    </table>
+    <table nameupper="SPESE" title="Spese" single="Spesa" fields-info="idevento,idtipospesa,pezzo,data,prezzo">
+      <links>
+        <link tableupper="EVENTI" fieldupper="IDEVENTO" />
+        <link tableupper="TIPISPESA" fieldupper="IDTIPOSPESA" />
+        <link tableupper="UTENTI" fieldupper="IDUTENTE" />
+      </links>
+    </table>
+    <table nameupper="TAGS" title="Tags" single="Tag" fields-info="tag" fnc="[dbo].[getListOfTags]({@field='field_ids'})">
+      <rules>
+        <nochar fieldupper="TAG" value="," />
+      </rules>
+    </table>
+    <table nameupper="TIPIALIMENTAZIONE" title="Tipi Alimentazione" single="Tipo Alimentazione" fields-info="tipoalimentazione" />
+    <table nameupper="TIPIBOLLETTA" title="Tipi Bolletta" single="Tipo Bolletta" fields-info="tipobolletta,note">
+      <links>
+        <link tableupper="ANAGRAFICHE" fieldupper="IDANAGRAFICA" />
+      </links>
+    </table>
+    <table nameupper="TIPICONTATTO" title="Tipi Contatto" single="Tipo Contatto" fields-info="tipocontatto" />
+    <table nameupper="TIPIEVENTI" title="Tipi Eventi" single="Tipo Evento" fields-info="tipoevento" />
+    <table nameupper="TIPISPESA" title="Tipi Spesa" single="Tipo Spesa" fields-info="tipospesa" />
+    <table nameupper="TIPIUTENTE" title="Tipi Utente" single="Tipo Utente" fields-info="tipoutente" />
+    <table nameupper="UNITAMISURA" title="Unita di Misura" fields-info="unitamisura" />
+    <table nameupper="UTENTI" title="Utenti" single="Utente" fields-info="nome,idtipoutente,note">
+      <links>
+        <link tableupper="TIPIUTENTE" fieldupper="IDTIPOUTENTE" />
+      </links>
+    </table>
+    <table nameupper="UTENTIVISIBILITY" title="Visibilita Utenti" single="Visibilita Utente" fields-info="idutente,idutenteview">
+      <links>
+        <link tableupper="UTENTI" fieldupper="IDUTENTEVIEW" basic="true" />
+        <link tableupper="UTENTI" fieldupper="IDUTENTE" basic="true" />
+      </links>
+    </table>
+    <table nameupper="WEBLINKS" title="Web Links" single="Web Link" fields-info="weblink" />
+  </tables>
+  <fields>
+    <field title="Utente" nameupper="USER" nosingle="true" />
+    <field title="Utente Collegato" nameupper="IDUTENTEVIEW" nosingle="true" />
+    <field title="Password" nameupper="PASSWORD" />
+    <field title="Note" nameupper="NOTE" />
+    <field title="Data Inserimento" nameupper="DTINS" />
+    <field title="Data Aggiornamento" nameupper="DTUPD" />
+    <field title="Anagrafica" nameupper="ANAGRAFICA" />
+    <field title="Citta" nameupper="CITTA" />
+    <field title="Telefono" nameupper="TELEFONO" />
+    <field title="Indirizzo" nameupper="INDIRIZZO" />
+    <field title="Nazione" nameupper="NAZIONE" />
+    <field title="CAP" nameupper="CAP" />
+    <field title="Email" nameupper="EMAIL" />
+    <field title="Contatti" nameupper="CONTATTI" />
+    <field title="Distanza" nameupper="DISTANZA" />
+    <field title="Capitale Sociale" nameupper="CAPITALESOCIALE" />
+    <field title="Nro Dipendenti" nameupper="NRODIPENDENTI" />
+    <field title="Marca" nameupper="MARCA" />
+    <field title="Modello" nameupper="MODELLO" />
+    <field title="Data" nameupper="DATA" />
+    <field title="Data Riferimento" nameupper="DATARIFERIMENTO" />
+    <field title="Quantita" nameupper="QUANTITA" />
+    <field title="Data Scadenza" nameupper="DATASCADENZA" />
+    <field title="Durata" nameupper="DURATA" />
+    <field title="Evento" nameupper="EVENTO" />
+    <field title="Data Da" nameupper="DATADA" />
+    <field title="Data A" nameupper="DATAA" />
+    <field title="Estensione" nameupper="EXT" />
+    <field title="File Name" nameupper="FILENAME" />
+    <field title="Folder Name" nameupper="FOLDERNAME" />
+    <field title="Stelle" nameupper="STELLE" />
+    <field title="Rimborso" nameupper="RIMBORSO" />
+    <field title="Operazione Auto" nameupper="OPERAZIONEAUTO" nosingle="true" />
+    <field title="Citta" nameupper="CITTA" nosingle="true" />
+    <field title="Provincia" nameupper="PROVINCIA" nosingle="true" />
+    <field title="Km" nameupper="KM" />
+    <field title="Prezzo" nameupper="PREZZO" />
+    <field title="Costo Litro" nameupper="COSTOLITRO" />
+    <field title="Titolo" nameupper="TITOLO" />
+    <field title="Principale" nameupper="PRINCIPALE" />
+    <field title="Pezzo" nameupper="PEZZO" />
+    <field title="Quantita" nameupper="QUANTITA" />
+    <field title="Tag" nameupper="TAG" nosingle="true" />
+    <field title="Argomenti" nameupper="IDTAGS" />
+    <field title="Tipo Alimentazione" nameupper="TIPOALIMENTAZIONE" nosingle="true" />
+    <field title="Tipo Bolletta" nameupper="TIPOBOLLETTA" nosingle="true" />
+    <field title="Tipo Evento" nameupper="TIPOEVENTO" nosingle="true" />
+    <field title="Cod. Spesa" nameupper="CODSPESA" nosingle="true" />
+    <field title="Tipo Spesa" nameupper="TIPOSPESA" nosingle="true" />
+    <field title="Tipo Utente" nameupper="TIPOUTENTE" nosingle="true" />
+    <field title="Unita Misura" nameupper="UNITAMISURA" nosingle="true" />
+    <field title="Nome" nameupper="NOME" />
+    <field title="Pwd" nameupper="PWD" />
+    <field title="Reset Password" nameupper="RESETPWD" nosingle="true" />
+    <field title="Web Link" nameupper="WEBLINK" />
+  </fields>
+</root>

@@ -1,0 +1,40 @@
+xmlschema.page - derivato da xmlschema.ctrls
+
+definizione page
+
+<page>
+ @menu (facoltativo)
+ @header (facoltativo)
+ @init_qry (facoltativo): id query da lanciare in caricamento pagina
+
+<include>
+ <grp_module>: ragguppamento di moduli
+   @name: nome del gruppo di moduli
+  <module>: modulo da caricare lato client
+   @type: tipo di modulo da caricare
+    'link': modulo css da linkare alla pagina
+    'script': modulo js da caricare 
+   @href [espressione parsificata]: riferimento al modulo da caricare
+  <script>: script javascript da aggiungere alla pagina tramite parser
+
+<contents>: contenuti
+    
+<contents/import>
+ @name: nome controllo
+ @hcenter (facoltativo)
+ @topmargin (facoltivo)
+ @tab (facoltativo): <TABS CTRL>.<TAB NAME>
+ @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare  
+
+<contents/html>: contenuto libero html
+
+controlli:
+
+ <contents/form>
+ <contents/grid>
+ <contents/listview>
+ <contents/tabs>
+ <contents/tiles>
+ <contents/section>
+
+<queries>...vedi xmlschema.ctrl.txt

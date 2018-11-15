@@ -1,0 +1,13 @@
+risultato xml della pagina usata come HttpRequest
+
+<response>
+ @result: risultato finale
+  - 'ok': tutto bene
+  - 'error': si è verificato un errore
+
+<response/err> (facoltativo): eventuale messaggio di errore che si è verificato
+
+<response/values> (facoltativo): valori di ritorno
+
+<response/values/val> (facoltativo): valori di ritorno
+ @name: nome valore 

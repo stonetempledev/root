@@ -1,0 +1,32 @@
+xmlschema.menu - derivato da xmlschema.ctrls
+
+definizione menu
+
+<menu>: definizione menu
+ @title (facoltativo se si specifica la @page): titolo voce principale
+ @href, @page (alternativi): riferimento voce principale
+ @page_args (facoltativo): argomenti da passare alla pagina
+ @style (facoltativo: blue): dark, blue
+ <menu/voice>: definizione voce di menù primo livello
+  @if (facoltativo) [espressione parsificata]: condizione da rispettare
+  @title (facoltativo se si specifica la @page): titolo visualizzato
+  @href (facoltativo) [espressione parsificata]: riferimento url, se si tratta di una voce con sottovoci viene ignorato
+  @disabled (facoltativo): voce disabilitata?
+  @page (facoltativo): nome pagina di riferimento
+  @page_args (facoltativo): argomenti da passare alla pagina
+  @sep (facoltativo): separatore della voce di menu alla fine
+  @onlyconsole (facoltativo, true, false): visibile solo dall'eseguibile di console
+  <menu/voice/voice>: ...
+  <menu/voice/icon>: ...
+ <menu/icon>: icona
+  @if (facoltativo) [espressione parsificata]: condizione da rispettare
+  @name: nome icona da visualizzare
+  @text (facoltativo) [espressione parsificata]: testo da inserire accanto all'icona
+  @title (facoltativo) [espressione parsificata]: tooltip
+  @right (facoltativo): vuoi mettere l'icona a destra??
+  @href (facoltativo) [espressione parsificata]: riferimento url, se si tratta di una voce con sottovoci viene ignorato
+  @onlyconsole (facoltativo, true, false): visibile solo dall'eseguibile di console
+  @sep (facoltativo): separatore della voce di menu alla fine   
+  @javascript (facoltativo) [espressione parsificata]: client script da eseguire
+  <menu/icon/voice>: ...
+  <menu/icon/icon>: ...

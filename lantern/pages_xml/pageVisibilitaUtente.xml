@@ -1,0 +1,65 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-utente-visibilita" title="Utente visibile" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row tooltip='nome accesso utente principale'>
+          <field>
+            <label text='Nome utente principale:'/>
+          </field>
+          <field colspan='2'>
+            <input field='nome' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='utente visibile'>
+          <field>
+            <label text='Utente visibile:' />
+          </field>
+          <field>
+            <combo field='idutenteview' fielddes='nomeview' select='utentiview' onsel_desfield='noteutenteview' required='true' errField='Utente visibile' width='200px'/>
+          </field>
+          <field>
+            <input field='noteutenteview' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row>
+          <field class='footer' maxspan='true' right='true'>
+            <button type='submit' if="{@cond='frm-ins'}" value='Aggiungi'/>
+            <button type='exit' value='Annulla'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-ins'}">
+          <![CDATA[SELECT u.nome, u.note, u.pwd, u.resetpwd, u.idtipoutente
+      , NULL as idutenteview, NULL as nomeview, NULL as noteutenteview
+      --, dbo.getUtenteVisibility(u.idutente) as visibilita 
+ from utenti u
+ where u.idutente = {@qrykey='idusr'}]]>
+        </select>
+        <select name='utentiview' forcombos='idutente, nome, note' des='caricamento utenti'>
+          <![CDATA[select u.idutente, u.nome, u.note
+  from utenti u
+  join utenti up on up.idutente = {@qrykey='idusr'}
+  left join tipiutente t on u.idtipoutente = t.idtipoutente
+  where u.idutente <> up.idutente and t.tipoutente <> 'admin'
+   and u.idutente not in (select idutenteview from utentivisibility where idutente = up.idutente)
+   and isnull(u.conn, '') = isnull(up.conn, '')
+  ]]>
+        </select>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [utentivisibility] (idutente, idutenteview, dtins)       
+      select {@qrykey='idusr'}, {@qryNumb='idutenteview'}, getdate()]]>
+        </update>
+      </queries>
+    </form>
+  </contents>
+  <queries>
+    <select name='title'>
+      <![CDATA[SELECT u.nome
+ from utenti u
+ where u.idutente = {@qrykey='idusr'}]]>
+    </select>
+  </queries>
+</page>
+
+

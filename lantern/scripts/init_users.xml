@@ -1,0 +1,18 @@
+<root schema="xmlschema.script" title='inizializzazione utenti' des='inizializzazione degli utenti'>
+  <script>
+    <init_table table='utenti'/>
+    <sql>
+      insert into utenti (idtipoutente, nome, note, pwd, resetpwd, dtins)
+      values (0, 'admin', 'amministratore', 'admin', 0, '2010-01-01 00:00:00.002')
+    </sql>
+    <sql>
+      insert into utenti (idtipoutente, nome, note, pwd, resetpwd, dtins)
+      values (1, 'guest', 'utente', NULL, 0, '2010-01-01 00:00:00.003')
+    </sql>
+    <sql>
+      insert into utenti (idtipoutente, nome, note, pwd, resetpwd, dtins, dtupd)
+      values (2, 'anonimo', 'utente anonimo visibile da tutti', NULL, 0, '2010-01-01 00:00:00.001', NULL)
+    </sql>
+  </script>
+</root>
+

@@ -1,0 +1,22 @@
+xmlschema.listview - derivato da xmlschema.ctrls
+
+definizione list view
+
+<listview>: definizione list view
+ @script (facoltativo): id script di caricamento dei dati
+ @select (facoltativo): id script di caricamento dei dati
+ @key (facoltativo): elenco nomi campi chiave che identificano la chiave della riga
+ @client-script (facoltativo)
+ @sec-open (facoltativo): id sezione html di apertura list view
+ @sec-close (facoltativo): id sezione html di chiusura list view
+ @sec-rows: lista degli id di sezione html dei contenuti dell'elemento, la prima sezione verificata che corrisponde 
+  alla condizione allora viene utilizzata
+ - gestione sotto righe in presenza di @breakKeysQuery
+  @break-key (facoltativo): crea una nuova riga sulla rottura della chiave del recordset
+  @sec-close-row: html di chiusura riga
+  @sec-sub-row: html di sotto riga interna
+ 
+<sectionskeys>: definizione valori chiave sezioni html
+ <sectionskeys/sectionkeys>: definizione valori chiave sezione html
+  <sectionskeys/sectionkeys/key>: definizione valore chiave da inserire nella sezione html
+   @name: codice chiave usato per aggiornare la sezione

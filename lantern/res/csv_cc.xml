@@ -1,0 +1,37 @@
+<root schema="xmlschema.import_csv">
+  <vars>
+    <var name="from_line">2</var>
+    <var name="separator">;</var>
+  </vars>
+  <fields>
+    <field name="DataOperazione" type="date"/>
+    <field name="DataValuta" type="date"/>
+    <field name="Causale" type="text"/>
+    <field name="Descrizione" type="text"/>
+    <!--<field name="Entrate" type="euro"/>
+    <field name="Uscite" type="euro"/>-->
+    <field name="Importo" type="euro"/>
+    <field name="SaldoParziale" type="euro"/>
+  </fields>
+  <queries>
+    <update name='ins' des='inserimento record'>
+      <![CDATA[
+      if({@qryVoid='Descrizione'} <> 'Saldo Iniziale' and {@qryVoid='Descrizione'} <> 'Saldo Contabile' 
+        and {@qryVoid='Descrizione'} <> 'Saldo Contabile non definitivo(*)')
+       insert into saldoccorrente (IDCCorrente, Data, Causale, Movimento, Saldo, Note, dtIns)
+        values ({@qrykey='idcc'}, {@qryDate='DataValuta,DataOperazione'}, {@qryText='Causale'}, {@qryEuro='Importo'}, {@qryEuro='SaldoParziale'}, {@qryText='Descrizione'}, sysdatetime())]]>
+    </update>
+    <update name='upd' des='inserimento record'>
+      <![CDATA[
+      if({@qryVoid='Descrizione'} <> 'Saldo Iniziale' and {@qryVoid='Descrizione'} <> 'Saldo Contabile' 
+        and {@qryVoid='Descrizione'} <> 'Saldo Contabile non definitivo(*)')
+       update saldoccorrente set Movimento = {@qryEuro='Importo'}, Saldo = {@qryEuro='SaldoParziale'}, DtUpd = sysdatetime()
+        where IDCCorrente = {@qrykey='idcc'} and Data {@qryEqDate='DataValuta,DataOperazione'} and Note {@qryEqText='Descrizione'}
+         and (isnull(Movimento, 0) <> isnull({@qryEuro='Importo'}, 0) or isnull(Saldo, 0) <> isnull({@qryEuro='SaldoParziale'}, 0))]]>
+    </update>
+    <select name='check' des='check exists record'>
+      <![CDATA[select count(*) from saldoccorrente 
+     where IDCCorrente = {@qrykey='idcc'} and Data {@qryEqDate='DataValuta,DataOperazione'} and Note {@qryEqText='Descrizione'}]]>
+    </select>
+  </queries>
+</root>

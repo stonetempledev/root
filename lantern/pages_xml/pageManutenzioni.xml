@@ -1,0 +1,51 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-manutenzioni" title="Elenco manutenzioni" selects='load' pagesize='15'>
+      <cols key="idmanutenzioneauto(idman),idauto(idat),idoperazioneauto(idop)">
+        <col title='Auto' field='automodello' tooltipfld='noteauto' des="auto modello" width="175">
+          <refitem title="modifica autovettura" ref="{@pagerefargs='auto','type=upd'}"/>
+          <refheader title="elenco autovetture" ref="{@pageref='autos'}"/>
+        </col>
+        <col title='Intervento' field='operazioneauto' tooltipfld='desoperazioneauto' des="intervento effettuato" width="175">
+          <refitem title="modifica tipo operazione" ref="{@pagerefargs='intervento','type=upd'}"/>
+          <refheader title="elenco tipi interventi" ref="{@pageref='interventi'}"/>
+        </col>
+        <col title='Km' field='km' type='integer' des="chilometraggio" format="#,###" width="60"/>
+        <col title='Quando' field='data' type='date' formatDate='dataEstesa' des='quando hai fatto il rifornimento'/>
+        <col title='Prezzo' field='prezzo' type='euro' summary='SUM(prezzo)' des='prezzo manutenzione' width="60"/>
+        <col title='Rimborso' field='rimborso' type='euro' summary='SUM(rimborso)' des='rimborso manutenzione' width="60"/>
+        <col title='Giorni' field='giorni' type='integer' des="quanti giorni dall'ultimo intervento" width='50'/>
+        <col title='Km percorsi' field='kmpercorsi' type='integer' des="chilometri percorsi con l'ultimo intervento" width='80'/>
+        <col title='Note' field='note' des='note particolari' width='150'/>
+        <col title='Utente' field='nome' tooltipfld='noteutente' des='chi usa la autovettura' width='80'/>
+        <action des='modifica manutenzione...' icon='mif-pencil' pageref="{@pagerefargs='manutenzione','type=upd'}"/>
+        <action des='elimina manutenzione...' icon='mif-cross' primarykey='idmanutenzioneauto' demand="Sei sicuro di voler cancellare la manutenzione?"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi manutenzione' ref="{@pagerefargs='manutenzione','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select m.idmanutenzioneauto, m.km, m.data, m.prezzo, m.rimborso, m.note
+  , o.idoperazioneauto, o.operazioneauto, o.note as desoperazioneauto
+  , a.idauto, a.marca + ' - ' + a.modello as automodello, a.note as noteauto
+  , t.tipoalimentazione, t.note as notetipoalimentazione
+  , u.nome, u.note as noteutente
+  , m2.idmanutenzioneauto as idprev
+  , datediff(day, m2.data, m.data) as giorni, m2.data as dataprev, m2.km as kmprev
+  , m.km - m2.km as kmpercorsi
+ from [manutenzioneauto] m
+ left join [manutenzioneauto] m2 on m.idauto = m2.idauto and m.idoperazioneauto = m2.idoperazioneauto
+  and m2.km = (select max(km) from manutenzioneauto where km < m.km and idauto = m.idauto and idoperazioneauto = m.idoperazioneauto)
+ left join operazioniauto o on o.idoperazioneauto = m.idoperazioneauto
+ left join [auto] a on a.idauto = m.idauto
+ left join tipialimentazione t on t.idtipoalimentazione = a.idtipoalimentazione
+ left join utenti u on u.idutente = a.idutente  
+ where a.idutente in ({@method='info',string:userVisibility})
+  and ('{@qrypar='from'}' = '' or ('{@qrypar='from'}' <> '' and m.data >= convert(datetime, '{@qrypar='from'}', 112)))
+  and ('{@qrypar='to'}' = '' or ('{@qrypar='to'}' <> '' and m.data <= convert(datetime, '{@qrypar='to'}', 112)))]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

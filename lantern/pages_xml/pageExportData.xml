@@ -1,0 +1,30 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-export" title="Esportazione dati" width="600px" height="200px">
+      <contents>
+        <row tooltip='stringa di connessione database di origine'>
+          <field>
+            <label text='Origine:'/>
+          </field>
+          <field>
+            <input field='connOrigine' type='text' required='true' errField='Origine'/>
+          </field>
+        </row>
+        <row tooltip='stringa di connessione database di destinazione'>
+          <field>
+            <label text='Destinazione:'/>
+          </field>
+          <field>
+            <input field='connDest' type='text' required='true' errField='Destinazione'/>
+          </field>
+        </row>
+        <row>
+          <field class='footer' maxspan='true' right='true'>
+            <button type='action' action='dataExport' value='Esporta'/>
+            <button type='exit' value='Annulla'/>
+          </field>
+        </row>
+      </contents>
+    </form>
+  </contents>
+</page>

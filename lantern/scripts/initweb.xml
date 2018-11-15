@@ -1,0 +1,8 @@
+<root schema="xmlschema.script" title='inizializzazione db web' des='prima inizializzazione del database per renderlo utilizzabile'>
+  <script>
+    <init_tables ver='{@cur_ver}' notes='init db'/>
+    <exec_script name='init_tpusers'/>
+    <exec_script name='init_users'/>
+  </script>
+</root>
+

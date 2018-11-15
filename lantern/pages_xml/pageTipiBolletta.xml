@@ -1,0 +1,24 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="tipi-bolletta" title="Tipi bolletta" selects='load' pagesize='15'>
+      <cols key="idtipobolletta(idtpbll)">
+        <col title='Tipo Bolletta' field='tipobolletta' des="descrizione tipo bolletta" width="200"/>
+        <col title='Anagrafica' field='anagrafica' des="anagrafica associata alla bolletta"/>
+        <col title='Note' field='note' des='note particolari' width='200'/>
+        <action des='modifica tipo bolletta...' icon='mif-pencil' pageref="{@pagerefargs='tipoBolletta','type=upd'}"/>
+        <action des='elimina tipo bolletta...' icon='mif-cross' primarykey='idtipobolletta' demand="Sei sicuro di voler cancellare il tipo bolletta?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi tipo bolletta' ref="{@pagerefargs='tipoBolletta','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[SELECT b.idtipobolletta, b.tipobolletta, b.note
+ , a.idanagrafica, a.anagrafica as anagrafica
+ from tipibolletta b
+ left join anagrafiche a on b.idanagrafica = a.idanagrafica]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

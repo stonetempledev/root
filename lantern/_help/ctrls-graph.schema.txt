@@ -1,0 +1,21 @@
+
+xmlschema.graph - derivato da xmlschema.ctrls
+
+definizione graph
+
+<graph>
+ @name: nome grafico
+ @title [espressione parsificata]: titolo grafico
+ @type: tipo di grafico visualizzato
+  days-2d: grafico 2d con alla base i giorni e in verticale i valori numerici da rappresentare
+ @width (facoltativo): larghezza grafico
+ @height (facoltativo): altezza grafico
+ @if (facoltativo) [espressione parsificata]: condizione da rispettare
+ @interval (facoltativo): tipo di intervallo temporaneo 'day', 'week', 'month'
+ @scroll-x (facoltativo: true, false): freccine avanti e indietro
+ @format-value (facoltativo): formattazione valore visualizzato nella griglia
+
+<graph/datas/data>
+ @selects: identificativi delle queries separate da ',' da valutare per il caricamento dei dati
+ @color-line (facoltativo): colore della linea
+ @tp-grid (facoltativo): formattazione tooltip visualizzato nella griglia

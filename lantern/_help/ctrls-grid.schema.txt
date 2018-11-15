@@ -1,0 +1,84 @@
+xmlschema.grid - derivato da xmlschema.ctrls
+
+definizione griglia
+
+<grid>: definizione griglia
+ @if (facoltativo) [espressione parsificata]: condizione da rispettare
+ @pagesize: page size applicato alla griglia
+ @top: limite massimo di records tornati dal recordset per non intasare i caricamenti   
+ @exportfile: nome file da esportare
+ caricamento dati:
+  @selects (facoltativo): identificativi separati da ',' delle queries di selezione dati
+  @loadscript (facoltativo): script di caricamento dati
+ @class (facoltativo)
+ @title (facoltativo)
+ @canexport (facoltativo: true): puoi esportare?!?!
+ @hide_count (facoltativo): vuoi nascondere il conteggio dei records
+
+<grid/cols>: definizione colonne griglia
+ @key (facoltativo): elenco campi chiave separati dalla virgola ognuno accompagnato dal nome parametro specificato nell'url, per lanciare i forms di modifica o aggiunta 
+  es.: field1(fld),field2(fld2)
+
+<grid/cols/col> (multiple): definizione colonna griglia
+ @if (facoltativo) [espressione parsificata]: condizione da rispettare
+ @type: 
+  'text' (default): semplice testo
+  'euro': campo moneta
+  'real': campo reale con la virgola
+    @format: formato da applicare al valore numerico
+  'integer': campo intero
+    @format: formato da applicare al valore numerico
+  'date': semplice label con la data
+   @formatDate: formato da applicare alla data fra quelli disponibili nel config /root/dateformats
+  'check': check box                
+  'link': link 
+   @field: campo valore visualizzato
+   @fieldref: campo riferimento documento
+ @field: campo di riferimento della query di selezione
+  note bene: se specificato con il . significa indicare l'alias da usare per la generazione della select
+ @width (facoltativo): larghezza colonna
+ @des (facoltativo): tooltip
+ @tooltipfld  (facoltativo): campo contenente la descrizione del valore per il tooltip
+ @summary (facoltativo): espressione da applicare a tutte le righe da visualizzare in fondo
+ @show_title (facoltativo): forza la visualizzazione del campo completo
+
+<grid/cols/action> (multiple): definizione azione particolare
+ @if (facoltativo) [espressione parsificata]: condizione da rispettare
+ @icon: icona da visualizzare
+ @des (facoltativo)   
+ @url_field (facoltativo): campo tabella contenente l'indirizzo web da aprire
+  , @url_field_title (facoltativo): campo contenente il titolo da applicare
+ @pageref [espressione parsificata]: richiamo pagina - pagina di riferimento da lanciare per effettuare l'azione
+  || @pageopen [espressione parsificata]: pagina di riferimento da aprire per effettuare l'azione
+ @pagerequest (facoltativo): lancio richiesta http - pagina per la quale effettuare la request
+  , @demand (facoltativo): domanda prima di effettuare la richiesta   
+  , @queries (facoltativo): queries da lanciare per effettuare l'aggiornamento
+  , @action (facoltativo): nome azione da eseguire
+ @primarykey (facoltativo): gestione eliminazione ed elementi correlati - nome campo primario
+  , @type (facoltativo): del (default), linked
+  , @force (boolean, facoltativo): vuoi forzare l'eliminazione anche di tutti gli elementi collegati???  
+ 
+<grid/cols/col/refitem> (facoltativo): definizione riferimento pagina da lanciare sul click all'interno della colonna
+ @if (facoltativo) [espressione parsificata]: condizione da rispettare
+ @title (facoltativo): titolo del riferimento da visualizzare nella griglia
+ @ref [espressione parsificata]: riferimento alla pagina da lanciare 
+  || @open [espressione parsificata]: riferimento alla pagina da aprire con la windows open
+
+<grid/cols/col/refheader> (facoltativo): definizione riferimento pagina da lanciare sul click della colonna
+ @if (facoltativo) [espressione parsificata]: condizione da rispettare
+ @ref [espressione parsificata]: riferimento alla pagina da lanciare 
+
+<grid/buttons>: pulsanti che appaiono nella parte bassa della griglia
+
+<grid/buttons/button> (multiple): singolo pulsante che appare nella parte bassa della griglia
+ @if (facoltativo) [espressione parsificata]: condizione da rispettare
+ @text: testo pulsante
+ @action: nome azione da trattare a codice 
+ @ref [espressione parsificata]: indirizzo pagina da lanciare
+  || @open (facoltativo) [espressione parsificata]: riferimento alla pagina da lanciare con apertura di un nuovo tab e gestione chiusura automatica
+ @shortkeys: pulsanti rapidi (CTRL + ALT + SHIFT + abcdefgh...)
+ @demand (facoltativo): domanda da porre prima del lancio 
+
+PAROLE CHIAVE PER PARSIFICARE LA SELECT
+
+ {!begin_sql!}, {!end_sql!}

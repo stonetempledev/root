@@ -1,0 +1,4 @@
+parametri passati alle pagine
+ child=1: finestra child richiamata per un inserimento 'volante' di una form
+  sel=<nome select combo>&cname=<nome form>: all'uscita della form dev'essere richiamato l'aggiornamento del combo contenuto nella finestra 'padre'
+  refresh=1: all'uscita della form dev'essere richiamato l'aggiornamento della pagina

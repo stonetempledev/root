@@ -1,0 +1,35 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-eventi" title="Eventi speciali" selects='load' pagesize='15' >
+      <cols key="idevento(idev),idutente(idusr),idtipoevento(idte)">
+        <col title='Tipo Evento' field='tipoevento' tooltipfld='notetipoevento' des="tipo evento" width="150">
+          <refitem ref="{@pagerefargs='tipoEvento','type=upd'}"/>
+          <refheader ref="{@pageref='tipiEvento'}" title="elenco dei tipi evento disponibili"/>
+        </col>
+        <col title='Evento' field='evento' des="titolo evento" width="200"/>
+        <col title='Note' field='note' des='descrizione evento' width='200'/>
+        <col title='Da' field='datada' type='date' formatDate='dataEstesa' des="da quando è partito l'evento"/>
+        <col title='A' field='dataa' type='date' formatDate='dataEstesa' des="quando è finito l'evento"/>
+        <col title='Utente' field='utente' tooltipfld='desutente' des="utente che ha inserito l'evento">
+          <refitem ref="{@pagerefargs='utente','type=upd'}" usertypes="admin"/>
+        </col>
+        <action des='modifica evento...' icon='mif-pencil' pageref="{@pagerefargs='evento','type=upd'}"/>
+        <action des='elimina evento...' icon='mif-cross' primarykey='idevento' demand="Sei sicuro di voler cancellare l'evento?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi evento' ref="{@pagerefargs='evento','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select e.idevento, e.evento, e.datada, e.dataa, e.note 
+ , t.idtipoevento, t.tipoevento, t.note as notetipoevento
+ , u.idutente, u.nome as utente, u.note as desutente 
+ from eventi e
+ left join tipieventi t on t.idtipoevento = e.idtipoevento
+ left join utenti u on u.idutente = e.idutente
+ where e.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

@@ -1,0 +1,28 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-backups" title="Elenco backups database " loadscript="load" pagesize='15' canexport='false'>
+      <cols key="idfile(idfl)">
+        <col title='Titolo' field='title' des="titolo backup" width="200"/>
+        <col title='Quando' field='date' type='date' formatDate='dataOraEstesa' des='quando è stato effettuato il backup' width="100"/>
+        <col title='Descrizione' field='des' des='note particolari' width="200"/>
+        <col title='Infos' field='infos' des='informazioni particolari' width="300"/>
+        <action des='elimina backup...' icon='mif-cross' pagerequest="{@currurl}" action="remove-db-backup" demand="Sei sicuro di voler cancellare il backup?"/>
+        <action des='ripristina backup...' icon='mif-arrow-up' pagerequest="{@currurl}" action="mount-db-backup" demand="Sei sicuro di voler ripristinare il backup?"/>
+        <action des='allineamento dati backup...' icon='mif-upload' pageref="{@pagerefargs='tables_upload','type=data'}" />
+        <action des='scarica backup...' icon='mif-arrow-down' pageref="{@pagerefargs='backups','type=dl-bck'}"/>
+        <action des='ripristina dati backup...' icon='mif-database' pagerequest="{@currurl}" action="mount-data-db-backup" demand="Sei sicuro di voler ripristinare i dati del backup?"/>
+        <action des='estrai schema backup...' icon='mif-settings-ethernet' pageref="{@pagerefargs='backups','type=sch'}"/>
+      </cols>
+      <buttons>
+        <button text='Importa backup' ref="{@pageref='backup-import'}"/>
+        <button text='Crea backup' ref="{@pagerefargs='backup','type=ins'}"/>
+        <button text='Elimina tutti i backups' action="remove-db-backups" demand="Sei sicuro di voler eliminare tutti i backups?"/>
+      </buttons>
+      <scripts>
+        <xmlnodes name='load'>
+          <![CDATA[{@method='backups_list'}]]>
+        </xmlnodes>
+      </scripts>
+    </grid>
+  </contents>
+</page>

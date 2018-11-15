@@ -1,0 +1,35 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-sitiweb" title="Elenco Siti Web" selects='load' pagesize='15'>
+      <cols key="idsitoweb(idsw),idutente(idusr),idgradimento(idgr)">
+        <col title='Titolo' field='titolo' fieldref='weblink' type='link' tooltipfld='noteweblink' des="titolo sito web" width="200"/>
+        <col title='Note' field='note' des='descrizione sito web' width='200'/>
+        <col title='Gradimento' field='notegradimento' des="note di gradimento" width="150"/>
+        <col title='Argomenti' field='tags' des="argomenti" width='250'/>
+        <col title='Utente' field='utente' tooltipfld='desutente' des="utente che ha inserito il sito">
+          <refitem ref="{@pagerefargs='utente','type=upd'}" usertypes="admin"/>
+        </col>
+        <action des='modifica sito...' icon='mif-pencil' pageref="{@pagerefargs='sitoweb','type=upd'}"/>
+        <action des='elimina sito...' icon='mif-cross' primarykey='idsitoweb' demand="Sei sicuro di voler cancellare il sito?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi sito' ref="{@pagerefargs='sitoweb','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select s.idsitoweb, s.titolo, s.note
+ , s.idtags, [dbo].[getListOfTags](idtags) as tags
+ , u.idutente, u.nome as utente, u.note as desutente 
+ , i.idgradimento, i.stelle, i.note as notegradimento
+ , w.weblink, w.note as noteweblink
+ from sitiweb s	
+ left join utenti u on u.idutente = s.idutente
+ left join indicegradimento i on i.idgradimento = s.idgradimento
+ left join sitiweblinks sw on sw.idsitoweb = s.idsitoweb and sw.principale = 1
+ left join weblinks w on sw.idweblink = w.idweblink
+ where s.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

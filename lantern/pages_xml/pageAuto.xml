@@ -1,0 +1,90 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-auto" title="Automobile" hcenter="true" topmargin="100" selects="load" updates="update" width="600px" height="200px">
+      <contents>
+        <row tooltip='marca veicolo'>
+          <field>
+            <label text='Marca:'/>
+          </field>
+          <field colspan='2'>
+            <input field='marca' type='text' required='true' errField='Marca'/>
+          </field>
+        </row>
+        <row tooltip='modello veicolo'>
+          <field>
+            <label text='Modello:'/>
+          </field>
+          <field colspan='2'>
+            <input field='modello' type='text' required='true' errField='Modello'/>
+          </field>
+        </row>
+        <row tooltip='note particolari'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text'/>
+          </field>
+        </row>
+        <row tooltip='tipo alimentazione veicolo'>
+          <field>
+            <label text='Tipo alimentazione:'/>
+          </field>
+          <field>
+            <combo field='idtipoalimentazione' fielddes='tipoalimentazione' select='tipiAlimentazione' onsel_desfield='notetipoalimentazione' required='true' errField='Tipo Alimentazione' width='200px'/>
+          </field>
+          <field>
+            <input field='notetipoalimentazione' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='utente che usa il veicolo'>
+          <field>
+            <label text='Utente:'/>
+          </field>
+          <field>
+            <combo field='idutente' fielddes='utente' select='utenti' onsel_desfield='noteutente' required='true' errField='Utente' width='200px'/>
+          </field>
+          <field>
+            <input field='noteutente' type='text' enabled='false'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[select a.idauto, a.marca, a.modello, a.note, a.idtipoalimentazione, a.idutente
+   , t.tipoalimentazione, t.note as notetipoalimentazione
+   , u.nome as utente, u.note as noteutente
+  from [auto] a
+  left join tipialimentazione t on a.idtipoalimentazione = t.idtipoalimentazione
+  left join utenti u on u.idutente = a.idutente
+  where a.idauto = {@qrykey='idat'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL as idauto, NULL as marca, NULL as modello, NULL as note, NULL as idtipoalimentazione, NULL as idutente
+   , NULL as tipoalimentazione, NULL as notetipoalimentazione, NULL as utente, NULL as noteutente
+      from (select 1 as col) tbl
+    ]]>
+        </select>
+        <select name='tipiAlimentazione' forcombos='idtipoalimentazione, tipoalimentazione, note'>
+          <![CDATA[select tbl.idtipoalimentazione, tbl.tipoalimentazione, tbl.note
+ from tipialimentazione tbl]]>
+        </select>
+        <select name='utenti' forcombos='idutente, nome, note'>
+          <![CDATA[select u.idutente, u.nome, u.note from utenti u
+      join tipiutente t on u.idtipoutente = t.idtipoutente
+      where t.tipoutente <> 'admin' and u.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update [auto] set marca = {@qryText='marca'}, modello = {@qryText='modello'} 
+       , idtipoalimentazione = {@qryNumb='idtipoalimentazione'}, note = {@qryText='note'}, idutente = {@qryNumb='idutente'}, dtupd = getDate()
+        where idauto = {@qrykey='idat'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [auto] (marca, modello, note, idtipoalimentazione, idutente, dtins)       
+      select {@qryText='marca'}, {@qryText='modello'}, {@qryText='note'}, {@qryNumb='idtipoalimentazione'}, {@qryNumb='idutente'}, getdate()]]>
+        </update>
+      </queries>
+    </form>
+    <import name="buttons"/>
+  </contents>
+</page>

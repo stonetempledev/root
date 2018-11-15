@@ -1,0 +1,49 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="tipo-evento" title="Tipo evento" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row>
+          <field>
+            <label text='Tipo Evento:'/>
+          </field>
+          <field colspan='2'>
+            <input field='tipoevento' type='text' enabled='true' required='true' errField='Tipo Evento'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Principale:'/>
+          </field>
+          <field colspan='2'>
+            <input field='principale' type='check' enabled='true'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text' enabled='true'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}">
+          <![CDATA[SELECT t.idtipoevento, t.tipoevento, t.note, t.principale
+ from tipieventi t
+ where t.idtipoevento = {@qrykey='idte'}]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update tipieventi set tipoevento = {@qryText='tipoevento'}, [principale] = {@qryFlag='principale'}
+          , [note] = {@qryText='note'}, dtupd = getdate()
+        where idtipoevento = {@qrykey='idte'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [tipieventi] (tipoevento, note, principale, dtins)       
+      select {@qryText='tipoevento'}, {@qryText='note'}, {@qryFlag='principale'}, getdate()]]>
+        </update>
+      </queries>
+    </form>
+    <import name="buttons"/>
+  </contents>
+</page>

@@ -1,0 +1,43 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-provincia" title="Provincia" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row>
+          <field>
+            <label text='Citta:'/>
+          </field>
+          <field>
+            <input field='citta' type='text' enabled='true' required='true' errField='Citta'/>
+          </field>
+        </row>
+        <row>
+          <field>
+            <label text='Provincia:'/>
+          </field>
+          <field>
+            <input field='provincia' type='text' enabled='true' required='true' errField='Provincia'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}">
+          <![CDATA[SELECT p.idprovincia, p.citta, p.provincia
+ from province p
+ where p.idprovincia = {@qrykey='idpr'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}">
+          <![CDATA[SELECT NULL as idprovincia, NULL as citta, NULL as provincia
+ from (select 1 as col) tbl]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update province set citta = {@qryText='citta'}, provincia = {@qryText='provincia'}, dtupd = getdate()
+        where idprovincia = {@qrykey='idpr'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [province] (citta, provincia, dtins)       
+      select {@qryText='citta'}, {@qryText='provincia'}, getdate()]]>
+        </update>
+      </queries>
+    </form>    <import name="buttons"/>
+  </contents>
+</page>

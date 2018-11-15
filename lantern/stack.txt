@@ -1,0 +1,38 @@
+paginuzze
+ / rifornimenti intelligenti: cataloga scripts come si deve
+ ! raggruppamenti - reports ad hoc per le spese e il ccorrente
+ indice gradimento
+ stili utenti: red, blue
+ mm
+  ~ menu personalizzato
+ accounts - gestione allegato
+ find work: spedizioni, cvs, colloqui, presentazioni
+ bike
+  02:30 - 45km . san giorgio - podenzano - turro - pontenure
+  01:30 - 35km . san protaso - vigolo - ciriano - fontana fredda
+ files, pcs, stations
+ menus
+ rubrica
+ argomenti
+ agenda
+? cancellazioni - actionName == "remove-all", le mettiamo nel cestello?
+una login gestita da web.config come si deve
+ https://msdn.microsoft.com/en-us/library/ee817643.aspx
+ https://msdn.microsoft.com/en-us/library/xdt4thhy.aspx
+recovery
+ ? visualizzare il log
+ ? pulizia tmp
+sicurezza
+ passwords criptate dbs, utenti
+ guid locale (anche per i servizi)
+synch - repository
+ se provo a reimportare il db coi contatti va in balla totale
+ tipo file (interno, linked, o interno allineabile)
+ test allineamento - upload, dati - files
+ asynch tables.aspx
+le menate
+ ? le condizioni, fra quadre gli id scripts e parsifichiamo l'espressione
+ ? validazione documenti xml
+ ? schemi xml
+ ? classi legate agli schemi xml
+ ? spostare tutto nella serverClasss

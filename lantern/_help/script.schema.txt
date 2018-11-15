@@ -1,0 +1,17 @@
+xmlschema.script - definizione script sql
+
+<root>
+
+ <tables>...vedi xmlschema.db
+
+ <script>
+  @title: titolo script
+  @des: descrizione contenuti
+
+  <group>
+   @name: raggruppamento queries
+   <sql>: vedi <sql>
+
+  <sql> [espressione parsificata]: query da eseguire
+   @name (facoltativo): nome della select da effettuare
+   @des (facoltativo): descrizione della select da effettuare

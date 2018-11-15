@@ -1,0 +1,21 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-durate" title="Durate" selects='load' pagesize='15' >
+      <cols key="iddurata(iddr)">
+        <col title='Durata' field='durata' des="descrizione durata" width="200"/>
+        <col title='Note' field='note' des='note particolari' width='200'/>
+        <action des='modifica durata...' icon='mif-pencil' pageref="{@pagerefargs='durata','type=upd'}"/>
+        <action des='elimina durata...' icon='mif-cross' primarykey='iddurata' demand="Sei sicuro di voler cancellare la durata?"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi durata' ref="{@pagerefargs='durata','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[SELECT d.iddurata, d.durata, d.note
+ from durate d]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

@@ -1,0 +1,23 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-utente-visibilita" title="Elenco utenti visibili" selects='load' pagesize='15'>
+      <cols key="idutente(idusr),idutentevisibility(idusrv)">
+        <col title='Nome' field='utenteview' des="nome utente visibile" width="150"/>
+        <col title='Descrizione' field='noteview' des="descrizione utente visibile" width="200"/>
+        <action des='elimina utente dalla visibilita...' icon='mif-cross' primarykey='idutentevisibility' demand="Sei sicuro di voler cancellare la visibilità utente?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi utente visibile' ref="{@pagerefargs='utentevs','type=ins&amp;idusr={@qrykey='idusr'}'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select v.idutentevisibility, v.idutente, v.idutenteview, u.nome as utente, uv.nome as utenteview, uv.note as noteview
+ from utentivisibility v
+ join utenti uv on v.idutenteview = uv.idutente
+ join utenti u on v.idutente = u.idutente
+ where v.idutente = {@qrykey='idusr'}]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

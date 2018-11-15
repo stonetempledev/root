@@ -1,0 +1,21 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="tipi-alimentazione" title="Tipi carburante" selects='load' pagesize='15'>
+      <cols key="idtipoalimentazione(idta)">
+        <col title='Tipo Alimentazione' field='tipoalimentazione' des="descrizione tipo carburante" width="150"/>
+        <col title='Note' field='note' des='note particolari' width='250'/>
+        <action des='modifica tipo carburante...' icon='mif-pencil' pageref="{@pagerefargs='tipoAlimentazione','type=upd'}"/>
+        <action des='elimina tipo alimentazione...' icon='mif-cross' primarykey='idtipoalimentazione' demand="Sei sicuro di voler cancellare il tipo di carburante?"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi tipo carburante' ref="{@pagerefargs='tipoAlimentazione','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[SELECT t.idtipoalimentazione, t.tipoalimentazione, t.note
+ from tipialimentazione t]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

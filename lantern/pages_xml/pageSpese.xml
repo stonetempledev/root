@@ -1,0 +1,45 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-spese" title="Elenco registrazioni" selects='load' pagesize='45' top='500'>
+      <cols key="idspesa(idsps),idutente(idusr),idtipospesa(idtpsp)">
+        <col title='Tipo' field='tipospesa' tooltipfld='notetipospesa' des="tipo spesa effettuata" width="150">
+          <refheader title="elenco dei tipi spesa disponibili" ref="{@pageref='tipiSpesa'}"/>
+          <refitem title="modifica tipo spesa" ref="{@pagerefargs='tipoSpesa','type=upd'}"/>
+        </col>
+        <col title='Evento' field='evento' tooltipfld='desevento' des="evento legato alla spesa" width="200"/>
+        <col title='Dettagli' field='pezzo' des='dettaglio spesa' width='200'/>
+        <col title='Quantita' field='quantita' type='integer' des='dettaglio quantita'/>
+        <col title='Quando' field='data' type='date' formatDate='dataEstesa' des='quando è stata fatta la spesa'/>
+        <col title='Entrata' field='entrata' type='check' des="si tratta di un'entrata"/>
+        <col title='Prezzo' field='prezzo' type='euro' des='prezzo unitario spesa'/>
+        <col title='Totale' field='totale' type='euro' summary='SUM(totale * (case when isnull(entrata, 0) = 0 then -1 else 1 end))' des='prezzo totale spesa'/>
+        <col title='Utente' field='utente' tooltipfld='desutente' des='utente che ha inserito la spesa'>
+          <refitem ref="{@pagerefargs='utente','type=upd'}" usertypes="admin"/>
+        </col>
+        <action des='modifica registrazione...' icon='mif-pencil' pageref="{@pagerefargs='spesa','type=upd'}"/>
+        <action des='elimina registrazione...' icon='mif-cross' primarykey='idspesa' demand="Sei sicuro di voler cancellare la registrazione?"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi registrazione' ref="{@pagerefargs='spesa','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[SELECT s.idspesa, s.idtipospesa, s.pezzo, s.quantita, s.data, s.prezzo
+    , t.entrata, t.tipospesa, t.codspesa, t.note as notetipospesa
+    , e.evento, e.note as desevento
+    , u.idutente, u.nome as utente, u.note as desutente
+    , (s.prezzo * isnull(s.quantita, 1)) as totale
+ from spese s
+ left join tipispesa t on t.idtipospesa = s.idtipospesa
+ left join eventi e on e.idevento = s.idevento
+ left join utenti u on u.idutente = s.idutente
+ where s.idutente in ({@method='info',string:userVisibility})
+  and ('{@qrypar='from'}' = '' or ('{@qrypar='from'}' <> '' and s.data >= convert(datetime, '{@qrypar='from'}', 112)))
+  and ('{@qrypar='to'}' = '' or ('{@qrypar='to'}' <> '' and s.data <= convert(datetime, '{@qrypar='to'}', 112)))
+  and ({@valpar='codes'} = 0 or ({@valpar='codes'} = 1 and t.codspesa in ({@qrypar_def='codes'})))
+  and ({@valpar='not_codes'} = 0 or ({@valpar='not_codes'} = 1 and t.codspesa not in ({@qrypar_def='not_codes'})))]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

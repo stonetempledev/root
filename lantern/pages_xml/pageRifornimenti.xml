@@ -1,0 +1,55 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-rifornimenti" title="Elenco rifornimenti" selects='load' pagesize='15'>
+      <cols key="idrifornimento(idrf),idauto(idat),idevento(idev),idtipoalimentazione(idta)">
+        <col title='Auto' field='automodello' tooltipfld='noteauto' des="auto modello" width="175">
+          <refitem title="modifica autovettura" ref="{@pagerefargs='auto','type=upd'}"/>
+          <refheader title="elenco autovetture" ref="{@pageref='autos'}"/>
+        </col>
+        <col title='Km' field='km' type='integer' des="chilometraggio" format="#,###" width="60"/>
+        <col title='Quando' field='data' type='date' formatDate='dataEstesa' des='quando hai fatto il rifornimento'/>
+        <col title='Tipo' field='tipoalimentazione' tooltipfld='notetipoalimentazione' des='tipo carburante' width='75'>
+          <refitem title="modifica tipo alimentazione" ref="{@pagerefargs='tipoAlimentazione','type=upd'}"/>
+          <refheader title="elenco tipi alimentazione" ref="{@pageref='tipiAlimentazione'}"/>
+        </col>
+        <col title='Prezzo' field='prezzo' type='euro' summary='SUM(prezzo)' des='prezzo rifornimento' width="60"/>
+        <col title='Costo Litro' field='costolitro' type='euro' des='costo al litro' width="80"/>
+        <col title='Giorni' field='giorni' type='integer' des='per quanti giorni è durato il rifornimento' width='50'/>
+        <col title='Km percorsi' field='kmpercorsi' type='integer' format="#,###" des="chilometri percorsi rispetto al rifornimento precedente" width='80'/>
+        <col title='Km giorno' field='kmgiorno' type='real' format="n2" des='chilometri percorsi di media al giorno rispetto al rifornimento precedente' width='80'/>
+        <col title='Km litro' field='kmlitro' type='real' format="n2" des='media consumo km litro rispetto al rifornimento precedente' width='70'/>
+        <col title='Evento' field='evento' tooltipfld='desevento' des='evento associato' width='150'/>
+        <col title='Note' field='note' des='note particolari' width='150'/>
+        <col title='Utente' field='nome' tooltipfld='noteutente' des='chi usa la autovettura' width='80'/>
+        <action des='modifica rifornimento...' icon='mif-pencil' pageref="{@pagerefargs='rifornimento','type=upd'}"/>
+        <action des='elimina rifornimento...' icon='mif-cross' primarykey='idrifornimento' demand="Sei sicuro di voler cancellare il rifornimento?"/>
+      </cols>
+      <buttons>
+        <button text='Aggiungi rifornimento' ref="{@pagerefargs='rifornimento','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[select r.idrifornimento, r.km, r.data, r.prezzo, r.costolitro, r.note
+  , e.idevento, e.evento, e.note as desevento
+  , a.idauto, a.marca + ' - ' + a.modello as automodello, a.note as noteauto
+  , t.idtipoalimentazione, t.tipoalimentazione, t.note as notetipoalimentazione
+  , u.nome, u.note as noteutente
+  , r2.idrifornimento as idprev
+  , datediff(day, r2.data, r.data) as giorni, r2.data as dataprev, r2.km as kmprev
+  , r.km - r2.km as kmpercorsi
+  , (cast((r.km - r2.km) as float) / (case datediff(day, r2.data, r.data) when 0 then 1 else datediff(day, r2.data, r.data) end )) as kmgiorno
+  , (r.km - r2.km) / (r2.prezzo / r2.costolitro) as kmlitro
+ from [rifornimentoauto] r
+ left join [rifornimentoauto] r2 on r.idauto = r2.idauto and r2.km = (select max(km) from rifornimentoauto where km < r.km and idauto = r.idauto)
+ left join eventi e on e.idevento = r.idevento
+ left join [auto] a on a.idauto = r.idauto
+ left join tipialimentazione t on t.idtipoalimentazione = a.idtipoalimentazione
+ left join utenti u on u.idutente = a.idutente
+ where a.idutente in ({@method='info',string:userVisibility})
+  and ('{@qrypar='from'}' = '' or ('{@qrypar='from'}' <> '' and r.data >= convert(datetime, '{@qrypar='from'}', 112)))
+  and ('{@qrypar='to'}' = '' or ('{@qrypar='to'}' <> '' and r.data <= convert(datetime, '{@qrypar='to'}', 112)))]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

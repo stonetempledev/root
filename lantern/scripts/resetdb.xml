@@ -1,0 +1,8 @@
+<root schema="xmlschema.script" title='cancellazione del db' des='cancellazione delle tabelle del database'>
+  <script>
+    <drop_tables/>
+    <drop_functions/>
+    <drop_procedures/>
+  </script>
+</root>
+

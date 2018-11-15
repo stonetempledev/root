@@ -1,0 +1,67 @@
+definizione elementi comuni controlli e config
+
+<*>: elemento di root principale
+ @name: nome assegnato al controllo
+ @hcenter (facoltativo)
+ @topmargin (facoltivo)
+ @tab (facoltativo): <TABS CTRL>.<TAB NAME>
+ @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+
+<include>
+ <grp_module>: ragguppamento di moduli
+   @name: nome del gruppo di moduli
+  <module>: modulo da caricare lato client
+   @type: tipo di modulo da caricare
+    'link': modulo css da linkare alla pagina
+    'script': modulo js da caricare 
+   @href [espressione parsificata]: riferimento al modulo da caricare
+
+<sections> (facoltativo): definizione sezioni html    
+ <sections/section> (multiple, facoltativo) [espressione parsificata]: definizione sezione html 
+  @name: nome sezione   
+  @des (facoltativo): descrizione sezione
+  @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+  @keys (facoltativo): chiavi da sostituire per aggiornare la sezione (ad esempio per le list view)
+
+ <clientscripts>
+  <clientscripts/clientscript>
+   @name
+ 
+<scripts> (facoltativo): definizione scripts c#
+ <scripts/condition> (multiple, facoltativo) [espressione parsificata]: script di condizione
+  @name: identificativo script c# 
+  nota bene: deve tornare true o false
+ <scripts/exec> (multiple, facoltativo) [espressione parsificata]: script eseguito
+  @name: identificativo script c# 
+  nota bene: può tornare anche null perchè ingnorato
+ <scripts/xmlnodes> (multiple, facoltativo) [espressione parsificata]: script che torna un insieme di nodi XmlNodeList
+  @name: identificativo script c#
+  nota bene: deve tornare un oggetto XmlNodeList
+ <scripts/table> (multiple, facoltativo) [espressione parsificata]: script che torna un DataTable
+  @name: identificativo script c#
+  nota bene: deve tornare un oggetto DataSet
+
+<queries>: definizione queries utilizzate a livello generale per caricare o aggiornare la base dati
+ <queries/select> (multiple) [espressione parsificata]: definizione della query di selezione per il caricamento dei dati 
+  @name: nome della select non univoco
+  @id (facoltativo): id univoco della select
+  @forcombos (facoltativo): si tratta di dati utilizzati nelle combo, specificare i campi id e titolo separati da virgola
+  @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+  @des (facoltativo): descrizione della query
+  @script (facoltativo): nome script da utilizzare che torna il DataTable
+  @data-fields (facoltativo): nome dei campi da utilizzare per la lettura dei dati
+ <queries/updates> (multiple): raggruppamento di più queries di aggiornamento o inserimento
+  @name: identificativo univoco del gruppo di queries di aggiornamento
+  @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare   
+  <queries/updates/update> (multiple) [espressione parsificata]: definizione della query di aggiornamento o inserimento dati relativi al form
+   @id (facoltativo): id univoco dell'update
+   @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare   
+   @des (facoltativo): descrizione della query
+   @setkey (facoltativo): aggiornamento della chiave primaria usata per le queries 
+ <queries/update> (multiple) [espressione parsificata]: definizione della query di aggiornamento o inserimento dati relativi al form
+  @name: identificativo non univoco della query d'aggiornamento
+  @id (facoltativo): id univoco dell'update
+  @if (facoltativo) [espressione parsificata]: identificativo condizione da verificare
+  @des (facoltativo): descrizione della query
+  @setkey (facoltativo): aggiornamento della chiave primaria usata per le queries 
+  

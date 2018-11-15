@@ -1,0 +1,847 @@
+<page schema="xmlschema.ctrls" init_qry="init_stats">
+  <!-- 
+  QUOTIDIANI
+   in 'MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE','HOSPITAL','TASSA','BIMBOMEDICAL'
+  SVAGHI
+   not in 'MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE','HOSPITAL','TASSA','BIMBOMEDICAL', 'HW','MOBILI','BRICO','ELETTRODOMESTICI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO','SPEDIZIONI'
+  EXTRA
+   in 'HW','MOBILI','BRICO','ELETTRODOMESTICI','SPEDIZIONI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO'
+  -->
+  <include>
+    <module type='script' href="{@siteurl}/pages_js/check.js"/>
+    <module type='css' href="{@siteurl}/pages_js/check.css"/>
+    <script>
+      <![CDATA[var _url_spese = "{@pageref='spese'}", _url_bollette = "{@pageref='bollette'}", _url_rifornimenti = "{@pageref='rifornimenti'}"
+       , _url_manutenzioni = "{@pageref='manutenzioni'}", _url_cc = "{@pageref='saldiccorrente'}", _cc_id = "{@res_qry='cc_id'}"
+       , _url_regitrazioni = "{@pageref='registrazioni'}", _codes_spese = "'MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE','HOSPITAL','TASSA','BIMBOMEDICAL'"
+       , _codes_svaghi = "'MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE','HOSPITAL','TASSA','BIMBOMEDICAL', 'HW','MOBILI','BRICO','ELETTRODOMESTICI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO','SPEDIZIONI'";]]>
+    </script>
+  </include>
+  <contents>
+    <section name="legenda">
+      <![CDATA[<h3>LEGENDA</h3>
+      <ul>
+       <li><h4>QUOTIDIANI <small>spese quotidiane di primaria necessità</small></h4>
+       <p><b>CODICI</b>: 'MARKET', 'CELL', 'BUS', 'VESTITO', 'VESTITOBIMBO', 'DOCTOR', 'MEDICINE', 'HOSPITAL', 'TASSA', 'BIMBOMEDICAL'</p></li>
+       <li><h4>SVAGHI <small>spese in cenette, mangiatine varie, cose frivole</small></h4>
+       <p><b>CODICI</b>: 'BIMBO', 'BOOKS', 'CERIMONIE', 'COFFE', 'DINNER', 'ENTRATA', 'EVENT', 'JOKER', 'LOOK', 'MUSEUM', 'REGALO', 'SCOMMESSE', 'SOUVENIR', 'SVAGO', 'TICKET', 'TRAVEL'</p></li>
+       <li><h4>EXTRA <small>spese straordinarie tipo mobili, macchina, è caduto il cornicione</small></h4>
+       <p><b>CODICI</b>: 'HW', 'MOBILI', 'BRICO', 'ELETTRODOMESTICI', 'SPEDIZIONI', 'PARK', 'HOMEWORK', 'AUTOSTRADA', 'SOGGIORNO'</p></li>
+      </ul>]]>
+    </section>
+    <!-- movimenti bancari -->
+    <graph name="gr-saldo" title="MOVIMENTI SETTIMANALI C.C. '0000030349857'" type="days-2d" width="100%" height="350px" scroll-x="true" format-value="€ #,##0.##">
+      <datas>
+        <data selects="saldi" color-line="blue" tp-grid="Saldo al {x}: {y}" lg-grid="saldi" marker-size="8" onclick="click_saldi"/>
+        <data selects="spese" color-line="red" tp-grid="Spese della settimana al {x}: {y}" lg-grid="uscite" axis-type="secondary"
+              marker-size="5" line-thikness="1" onclick="click_spese_cc"/>
+        <data selects="entrate" color-line="green" tp-grid="Entrate della settimana al {x}: {y}" lg-grid="entrate" axis-type="secondary" type="column"
+              fill-opacity=".4" onclick="click_entrate_cc"/>
+      </datas>
+      <queries>
+        <select name='saldi' des="query di riferimento caricamento dati per la statistica" data-fields="day,saldo">
+          <![CDATA[declare @from datetime; set @from = getdate();
+            
+            set @from = DATEADD(d, {@field='i_x'} * 21, @from);
+            
+            select top 20 w.year, w.week, isnull(ws.day, dbo.getDateFromWeek(w.year, w.week)) as day, ws.saldo 
+ from weeks w
+ left join (select weeks.year, weeks.week, weeks.day, saldi.saldo
+  from (select distinct sc.IDCCorrente, datepart(year, sc.data) as year, datepart(ww, sc.data) as week
+   , (select max(data) from saldoccorrente where idccorrente = sc.idccorrente
+    and datepart(year, data) = datepart(year, sc.data)
+    and datepart(ww, data) = datepart(ww, sc.data)) as day
+  from saldoccorrente sc
+  where sc.idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')) weeks
+  join (select tbl.idccorrente, tbl.data, s.saldo
+   from (select distinct data, max(idsaldoccorrente) as id, idccorrente from saldoccorrente
+    group by data, idccorrente) tbl
+     join saldoccorrente s on s.IDSaldoCCorrente = tbl.id and s.IDCCorrente = tbl.IDCCorrente) saldi 
+      on saldi.idccorrente = weeks.idccorrente and saldi.data = weeks.day) ws on ws.year = w.year and ws.week = w.week
+  where (w.year = datepart(year, @from) and w.week <= datepart(ww, @from))
+   or (w.year < datepart(year, @from))
+  order by w.year desc, w.week desc;]]>
+        </select>
+        <select name='spese' des="query di riferimento caricamento dati per la statistica" data-fields="day,spese">
+          <![CDATA[declare @from datetime; set @from = getdate();
+            
+set @from = DATEADD(d, {@field='i_x'} * 21, @from);
+
+select tbl.year, tbl.week, tbl.d_to as day
+ , ((select sum(movimento) from saldoccorrente 
+    where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')
+	and movimento < 0 and data >= tbl.d_from and data <= tbl.d_to) * -1) as spese
+from (
+select top 20 w.year, w.week, DATEADD(d, -6, dbo.getDateFromWeek(w.year, w.week)) as d_from, dbo.getDateFromWeek(w.year, w.week) as d_to
+ from weeks w
+  where (w.year = datepart(year, @from) and w.week <= datepart(ww, @from))
+   or (w.year < datepart(year, @from))) tbl
+  order by tbl.year desc, tbl.week desc;]]>
+        </select>
+        <select name='entrate' des="query di riferimento caricamento dati per la statistica" data-fields="day,entrate">
+          <![CDATA[declare @from datetime; set @from = getdate();
+            
+set @from = DATEADD(d, {@field='i_x'} * 21, @from);
+
+select tbl.year, tbl.week, tbl.d_to as day
+ , ((select sum(movimento) from saldoccorrente 
+    where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')
+	and movimento > 0 and data >= tbl.d_from and data <= tbl.d_to)) as entrate
+from (
+select top 20 w.year, w.week, DATEADD(d, -6, dbo.getDateFromWeek(w.year, w.week)) as d_from, dbo.getDateFromWeek(w.year, w.week) as d_to
+ from weeks w
+  where (w.year = datepart(year, @from) and w.week <= datepart(ww, @from))
+   or (w.year < datepart(year, @from))) tbl
+  order by tbl.year desc, tbl.week desc;]]>
+        </select>
+      </queries>
+    </graph>
+    <!-- spese quotidiane -->
+    <graph name="gr-spese" title="SCONTRINI SETTIMANALI" type="days-2d" width="100%" height="350px" scroll-x="true" format-value="€ #,##0.##">
+      <datas>
+        <data selects="spese" color-line="red" tp-grid="Spese della settimana al {x}: {y}" lg-grid="spese" marker-size="8" onclick="click_spese"/>
+        <data selects="spese-primarie"  color-line="orangered" tp-grid="Spese quotidiane primarie della settimana al {x}: {y}" lg-grid="spese quotidiane" onclick="click_speseq" marker-size="5" line-thikness="1"/>
+        <data selects="spese-svaghi"  color-line="gold" tp-grid="Spese svaghi della settimana al {x}: {y}" lg-grid="svaghi" marker-size="5" line-thikness="1" onclick="click_speses" type="line" />
+        <data selects="bollette"  color-line="blue" tp-grid="Bollette della settimana al {x}: {y}" lg-grid="bollette" marker-size="8" onclick="click_bollette"/>
+        <data selects="rifornimenti"  color-line="olive" tp-grid="Rifornimenti della settimana al {x}: {y}" lg-grid="rifornimenti" marker-size="8" onclick="click_rifornimenti"/>
+        <data selects="spese-extra"  color-line="goldenrod" tp-grid="Spese extra della settimana al {x}: {y}" lg-grid="spese extra"
+              type="column" fill-opacity=".4"/>
+      </datas>
+      <queries>
+        <select name='spese' des="query di riferimento caricamento dati per la statistica" data-fields="day,spese">
+          <![CDATA[declare @from datetime; set @from = getdate();
+            
+set @from = DATEADD(d, {@field='i_x'} * 21, @from);
+
+select top 20 index1, index2, data as day, value as spese from xx_statistiche 
+ where codstatistica = 'SPESE_WEEK' and ((index1 = datepart(year, @from) and index2 <= datepart(ww, @from))
+   or (index1 < datepart(year, @from)))
+ order by index1 desc, index2 desc;]]>
+        </select>
+        <select name='spese-primarie' des="query di riferimento caricamento dati per la statistica" data-fields="day,spese">
+          <![CDATA[declare @from datetime; set @from = getdate();
+            
+set @from = DATEADD(d, {@field='i_x'} * 21, @from);
+
+select top 20 index1, index2, data as day, value as spese from xx_statistiche 
+ where codstatistica = 'SPESE_PRIMARIE_WEEK' and ((index1 = datepart(year, @from) and index2 <= datepart(ww, @from))
+   or (index1 < datepart(year, @from)))
+ order by index1 desc, index2 desc;]]>
+        </select>
+        <select name='spese-extra' des="query di riferimento caricamento dati per la statistica" data-fields="day,spese">
+          <![CDATA[declare @from datetime; set @from = getdate();
+            
+set @from = DATEADD(d, {@field='i_x'} * 21, @from);
+
+select top 20 index1, index2, data as day, value as spese from xx_statistiche 
+ where codstatistica = 'SPESE_EXTRA_WEEK' and ((index1 = datepart(year, @from) and index2 <= datepart(ww, @from))
+   or (index1 < datepart(year, @from)))
+ order by index1 desc, index2 desc;]]>
+        </select>
+        <select name='spese-svaghi' des="query di riferimento caricamento dati per la statistica" data-fields="day,spese">
+          <![CDATA[declare @from datetime; set @from = getdate();
+            
+set @from = DATEADD(d, {@field='i_x'} * 21, @from);
+
+select top 20 index1, index2, data as day, value as spese from xx_statistiche 
+ where codstatistica = 'SPESE_SVAGHI_WEEK' and ((index1 = datepart(year, @from) and index2 <= datepart(ww, @from))
+   or (index1 < datepart(year, @from)))
+ order by index1 desc, index2 desc;]]>
+        </select>
+        <select name='bollette' des="query di riferimento caricamento dati per la bolletta" data-fields="day,bollette">
+          <![CDATA[declare @from datetime; set @from = getdate();
+            
+set @from = DATEADD(d, {@field='i_x'} * 21, @from);
+
+select top 20 index1, index2, data as day, value as bollette from xx_statistiche 
+ where codstatistica = 'BOLLETTE_WEEK' and ((index1 = datepart(year, @from) and index2 <= datepart(ww, @from))
+   or (index1 < datepart(year, @from)))
+ order by index1 desc, index2 desc;]]>
+        </select>
+        <select name='rifornimenti' des="query di riferimento caricamento dati per il rifornimento" data-fields="day,rifornimenti">
+          <![CDATA[declare @from datetime; set @from = getdate();
+            
+set @from = DATEADD(d, {@field='i_x'} * 21, @from);
+
+select top 20 index1, index2, data as day, value as rifornimenti from xx_statistiche 
+ where codstatistica = 'RIFORNIMENTI_WEEK' and ((index1 = datepart(year, @from) and index2 <= datepart(ww, @from))
+   or (index1 < datepart(year, @from)))
+ order by index1 desc, index2 desc;]]>
+        </select>
+      </queries>
+    </graph>
+
+    <!-- variabili mese -->
+    <listview name="lw-vars-mese" select="load" sec-open="open" sec-close="close" sec-rows="row-mese">
+      <sections>
+        <section name='open'>
+          <![CDATA[ 
+          <div class='ltrn-lw' style='margin-top:30px;margin-bottom:30px;'>
+          <h3 style='text-align:center'>VALORI MENSILI</h3>
+          <table><tr class='stats-h-row'><th class='stats-h-cell'>Mese</th>
+           <th class='stats-h-cell'>Quotidiane</th><th class='stats-h-cell'>Svaghi</th>
+           <th class='stats-h-cell'>Extra</th>
+           <th class='stats-h-cell'>Bollette</th><th class='stats-h-cell'>Rifornimenti</th>
+           <th class='stats-h-cell'>Uscite</th>
+           <th class='stats-h-cell'>Entrate c.c.</th><th class='stats-h-cell'>Uscite c.c.</th>
+           <th class='stats-h-cell'>Diff. Mese c.c.</th><th class='stats-h-cell'>Diff. Anno c.c.</th>
+           <th class='stats-h-cell'>Saldo c.c.</th></tr>]]>
+        </section>
+        <section name='row-mese'>
+          <![CDATA[<tr class='stats-b-row'>
+            <td class='stats-b-cell rif-month'>{@field='mese'}</td>
+            <td class='stats-b-cell' style='color:orangered'><span class='value-cell'>{@field='spese_q'}</span>
+            <div class='subrow-cell'><span class='title-cell'>media 3 mesi: </span><span class='sub-value-cell'>{@field='spese_q_3'}</span></div>
+            <div class='subrow-cell'><span class='title-cell'>media 6 mesi: </span><span class='sub-value-cell'>{@field='spese_q_6'}</span></div></td>
+            <td class='stats-b-cell' style='color:gold'><span class='value-cell'>{@field='svaghi'}</span>
+            <div class='subrow-cell'><span class='title-cell'>media 3 mesi: </span><span class='sub-value-cell'>{@field='svaghi_3'}</span></div>
+            <div class='subrow-cell'><span class='title-cell'>media 6 mesi: </span><span class='sub-value-cell'>{@field='svaghi_6'}</span></div></td>
+            <td class='stats-b-cell' style='color:goldenrod'><span class='value-cell'>{@field='spese_extra'}</span></td>
+            <td class='stats-b-cell' style='color:blue'><span class='value-cell'>{@field='bollette'}</span></td>
+            <td class='stats-b-cell' style='color:olive'><span class='value-cell'>{@field='rifornimenti'}</span></td>
+            <td class='stats-b-cell' style='color:red'><span class='value-cell'>{@field='uscite'}</span>
+            <div class='subrow-cell'><span class='title-cell'>media 3 mesi: </span><span class='sub-value-cell'>{@field='uscite_3'}</span></div>
+            <div class='subrow-cell'><span class='title-cell'>media 6 mesi: </span><span class='sub-value-cell'>{@field='uscite_6'}</span></div></td>
+            <td class='stats-b-cell' style='color:gray;'><span class='value-cell'>{@field='entrate_cc'}</span></td>
+            <td class='stats-b-cell' style='color:gray;'><span class='value-cell'>{@field='uscite_cc'}</span></td>
+            <td class='stats-b-cell' style='color:gray;'><span class='value-cell'>{@field='diff_cc'}</span></td>
+            <td class='stats-b-cell' style='color:gray;'><span class='value-cell'>{@field='sum_diff_cc'}</span></td>
+            <td class='stats-b-cell' style='color:lightgrey;'><span class='value-cell'>{@field='saldo_cc'}</span></td>
+           </tr>]]>
+        </section>
+        <section name='close'>
+          <![CDATA[ </table></div>          
+        <input id='up-descriptions' type='button' class='lw-button' style='display:none;font-weight:bold;color:tomato;' value='aggiorna le descrizioni dei codici' onclick='up_descriptions()'/>]]>
+        </section>
+      </sections>
+      <queries>
+        <select name='load'>
+          <![CDATA[select dbo.formatInt(s.index1, 4) + '/' + dbo.formatInt(s.index2, 2) as mese
+            , dbo.formatCurrency(isnull(s2.value, 0)) as uscite, dbo.formatCurrency(isnull(s2_3.value, 0)) as uscite_3, dbo.formatCurrency(isnull(s2_6.value, 0)) as uscite_6
+    			     , dbo.formatCurrency(isnull(s3.value, 0)) as diff_cc
+            , dbo.formatCurrency((select sum(isnull(value, 0)) from xx_statistiche where codstatistica = 'DIFF_CC_MONTH' and index1 = s.index1 and index2 <= s.index2)) as sum_diff_cc
+            , dbo.formatCurrency(isnull(s4.value, 0)) as entrate_cc, dbo.formatCurrency(isnull(s5.value, 0)) as uscite_cc
+            , dbo.formatCurrency(isnull(s6.value, 0)) as spese_q, dbo.formatCurrency(isnull(s6_3.value, 0)) as spese_q_3, dbo.formatCurrency(isnull(s6_6.value, 0)) as spese_q_6
+            , dbo.formatCurrency(isnull(s7.value, 0)) as svaghi, dbo.formatCurrency(isnull(s7_3.value, 0)) as svaghi_3, dbo.formatCurrency(isnull(s7_6.value, 0)) as svaghi_6
+            , dbo.formatCurrency(isnull(s8.value, 0)) as bollette, dbo.formatCurrency(isnull(s9.value, 0)) as rifornimenti
+            , dbo.formatCurrency(isnull(s10.value, 0)) as spese_extra, dbo.formatCurrency(isnull(s11.value, 0)) as saldo_cc
+          from (select a.anno as index1, m.IDMese as index2 from anni a, mesi m) s
+          left join xx_Statistiche s2 on s2.index1 = s.index1 and s2.index2 = s.index2 and s2.CodStatistica = 'SPESE_MONTH'
+          left join xx_Statistiche s2_3 on s2_3.index1 = s.index1 and s2_3.index2 = s.index2 and s2_3.CodStatistica = 'SPESE_MONTH_AV_3'
+          left join xx_Statistiche s2_6 on s2_6.index1 = s.index1 and s2_6.index2 = s.index2 and s2_6.CodStatistica = 'SPESE_MONTH_AV_6'
+          left join xx_Statistiche s3 on s3.index1 = s.index1 and s3.index2 = s.index2 and s3.CodStatistica = 'DIFF_CC_MONTH'
+          left join xx_Statistiche s4 on s4.index1 = s.index1 and s4.index2 = s.index2 and s4.CodStatistica = 'ENTRATE_CC_MONTH'
+          left join xx_Statistiche s5 on s5.index1 = s.index1 and s5.index2 = s.index2 and s5.CodStatistica = 'SPESE_CC_MONTH'
+          left join xx_Statistiche s6 on s6.index1 = s.index1 and s6.index2 = s.index2 and s6.CodStatistica = 'SPESE_PRIMARIE_MONTH'
+          left join xx_Statistiche s6_3 on s6_3.index1 = s.index1 and s6_3.index2 = s.index2 and s6_3.CodStatistica = 'SPESE_PRIMARIE_MONTH_AV_3'
+          left join xx_Statistiche s6_6 on s6_6.index1 = s.index1 and s6_6.index2 = s.index2 and s6_6.CodStatistica = 'SPESE_PRIMARIE_MONTH_AV_6'
+          left join xx_Statistiche s7 on s7.index1 = s.index1 and s7.index2 = s.index2 and s7.CodStatistica = 'SPESE_SVAGHI_MONTH'
+          left join xx_Statistiche s7_3 on s7_3.index1 = s.index1 and s7_3.index2 = s.index2 and s7_3.CodStatistica = 'SPESE_SVAGHI_MONTH_AV_3'
+          left join xx_Statistiche s7_6 on s7_6.index1 = s.index1 and s7_6.index2 = s.index2 and s7_6.CodStatistica = 'SPESE_SVAGHI_MONTH_AV_6'
+          left join xx_Statistiche s8 on s8.index1 = s.index1 and s8.index2 = s.index2 and s8.CodStatistica = 'BOLLETTE_MONTH'
+          left join xx_Statistiche s9 on s9.index1 = s.index1 and s9.index2 = s.index2 and s9.CodStatistica = 'RIFORNIMENTI_MONTH'
+          left join xx_Statistiche s10 on s10.index1 = s.index1 and s10.index2 = s.index2 and s10.CodStatistica = 'SPESE_EXTRA_MONTH'
+          left join xx_Statistiche s11 on s11.index1 = s.index1 and s11.index2 = s.index2 and s11.CodStatistica = 'SALDO_CC_MONTH'
+          where ((s.index1 = datepart(year, getdate()) and s.index2 <= datepart(mm, getdate())) or (s.index1 < datepart(year, getdate())))
+           and s.index1 >= (datepart(year, getdate()) - 5)
+          order by s.index1 desc, s.index2 desc;]]>
+        </select>
+      </queries>
+    </listview>
+
+  </contents>
+  <queries>
+    <!-- cc_id -->
+    <select name='cc_id'>
+      <![CDATA[select idccorrente from CCorrente where nroccorrente = '0000030349857']]>
+    </select>
+    <updates name="init_stats">
+      <!-- SPESE_WEEK -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'SPESE_WEEK') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_WEEK')
+          < (select max(max_data)
+           from(select max(dtins) as max_data from spese where idtipospesa not in (select idtipospesa from tipispesa where entrata = 1) 
+           union select max(dtins) from Bollette 
+           union select max(dtins) from RifornimentoAuto 
+           union select max(dtins) from ManutenzioneAuto) t))
+        begin
+         
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_WEEK';
+        delete from xx_statistiche where codstatistica = 'SPESE_WEEK';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_WEEK', tbl.year, tbl.week, tbl.d_to as day
+          , (select sum(t.totale) as totale from 
+           (select s.data, sum(s.prezzo * isnull(s.quantita, 1)) as totale, 'spese' as tipo
+            from spese s where idtipospesa not in (select idtipospesa from tipispesa where entrata = 1) group by s.data
+           union select b.data, sum(isnull(b.prezzo, 0) - isnull(b.rimborso, 0)) as totale, 'bollette' as tipo
+            from Bollette b group by b.data
+           union select r.data, sum(prezzo) as totale, 'rifornimenti' as tipo 
+            from RifornimentoAuto r group by r.data
+           union select m.data, sum(isnull(prezzo, 0) - isnull(rimborso, 0)) as totale, 'manutenzioni' as tipo
+            from ManutenzioneAuto m group by m.data) t
+          where t.data >= tbl.d_from and t.data <= tbl.d_to) as spese
+         from (select w.year, w.week, DATEADD(d, -6, dbo.getDateFromWeek(w.year, w.week)) as d_from, dbo.getDateFromWeek(w.year, w.week) as d_to
+          from weeks w where 1 = 1) tbl where tbl.d_from >= CONVERT(date, '2009-01-01 00:00:00', 120) and tbl.d_from <= getdate()
+           order by tbl.year desc, tbl.week desc;
+          
+         insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+          values('SPESE_WEEK', 'spese della settimana', getdate());
+          
+          end]]>
+      </update>
+      <!-- SPESE_MONTH -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'SPESE_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_MONTH')
+          < (select max(max_data)
+           from(select max(dtins) as max_data from spese where idtipospesa not in (select idtipospesa from tipispesa where entrata = 1) 
+           union select max(dtins) from Bollette 
+           union select max(dtins) from RifornimentoAuto 
+           union select max(dtins) from ManutenzioneAuto) t))
+        begin
+         
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_MONTH';
+        delete from xx_statistiche where codstatistica = 'SPESE_MONTH';
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_MONTH_AV_3';
+        delete from xx_statistiche where codstatistica = 'SPESE_MONTH_AV_3';
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_MONTH_AV_6';
+        delete from xx_statistiche where codstatistica = 'SPESE_MONTH_AV_6';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_MONTH', tbl.anno, tbl.i_mese, tbl.dt_to as day
+          , (select sum(t.totale) as totale from 
+           (select s.data, sum(s.prezzo * isnull(s.quantita, 1)) as totale, 'spese' as tipo
+            from spese s where idtipospesa not in (select idtipospesa from tipispesa where entrata = 1) group by s.data
+           union select b.data, sum(isnull(b.prezzo, 0) - isnull(b.rimborso, 0)) as totale, 'bollette' as tipo
+            from Bollette b group by b.data
+           union select r.data, sum(prezzo) as totale, 'rifornimenti' as tipo 
+            from RifornimentoAuto r group by r.data
+           union select m.data, sum(isnull(prezzo, 0) - isnull(rimborso, 0)) as totale, 'manutenzioni' as tipo
+            from ManutenzioneAuto m group by m.data) t
+          where t.data >= tbl.dt_from and t.data <= tbl.dt_to) as spese
+         from (select t1.anno, t1.i_mese, t1.mese, t1.dt_from, DATEADD(MONTH, datediff(MONTH, -1, t1.dt_from), -1) as dt_to
+		      from (select a.anno, m.idmese as i_mese, m.mese
+		       , CONVERT(date, cast(a.anno as varchar) + '-' + dbo.formatInt(m.idmese, 2) + '-01 00:00:00', 120) as dt_from
+		      from anni a join mesi m on 1 = 1) t1 where t1.dt_from >= CONVERT(date, '2009-01-01 00:00:00', 120)
+			     and t1.dt_from <= getdate()) tbl
+            order by tbl.anno desc, tbl.i_mese desc;
+          
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_MONTH_AV_3', s.index1, s.index2, s.data
+          , (select avg(value) from (select top 3 value from xx_Statistiche where codstatistica = 'SPESE_MONTH' 
+           and ((index1 = s.index1 and index2 < s.index2) or (index1 < s.index1)) order by index1 desc, index2 desc) t) as value 
+         from xx_Statistiche s where s.codstatistica = 'spese_month' order by s.index1 desc, s.index2 desc
+ 
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_MONTH_AV_6', s.index1, s.index2, s.data
+          , (select avg(value) from (select top 6 value from xx_Statistiche where codstatistica = 'SPESE_MONTH' 
+           and ((index1 = s.index1 and index2 < s.index2) or (index1 < s.index1)) order by index1 desc, index2 desc) t) as value 
+         from xx_Statistiche s where s.codstatistica = 'spese_month' order by s.index1 desc, s.index2 desc
+
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+          values('SPESE_MONTH', 'spese del mese', getdate());
+          
+          end]]>
+      </update>
+      <!-- SPESE_CC_MONTH -->
+      <update>
+        <![CDATA[if not exists (select dtins from xx_storicostatistiche where codstatistica = 'SPESE_CC_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_CC_MONTH')
+          < (select max(dtins) from saldoccorrente 
+            where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')))
+        begin
+         
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_CC_MONTH';
+        delete from xx_statistiche where codstatistica = 'SPESE_CC_MONTH';
+  
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+          select 'SPESE_CC_MONTH', tbl.anno, tbl.i_mese, tbl.dt_to as day
+           , ((select sum(movimento) from saldoccorrente 
+            where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')
+	         and movimento < 0 and data >= tbl.dt_from and data <= tbl.dt_to) * -1) as spese
+          from (select t1.anno, t1.i_mese, t1.mese, t1.dt_from, DATEADD(MONTH, datediff(MONTH, -1, t1.dt_from), -1) as dt_to
+		        from (select a.anno, m.idmese as i_mese, m.mese
+		         , CONVERT(date, cast(a.anno as varchar) + '-' + dbo.formatInt(m.idmese, 2) + '-01 00:00:00', 120) as dt_from
+		        from anni a join mesi m on 1 = 1) t1 where t1.dt_from >= CONVERT(date, '2009-01-01 00:00:00', 120)
+			       and t1.dt_from <= getdate()) tbl
+          order by tbl.anno desc, tbl.i_mese desc;
+  
+         insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+          values('SPESE_CC_MONTH', 'spese del mese registrati nel c.c.', getdate());
+          
+        end]]>
+      </update>
+      <!-- ENTRATE_WEEK -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'ENTRATE_WEEK') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'ENTRATE_WEEK')
+          < (select max(dtins) from saldoccorrente 
+       where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')))
+       begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'ENTRATE_WEEK';
+        delete from xx_statistiche where codstatistica = 'ENTRATE_WEEK';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'ENTRATE_WEEK', tbl.year, tbl.week, tbl.d_to
+          , (isnull(((select sum(movimento) from saldoccorrente 
+             where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')
+	          and movimento > 0 and data >= tbl.d_from and data <= tbl.d_to)), 0) + 
+           isnull((select sum(prezzo * isnull(quantita, 1)) as totale from spese
+            where data >= tbl.d_from and data <= tbl.d_to 
+             and idtipospesa in (select idtipospesa from tipispesa where entrata = 1)), 0)) as entrate
+         from (select w.year, w.week, DATEADD(d, -6, dbo.getDateFromWeek(w.year, w.week)) as d_from, dbo.getDateFromWeek(w.year, w.week) as d_to
+          from weeks w where 1 = 1) tbl where tbl.d_from >= CONVERT(date, '2009-01-01 00:00:00', 120) and tbl.d_from <= getdate()
+           order by tbl.year desc, tbl.week desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('ENTRATE_WEEK', 'entrate della settimana', getdate());
+       end]]>
+      </update>
+      <!-- ENTRATE_MONTH -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'ENTRATE_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'ENTRATE_MONTH')
+          < (select max(dtins) from saldoccorrente 
+       where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')))
+       begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'ENTRATE_MONTH';
+        delete from xx_statistiche where codstatistica = 'ENTRATE_MONTH';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'ENTRATE_MONTH', tbl.anno, tbl.i_mese, tbl.dt_to
+            , (isnull(((select sum(movimento) from saldoccorrente 
+               where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')
+	            and movimento > 0 and data >= tbl.dt_from and data <= tbl.dt_to)), 0) + 
+             isnull((select sum(prezzo * isnull(quantita, 1)) as totale from spese
+              where data >= tbl.dt_from and data <= tbl.dt_to 
+               and idtipospesa in (select idtipospesa from tipispesa where entrata = 1)), 0)) as entrate
+           from (select t1.anno, t1.i_mese, t1.mese, t1.dt_from, DATEADD(MONTH, datediff(MONTH, -1, t1.dt_from), -1) as dt_to
+		     from (select a.anno, m.idmese as i_mese, m.mese
+		      , CONVERT(date, cast(a.anno as varchar) + '-' + dbo.formatInt(m.idmese, 2) + '-01 00:00:00', 120) as dt_from
+		     from anni a join mesi m on 1 = 1) t1 where t1.dt_from >= CONVERT(date, '2009-01-01 00:00:00', 120)
+			    and t1.dt_from <= getdate()) tbl
+         order by tbl.anno desc, tbl.i_mese desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('ENTRATE_MONTH', 'entrate del mese', getdate());
+       end]]>
+      </update>
+      <!-- ENTRATE_CC_MONTH -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'ENTRATE_CC_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'ENTRATE_CC_MONTH')
+          < (select max(dtins) from saldoccorrente 
+           where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')))
+        begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'ENTRATE_CC_MONTH';
+        delete from xx_statistiche where codstatistica = 'ENTRATE_CC_MONTH';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'ENTRATE_CC_MONTH', tbl.anno, tbl.i_mese, tbl.dt_to
+            , (isnull(((select sum(movimento) from saldoccorrente 
+               where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')
+	            and movimento > 0 and data >= tbl.dt_from and data <= tbl.dt_to)), 0)) as entrate
+           from (select t1.anno, t1.i_mese, t1.mese, t1.dt_from, DATEADD(MONTH, datediff(MONTH, -1, t1.dt_from), -1) as dt_to
+		     from (select a.anno, m.idmese as i_mese, m.mese
+		      , CONVERT(date, cast(a.anno as varchar) + '-' + dbo.formatInt(m.idmese, 2) + '-01 00:00:00', 120) as dt_from
+		     from anni a join mesi m on 1 = 1) t1 where t1.dt_from >= CONVERT(date, '2009-01-01 00:00:00', 120)
+			    and t1.dt_from <= getdate()) tbl
+         order by tbl.anno desc, tbl.i_mese desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('ENTRATE_CC_MONTH', 'differenze del mese', getdate());
+         
+       end]]>
+      </update>
+      <!-- SALDO_CC_MONTH -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'SALDO_CC_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SALDO_CC_MONTH')
+          < (select max(dtins) from saldoccorrente 
+           where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')))
+        begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'SALDO_CC_MONTH';
+        delete from xx_statistiche where codstatistica = 'SALDO_CC_MONTH';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SALDO_CC_MONTH', tbl.anno, tbl.i_mese, tbl.dt_saldo
+            , (select top 1 saldo from saldoccorrente 
+               where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')
+	            and data = tbl.dt_saldo order by idsaldoccorrente desc) as saldo
+           from (select t1.anno, t1.i_mese, t1.mese
+           , (select max(data) from saldoccorrente where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')
+            and year(data) = t1.anno and month(data) = t1.i_mese) as dt_saldo
+		        from (select a.anno, m.idmese as i_mese, m.mese
+		        from anni a join mesi m on 1 = 1) t1 where t1.anno >= 2009 
+           and ((t1.anno = year(getdate()) and t1.i_mese <= month(getdate()) or t1.anno < year(getdate())) )) tbl
+         order by tbl.anno desc, tbl.i_mese desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         select 'SALDO_CC_MONTH', 'saldo fine mese', max(data)
+          from saldoccorrente 
+           where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857');
+         
+       end]]>
+      </update>
+      <!-- DIFF_CC_MONTH -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'DIFF_CC_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'DIFF_CC_MONTH')
+          < (select max(dtins) from saldoccorrente 
+           where idccorrente = (select idccorrente from ccorrente where nroccorrente = '0000030349857')))
+        begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'DIFF_CC_MONTH';
+        delete from xx_statistiche where codstatistica = 'DIFF_CC_MONTH';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'DIFF_CC_MONTH', s.index1, s.index2, s.data         
+            , isnull(s.value, 0) - isnull(s1.value, 0)
+          from xx_Statistiche s
+          left join xx_Statistiche s1 on s1.index1 = s.index1 and s1.index2 = s.index2 and s1.CodStatistica = 'spese_cc_month'
+          where s.codstatistica = 'entrate_cc_month' 
+          order by s.index1 desc, s.index2 desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('DIFF_CC_MONTH', 'entrate del mese', getdate());
+         
+       end]]>
+      </update>
+      <!-- SPESE_PRIMARIE_WEEK -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'SPESE_PRIMARIE_WEEK') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_PRIMARIE_WEEK')
+          < (select max(s.dtins) from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where ts.codspesa in ('MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE','HOSPITAL','TASSA','BIMBOMEDICAL')))
+        begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_PRIMARIE_WEEK';
+        delete from xx_statistiche where codstatistica = 'SPESE_PRIMARIE_WEEK';
+  
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_PRIMARIE_WEEK', tbl.year, tbl.week, tbl.d_to
+          , (select sum(s.prezzo * isnull(s.quantita, 1)) as totale 
+          from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where s.data >= tbl.d_from and s.data <= tbl.d_to
+           and ts.codspesa in ('MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE','HOSPITAL','TASSA','BIMBOMEDICAL')) as spese_primarie
+         from (select w.year, w.week, DATEADD(d, -6, dbo.getDateFromWeek(w.year, w.week)) as d_from, dbo.getDateFromWeek(w.year, w.week) as d_to
+           from weeks w where 1 = 1) tbl where tbl.d_from >= CONVERT(date, '2009-01-01 00:00:00', 120) and tbl.d_from <= getdate()
+            order by tbl.year desc, tbl.week desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('SPESE_PRIMARIE_WEEK', 'spese quotidiane della settimana', getdate());
+       end]]>
+      </update>
+      <!-- SPESE_EXTRA_WEEK -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'SPESE_EXTRA_WEEK') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_EXTRA_WEEK')
+          < (select max(s.dtins) from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where ts.codspesa in ('HW','MOBILI','BRICO','ELETTRODOMESTICI','SPEDIZIONI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO')))
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_EXTRA_WEEK') < (select max(dtins) from ManutenzioneAuto))
+        begin
+        
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_EXTRA_WEEK';
+        delete from xx_statistiche where codstatistica = 'SPESE_EXTRA_WEEK';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+        select 'SPESE_EXTRA_WEEK', t2.year, t2.week, t2.day, isnull(t2.spese, 0) + isnull(t2.manutenzioni, 0) as spese
+        from (select t1.year, t1.week, t1.d_to as day
+          , (select sum(s.prezzo * isnull(s.quantita, 1)) as totale 
+          from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where s.data >= t1.d_from and s.data <= t1.d_to
+           and ts.codspesa in ('HW','MOBILI','BRICO','ELETTRODOMESTICI','SPEDIZIONI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO')) as spese
+          , (select sum(isnull(prezzo, 0) - isnull(rimborso, 0)) as totale from ManutenzioneAuto
+           where data >= t1.d_from and data <= t1.d_to) as manutenzioni
+         from (select w.year, w.week, DATEADD(d, -6, dbo.getDateFromWeek(w.year, w.week)) as d_from, dbo.getDateFromWeek(w.year, w.week) as d_to
+          from weeks w where 1 = 1) t1 where t1.d_from >= CONVERT(date, '2009-01-01 00:00:00', 120) and t1.d_from <= getdate()) t2 
+          order by t2.year desc, t2.week desc;
+  
+          insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+           values('SPESE_EXTRA_WEEK', 'spese extra della settimana', getdate());
+       
+       end]]>
+      </update>
+      <!-- BOLLETTE_WEEK -->
+      <update>
+        <![CDATA[if not exists (select dtins from xx_storicostatistiche where codstatistica = 'BOLLETTE_WEEK') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'BOLLETTE_WEEK') < (select max(dtins) from bollette))
+        begin
+        
+        delete from xx_storicostatistiche where codstatistica = 'BOLLETTE_WEEK';
+        delete from xx_statistiche where codstatistica = 'BOLLETTE_WEEK';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'BOLLETTE_WEEK', tbl.year, tbl.week, tbl.d_to
+          , (select sum(isnull(b.prezzo, 0) - isnull(b.rimborso, 0)) as totale 
+          from Bollette b
+          where b.data >= tbl.d_from and b.data <= tbl.d_to) as bollette
+         from (select w.year, w.week, DATEADD(d, -6, dbo.getDateFromWeek(w.year, w.week)) as d_from, dbo.getDateFromWeek(w.year, w.week) as d_to
+          from weeks w where 1 = 1) tbl where tbl.d_from >= CONVERT(date, '2009-01-01 00:00:00', 120) and tbl.d_from <= getdate()
+         order by tbl.year desc, tbl.week desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('BOLLETTE_WEEK', 'bollette della settimana', getdate());
+       
+        end]]>
+      </update>
+      <!-- SPESE_SVAGHI_WEEK -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'SPESE_SVAGHI_WEEK') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_SVAGHI_WEEK')
+          < (select max(s.dtins) from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where isnull(ts.entrata, 0) = 0 and ts.codspesa not in ('MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE'
+           ,'HOSPITAL','TASSA','BIMBOMEDICAL', 'HW','MOBILI','BRICO','ELETTRODOMESTICI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO','SPEDIZIONI')))
+       begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_SVAGHI_WEEK';
+        delete from xx_statistiche where codstatistica = 'SPESE_SVAGHI_WEEK';
+  
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_SVAGHI_WEEK', tbl.year, tbl.week, tbl.d_to
+          , (select sum(s.prezzo * isnull(s.quantita, 1)) as totale 
+          from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where isnull(ts.entrata, 0) = 0 and s.data >= tbl.d_from and s.data <= tbl.d_to
+           and ts.codspesa not in ('MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE','HOSPITAL','TASSA','BIMBOMEDICAL'
+            , 'HW','MOBILI','BRICO','ELETTRODOMESTICI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO','SPEDIZIONI')) as spese_svaghi
+         from (select w.year, w.week, DATEADD(d, -6, dbo.getDateFromWeek(w.year, w.week)) as d_from, dbo.getDateFromWeek(w.year, w.week) as d_to
+           from weeks w where 1 = 1) tbl where tbl.d_from >= CONVERT(date, '2009-01-01 00:00:00', 120) and tbl.d_from <= getdate()
+            order by tbl.year desc, tbl.week desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('SPESE_SVAGHI_WEEK', 'spese svaghi della settimana', getdate());
+       end]]>
+      </update>
+      <!-- RIFORNIMENTI_WEEK -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'RIFORNIMENTI_WEEK') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'RIFORNIMENTI_WEEK')
+          < (select max(dtins) from RifornimentoAuto))
+       begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'RIFORNIMENTI_WEEK';
+        delete from xx_statistiche where codstatistica = 'RIFORNIMENTI_WEEK';
+  
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'RIFORNIMENTI_WEEK', tbl.year, tbl.week, tbl.d_to
+          , (select sum(prezzo) as totale from RifornimentoAuto
+           where data >= tbl.d_from and data <= tbl.d_to) as rifornimenti
+         from (select w.year, w.week, DATEADD(d, -6, dbo.getDateFromWeek(w.year, w.week)) as d_from, dbo.getDateFromWeek(w.year, w.week) as d_to
+          from weeks w where 1 = 1) tbl where tbl.d_from >= CONVERT(date, '2009-01-01 00:00:00', 120) and tbl.d_from <= getdate()
+           order by tbl.year desc, tbl.week desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('RIFORNIMENTI_WEEK', 'rifornimenti della settimana', getdate());
+       end]]>
+      </update>
+      <!-- SPESE_PRIMARIE_MONTH -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'SPESE_PRIMARIE_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_PRIMARIE_MONTH')
+          < (select max(s.dtins) from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where ts.codspesa in ('MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE','HOSPITAL','TASSA','BIMBOMEDICAL')))
+        begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_PRIMARIE_MONTH';
+        delete from xx_statistiche where codstatistica = 'SPESE_PRIMARIE_MONTH';
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_PRIMARIE_MONTH_AV_3';
+        delete from xx_statistiche where codstatistica = 'SPESE_PRIMARIE_MONTH_AV_3';
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_PRIMARIE_MONTH_AV_6';
+        delete from xx_statistiche where codstatistica = 'SPESE_PRIMARIE_MONTH_AV_6';
+  
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_PRIMARIE_MONTH', tbl.anno, tbl.i_mese, tbl.dt_to
+          , (select sum(s.prezzo * isnull(s.quantita, 1)) as totale 
+          from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where s.data >= tbl.dt_from and s.data <= tbl.dt_to
+           and ts.codspesa in ('MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE','HOSPITAL','TASSA','BIMBOMEDICAL')) as spese_primarie
+         from (select t1.anno, t1.i_mese, t1.mese, t1.dt_from, DATEADD(MONTH, datediff(MONTH, -1, t1.dt_from), -1) as dt_to
+		        from (select a.anno, m.idmese as i_mese, m.mese
+		         , CONVERT(date, cast(a.anno as varchar) + '-' + dbo.formatInt(m.idmese, 2) + '-01 00:00:00', 120) as dt_from
+		        from anni a join mesi m on 1 = 1) t1 where t1.dt_from >= CONVERT(date, '2009-01-01 00:00:00', 120)
+			       and t1.dt_from <= getdate()) tbl
+          order by tbl.anno desc, tbl.i_mese desc;
+  
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_PRIMARIE_MONTH_AV_3', s.index1, s.index2, s.data
+          , (select avg(value) from (select top 3 value from xx_Statistiche where codstatistica = 'SPESE_PRIMARIE_MONTH' 
+           and ((index1 = s.index1 and index2 < s.index2) or (index1 < s.index1)) order by index1 desc, index2 desc) t) as value 
+         from xx_Statistiche s where s.codstatistica = 'spese_month' order by s.index1 desc, s.index2 desc
+ 
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_PRIMARIE_MONTH_AV_6', s.index1, s.index2, s.data
+          , (select avg(value) from (select top 6 value from xx_Statistiche where codstatistica = 'SPESE_PRIMARIE_MONTH' 
+           and ((index1 = s.index1 and index2 < s.index2) or (index1 < s.index1)) order by index1 desc, index2 desc) t) as value 
+         from xx_Statistiche s where s.codstatistica = 'spese_month' order by s.index1 desc, s.index2 desc
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('SPESE_PRIMARIE_MONTH', 'spese quotidiane del mese', getdate());
+       end]]>
+      </update>
+      <!-- SPESE_EXTRA_MONTH -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'SPESE_EXTRA_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_EXTRA_MONTH')
+          < (select max(s.dtins) from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where ts.codspesa in ('HW','MOBILI','BRICO','ELETTRODOMESTICI','SPEDIZIONI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO')))
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_EXTRA_MONTH') < (select max(dtins) from ManutenzioneAuto))
+        begin
+        
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_EXTRA_MONTH';
+        delete from xx_statistiche where codstatistica = 'SPESE_EXTRA_MONTH';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_EXTRA_MONTH', t2.anno, t2.i_mese, t2.day, isnull(t2.spese, 0) + isnull(t2.manutenzioni, 0) as spese
+          from (select tbl.anno, tbl.i_mese, tbl.dt_to as day
+           , (select sum(s.prezzo * isnull(s.quantita, 1)) as totale 
+           from spese s
+           join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+           where s.data >= tbl.dt_from and s.data <= tbl.dt_to
+            and ts.codspesa in ('HW','MOBILI','BRICO','ELETTRODOMESTICI','SPEDIZIONI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO')) as spese
+           , (select sum(isnull(prezzo, 0) - isnull(rimborso, 0)) as totale from ManutenzioneAuto
+            where data >= tbl.dt_from and data <= tbl.dt_to) as manutenzioni
+          from (select t1.anno, t1.i_mese, t1.mese, t1.dt_from, DATEADD(MONTH, datediff(MONTH, -1, t1.dt_from), -1) as dt_to
+		         from (select a.anno, m.idmese as i_mese, m.mese
+		          , CONVERT(date, cast(a.anno as varchar) + '-' + dbo.formatInt(m.idmese, 2) + '-01 00:00:00', 120) as dt_from
+		         from anni a join mesi m on 1 = 1) t1 where t1.dt_from >= CONVERT(date, '2009-01-01 00:00:00', 120)
+			        and t1.dt_from <= getdate()) tbl) t2
+           order by t2.anno desc, t2.i_mese desc;
+  
+          insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+           values('SPESE_EXTRA_MONTH', 'spese extra del mese', getdate());
+       
+       end]]>
+      </update>
+      <!-- BOLLETTE_MONTH -->
+      <update>
+        <![CDATA[if not exists (select dtins from xx_storicostatistiche where codstatistica = 'BOLLETTE_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'BOLLETTE_MONTH') < (select max(dtins) from bollette))
+        begin
+        
+        delete from xx_storicostatistiche where codstatistica = 'BOLLETTE_MONTH';
+        delete from xx_statistiche where codstatistica = 'BOLLETTE_MONTH';
+
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'BOLLETTE_MONTH', tbl.anno, tbl.i_mese, tbl.dt_to
+          , (select sum(isnull(b.prezzo, 0) - isnull(b.rimborso, 0)) as totale 
+          from Bollette b
+          where b.data >= tbl.dt_from and b.data <= tbl.dt_to) as bollette
+         from (select t1.anno, t1.i_mese, t1.mese, t1.dt_from, DATEADD(MONTH, datediff(MONTH, -1, t1.dt_from), -1) as dt_to
+		        from (select a.anno, m.idmese as i_mese, m.mese
+		         , CONVERT(date, cast(a.anno as varchar) + '-' + dbo.formatInt(m.idmese, 2) + '-01 00:00:00', 120) as dt_from
+		        from anni a join mesi m on 1 = 1) t1 where t1.dt_from >= CONVERT(date, '2009-01-01 00:00:00', 120)
+			       and t1.dt_from <= getdate()) tbl
+          order by tbl.anno desc, tbl.i_mese desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('BOLLETTE_MONTH', 'bollette del mese', getdate());
+       
+        end]]>
+      </update>
+      <!-- SPESE_SVAGHI_MONTH -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'SPESE_SVAGHI_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'SPESE_SVAGHI_MONTH')
+          < (select max(s.dtins) from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where isnull(ts.entrata, 0) = 0 and ts.codspesa not in ('MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE'
+           ,'HOSPITAL','TASSA','BIMBOMEDICAL', 'HW','MOBILI','BRICO','ELETTRODOMESTICI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO','SPEDIZIONI')))
+       begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_SVAGHI_MONTH';
+        delete from xx_statistiche where codstatistica = 'SPESE_SVAGHI_MONTH';
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_SVAGHI_MONTH_AV_3';
+        delete from xx_statistiche where codstatistica = 'SPESE_SVAGHI_MONTH_AV_3';
+        delete from xx_storicostatistiche where codstatistica = 'SPESE_SVAGHI_MONTH_AV_6';
+        delete from xx_statistiche where codstatistica = 'SPESE_SVAGHI_MONTH_AV_6';
+  
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_SVAGHI_MONTH', tbl.anno, tbl.i_mese, tbl.dt_to
+          , (select sum(s.prezzo * isnull(s.quantita, 1)) as totale 
+          from spese s
+          join tipispesa ts on ts.IDTipoSpesa = s.idtipospesa
+          where isnull(ts.entrata, 0) = 0 and s.data >= tbl.dt_from and s.data <= tbl.dt_to
+           and ts.codspesa not in ('MARKET','CELL','BUS','VESTITO','VESTITOBIMBO','DOCTOR','MEDICINE','HOSPITAL','TASSA','BIMBOMEDICAL'
+            , 'HW','MOBILI','BRICO','ELETTRODOMESTICI','PARK','HOMEWORK','AUTOSTRADA','SOGGIORNO','SPEDIZIONI')) as spese_svaghi
+         from (select t1.anno, t1.i_mese, t1.mese, t1.dt_from, DATEADD(MONTH, datediff(MONTH, -1, t1.dt_from), -1) as dt_to
+		        from (select a.anno, m.idmese as i_mese, m.mese
+		         , CONVERT(date, cast(a.anno as varchar) + '-' + dbo.formatInt(m.idmese, 2) + '-01 00:00:00', 120) as dt_from
+		        from anni a join mesi m on 1 = 1) t1 where t1.dt_from >= CONVERT(date, '2009-01-01 00:00:00', 120)
+			       and t1.dt_from <= getdate()) tbl
+          order by tbl.anno desc, tbl.i_mese desc;
+  
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_SVAGHI_MONTH_AV_3', s.index1, s.index2, s.data
+          , (select avg(value) from (select top 3 value from xx_Statistiche where codstatistica = 'SPESE_SVAGHI_MONTH' 
+           and ((index1 = s.index1 and index2 < s.index2) or (index1 < s.index1)) order by index1 desc, index2 desc) t) as value 
+         from xx_Statistiche s where s.codstatistica = 'spese_month' order by s.index1 desc, s.index2 desc
+ 
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'SPESE_SVAGHI_MONTH_AV_6', s.index1, s.index2, s.data
+          , (select avg(value) from (select top 6 value from xx_Statistiche where codstatistica = 'SPESE_SVAGHI_MONTH' 
+           and ((index1 = s.index1 and index2 < s.index2) or (index1 < s.index1)) order by index1 desc, index2 desc) t) as value 
+         from xx_Statistiche s where s.codstatistica = 'spese_month' order by s.index1 desc, s.index2 desc
+         
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('SPESE_SVAGHI_MONTH', 'spese svaghi del mese', getdate());
+       end]]>
+      </update>
+      <!-- RIFORNIMENTI_MONTH -->
+      <update>
+        <![CDATA[
+        if not exists (select dtins from xx_storicostatistiche where codstatistica = 'RIFORNIMENTI_MONTH') 
+         or ((select dtins from xx_storicostatistiche where codstatistica = 'RIFORNIMENTI_MONTH')
+          < (select max(dtins) from RifornimentoAuto))
+       begin
+    
+        delete from xx_storicostatistiche where codstatistica = 'RIFORNIMENTI_MONTH';
+        delete from xx_statistiche where codstatistica = 'RIFORNIMENTI_MONTH';
+  
+        insert into xx_statistiche (codstatistica, index1, index2, data, value)
+         select 'RIFORNIMENTI_MONTH', tbl.anno, tbl.i_mese, tbl.dt_to
+          , (select sum(prezzo) as totale from RifornimentoAuto
+           where data >= tbl.dt_from and data <= tbl.dt_to) as rifornimenti
+         from (select t1.anno, t1.i_mese, t1.mese, t1.dt_from, DATEADD(MONTH, datediff(MONTH, -1, t1.dt_from), -1) as dt_to
+		        from (select a.anno, m.idmese as i_mese, m.mese
+		         , CONVERT(date, cast(a.anno as varchar) + '-' + dbo.formatInt(m.idmese, 2) + '-01 00:00:00', 120) as dt_from
+		        from anni a join mesi m on 1 = 1) t1 where t1.dt_from >= CONVERT(date, '2009-01-01 00:00:00', 120)
+			       and t1.dt_from <= getdate()) tbl
+          order by tbl.anno desc, tbl.i_mese desc;
+  
+        insert into xx_storicostatistiche (codstatistica, dettaglio, dtins)
+         values('RIFORNIMENTI_MONTH', 'rifornimenti del mese', getdate());
+       end]]>
+      </update>
+    </updates>
+  </queries>
+</page>
+

@@ -1,0 +1,116 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-rifornimento" title="Rifornimento" selects="load" updates="update" width="600px" height="200px" hcenter="true">
+      <contents>
+        <row tooltip='auto interessata'>
+          <field>
+            <label text='Auto:' ref="{@pageref='autos'}" />
+          </field>
+          <field>
+            <combo field='idauto' fielddes='auto' select='modelliAuto' onsel_desfield='noteauto' required='true' errField='Auto' width='200px'/>
+          </field>
+          <field>
+            <input field='noteauto' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='eventuale evento associato'>
+          <field>
+            <label text='Evento:' ref="{@pageref='eventi'}" />
+          </field>
+          <field>
+            <combo field='idevento' fielddes='evento' select='eventi' onsel_desfield='desevento' required='false' errField='Evento' width='200px'/>
+          </field>
+          <field>
+            <input field='desevento' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='chilometraggio'>
+          <field>
+            <label text='Km:'/>
+          </field>
+          <field colspan='2'>
+            <input field='km' type='migliaia' required='true' errField='Km' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='totale costo rifornimento'>
+          <field>
+            <label text='Importo rifornimento:'/>
+          </field>
+          <field colspan='2'>
+            <input field='prezzo' type='euro' required='true' errField='Importo rifornimento' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='costo del carburante al litro'>
+          <field>
+            <label text='Costo al litro:'/>
+          </field>
+          <field colspan='2'>
+            <input field='costolitro' type='euro' required='true' errField='Costo al litro' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='quando è stato rabboccato il serbatoio'>
+          <field>
+            <label text='Quando:'/>
+          </field>
+          <field colspan='2'>
+            <input field='data' type='date' enabled='true' formatDate='dataEstesa' required='true' errField='Quando' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='note particolari'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[select r.idrifornimento, r.km, r.data, r.prezzo, r.costolitro, r.note
+  , e.idevento, e.evento, e.note as desevento
+  , a.idauto, a.marca + ' - ' + a.modello as auto, a.note as noteauto
+  , t.tipoalimentazione, t.note as notetipoalimentazione
+  , u.nome, u.note as noteutente
+ from [rifornimentoauto] r
+ left join eventi e on e.idevento = r.idevento
+ left join [auto] a on a.idauto = r.idauto
+ left join tipialimentazione t on t.idtipoalimentazione = a.idtipoalimentazione
+ left join utenti u on u.idutente = a.idutente
+ where r.idrifornimento = {@qrykey='idrf'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL as idauto, NULL as auto, NULL as noteauto
+       , NULL as idevento, NULL as evento, NULL as desevento
+       , NULL as costolitro, NULL as prezzo
+       , NULL as data, NULL as km, NULL as note
+      from (select 1 as col) tbl]]>
+        </select>
+        <select name='modelliAuto' forcombos='idauto, modello, note' des='caricamento auto disponibili'>
+          <![CDATA[select tbl.* 
+ from (select a.idauto, a.marca + ' - ' + a.modello as modello, a.note
+  , (select count(*) from rifornimentoauto b where b.idauto = a.idauto) as conteggio
+  from [auto] a
+  where a.idutente in ({@method='info',string:userVisibility})) tbl
+  order by tbl.conteggio desc]]>
+        </select>
+        <select name='eventi' forcombos='idevento, evento, note'>
+          <![CDATA[select e.idevento, e.evento, e.note
+      from eventi e
+      where e.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update rifornimentoauto set idauto = {@qryNumb='idauto'}, idevento = {@qryNumb='idevento'}
+         , costolitro = {@qryEuro='costolitro'}, prezzo = {@qryEuro='prezzo'}, data = {@qryDate='data'}
+         , km = {@qryMigl='km'}, note = {@qryText='note'}, dtupd = getDate()
+        where idrifornimento = {@qrykey='idrf'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into rifornimentoauto (idauto, idevento, costolitro, prezzo, data, km, note, dtins)       
+      select {@qryNumb='idauto'}, {@qryNumb='idevento'}, {@qryEuro='costolitro'}, {@qryEuro='prezzo'}
+       , {@qryDate='data'}, {@qryMigl='km'}, {@qryText='note'}, getdate()]]>
+        </update>
+      </queries>
+    </form>    <import name="buttons"/>
+  </contents>
+</page>

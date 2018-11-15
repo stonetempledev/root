@@ -1,0 +1,107 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-utente" title="Utente" selects="load" updates="update" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row tooltip='nome accesso utente'>
+          <field>
+            <label text='Nome utente:'/>
+          </field>
+          <field colspan='2'>
+            <input field='nome' type='text' enabled='true' required='true' errField='Nome utente'/>
+          </field>
+        </row>
+        <row tooltip='tipo utente'>
+          <field>
+            <label text='Tipo utente:' ref="{@pageref='tipiUtente'}" />
+          </field>
+          <field>
+            <combo field='idtipoutente' fielddes='tipoutente' select='tipiUtente' required='true'
+                   enabled_if="{@cond='frm-ins'}" errField='Tipo utente' width='200px'/>
+          </field>
+          <field>
+            <input field='notetipoutente' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='descrizione utente'>
+          <field>
+            <label text='Descrizione:'/>
+          </field>
+          <field colspan='2'>
+            <input field='note' type='text' enabled='true'/>
+          </field>
+        </row>
+        <row tooltip='visibilita utente' if="{@cond='frm-upd'} and {@cond='not-admin'} and {@cond='not-anonimo'}">
+          <field>
+            <label text='Visibilita:' ref="{@pagerefargs='utentivs','idusr={@qrykey='idusr'}'}"/>
+          </field>
+          <field colspan='2'>
+            <input field='visibilita' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='password' if="{@cond='not-anonimo'}">
+          <field>
+            <label text='Password:'/>
+          </field>
+          <field colspan='2'>
+            <input field='pwd' type='text' enabled='true'/>
+          </field>
+        </row>
+        <row tooltip='codice connessione'>
+          <field>
+            <label text='Connessione:'/>
+          </field>
+          <field colspan='2'>
+            <combo field='conn' fielddes='conn_des' select='connessioni' required='false' errField='Codice Connessione'>
+              <if if="{@cond='frm-upd'}" message="ci sono degli utenti di livello inferiore associati con un'altra connessione specificata!" select="check-conn-childs"/>
+              <if if="{@cond='frm-upd'}" message="ci sono degli utenti di livello superiore associati con un'altra connessione specificata!" select="check-conn-parents"/>
+            </combo>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='check-conn-childs' des="verifica connessione inserita per gli utenti di visibilita che stanno sotto">
+          <![CDATA[select * from utenti u 
+ join dbo.getUtenteVisibilityids({@qrykey='idusr'}, 0) vids on u.idutente = vids.idutente
+ where u.idutente <> {@qrykey='idusr'} and isnull(u.conn, '') <> {@qryText='conn'}]]>
+        </select>
+        <select name='check-conn-parents' des="verifica connessione inserita per gli utenti di visibilita che stanno sopra">
+          <![CDATA[select * from utenti u 
+ join dbo.getUtentiParentsIds({@qrykey='idusr'}, 0) vids on u.idutente = vids.idutente
+ where u.idutente <> {@qrykey='idusr'} and isnull(u.conn, '') <> {@qryText='conn'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL as nome, NULL as note, NULL as pwd, NULL as idtipoutente
+       , NULL as visibilita, NULL as tipoutente, NULL as notetipoutente, NULL as conn, null as conn_des
+      from (select 1 as col) tbl
+    ]]>
+        </select>        
+        <select name='load' if="{@cond='frm-upd'}" from='utente u' join='connessioni c on conn'>
+          <![CDATA[u.*, c.conn_des]]>
+        </select>
+        <select name='utente'>
+          <![CDATA[SELECT u.nome, u.note, u.pwd, u.resetpwd, u.idtipoutente
+      , dbo.getUtenteVisibility(u.idutente, 1) as visibilita 
+      , t.tipoutente, t.note as notetipoutente, u.conn
+ from utenti u
+ left join tipiutente t on u.idtipoutente = t.idtipoutente
+ where u.idutente = {@qrykey='idusr'}]]>
+        </select>
+        <select name='tipiUtente' forcombos='idtipoutente, tipoutente, note' des='caricamento tipi utente disponibili'>
+          <![CDATA[select t.idtipoutente, t.tipoutente, t.note
+  from tipiutente t]]>
+        </select>
+        <select name='connessioni' forcombos='conn, conn_des' des='caricamento codici connessioni disponibili' script='load_conns'/>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update utenti set nome = {@qryText='nome'}, [note] = {@qryText='note'}
+      , pwd = {@qryText='pwd'}, conn = {@qryText='conn'}, dtupd = getdate()
+        where idutente = {@qrykey='idusr'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into [utenti] (idtipoutente, nome, note, pwd, resetpwd, conn, dtins)       
+      values({@qryNumb='idtipoutente'}, {@qryText='nome'}, {@qryText='note'}, {@qryText='pwd'}, 0, {@qryText='conn'}, getdate())]]>
+        </update>
+      </queries>
+    </form>
+    <import name="buttons"/>
+  </contents>
+</page>

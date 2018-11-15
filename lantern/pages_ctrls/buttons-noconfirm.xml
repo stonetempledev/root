@@ -1,0 +1,12 @@
+<form-attach schema="xmlschema.ctrls">
+  <contents>
+    <row>
+      <field class='footer' maxspan='true' right='true'>
+        <button name='update' type='submit' if="{@cond='frm-upd'}" value='Aggiorna' noconfirm='true'/>
+        <button name='update' type='submit' if="{@cond='frm-ins'}" value='Aggiungi' noconfirm='true'/>
+        <button name='exit' type='exit' value='Annulla'/>
+      </field>
+    </row>
+  </contents>
+</form-attach>
+

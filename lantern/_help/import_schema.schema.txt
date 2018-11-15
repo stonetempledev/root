@@ -1,0 +1,16 @@
+definizione tracciato e queries di importazione
+
+<root>: elemento di root principale
+  @conn: connessione dati dalla quale importare
+
+<vars>: variabili generiche
+ <var>: definizione variabile di importazione
+  @name: nome della variabile  
+  @des (facoltativo): descrizione variabile
+
+<fields>: definizione campi tracciato 
+ <field>
+   @name: nome del campo da importare (utilizzato poi per la parsificazione delle queries)
+   @type: tipo di campo (config.xml/root/gridsettings/@type)
+
+<queries>: vedi ctrl.<queries> 

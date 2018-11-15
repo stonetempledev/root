@@ -1,0 +1,21 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <grid name="grid-interventi" title="Tipi interventi su auto" selects='load' pagesize='15'>
+      <cols key="idoperazioneauto(idop)">
+        <col title='Tipo Intervento' field='operazioneauto' des="descrizione tipo intervento" width="200"/>
+        <col title='Note' field='note' des='note particolari' width='200'/>
+        <action des='modifica tipo intervento...' icon='mif-pencil' pageref="{@pagerefargs='intervento','type=upd'}"/>
+        <action des='elimina tipo intervento...' icon='mif-cross' primarykey='idoperazioneauto' demand="Sei sicuro di voler cancellare il tipo di intervento?" />
+      </cols>
+      <buttons>
+        <button text='Aggiungi tipo intervento' ref="{@pagerefargs='intervento','type=ins'}" shortkeys="ALT + A"/>
+      </buttons>
+      <queries>
+        <select name='load'>
+          <![CDATA[SELECT o.idoperazioneauto, o.operazioneauto, o.note
+ from operazioniauto o]]>
+        </select>
+      </queries>
+    </grid>
+  </contents>
+</page>

@@ -1,0 +1,2915 @@
+<root schema="xmlschema.db" name="dell" title="export schema" date="2016/03/21 19:02:20" group="web" des="connessione portatile contenente i tuoi dati personali" conn="Data Source=DELL-PC;Initial Catalog=lantern;Integrated Security=True" type="sqlserver" ver="2015.05.20" notes="export schema">
+  <tables>
+    <table nameupper="__INFOS" name="__Infos">
+      <cols>
+        <col name="IDInfo" nameupper="IDINFO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Name" nameupper="NAME" type="nvarchar" maxlength="55" />
+        <col name="Index" nameupper="INDEX" type="int" numprec="10" numscale="0" />
+        <col name="Value" nameupper="VALUE" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Notes" nameupper="NOTES" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+      </cols>
+      <indexes>
+        <index name="idxInfos" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Name" nameupper="NAME" ascending="true" />
+            <field name="Index" nameupper="INDEX" ascending="true" />
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkInfos" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDInfo" nameupper="IDINFO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="ACCOUNTS" name="Accounts">
+      <cols>
+        <col name="IDAccount" nameupper="IDACCOUNT" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDSitoWeb" nameupper="IDSITOWEB" type="int" numprec="10" numscale="0" />
+        <col name="User" nameupper="USER" type="nvarchar" maxlength="55" />
+        <col name="Password" nameupper="PASSWORD" type="nvarchar" maxlength="55" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxAccounts" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDSitoWeb" nameupper="IDSITOWEB" ascending="true" />
+            <field name="User" nameupper="USER" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxAccounts_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkAccounts" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDAccount" nameupper="IDACCOUNT" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="AGENDA" name="Agenda">
+      <cols>
+        <col name="IDAgenda" nameupper="IDAGENDA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="IDTipoNoteAgenda" nameupper="IDTIPONOTEAGENDA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDQuando" nameupper="IDQUANDO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxAgenda" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Titolo" nameupper="TITOLO" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+            <field name="Data" nameupper="DATA" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxAgenda_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Agenda__F03B5C7503317E3D" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDAgenda" nameupper="IDAGENDA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="ANAGRAFICHE" name="Anagrafiche">
+      <cols>
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Anagrafica" nameupper="ANAGRAFICA" type="nvarchar" maxlength="255" />
+        <col name="Citta" nameupper="CITTA" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Telefono" nameupper="TELEFONO" type="nvarchar" nullable="true" maxlength="20" />
+        <col name="Indirizzo" nameupper="INDIRIZZO" type="nvarchar" nullable="true" maxlength="100" />
+        <col name="IDProvincia" nameupper="IDPROVINCIA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="CAP" nameupper="CAP" type="nvarchar" nullable="true" maxlength="5" />
+        <col name="Email" nameupper="EMAIL" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDGradimento" nameupper="IDGRADIMENTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Distanza" nameupper="DISTANZA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="CapitaleSociale" nameupper="CAPITALESOCIALE" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="NroDipendenti" nameupper="NRODIPENDENTI" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxAnagrafiche" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Anagrafica" nameupper="ANAGRAFICA" ascending="true" />
+            <field name="Citta" nameupper="CITTA" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxAnagrafiche_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkAnagrafiche" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDAnagrafica" nameupper="IDANAGRAFICA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="ANAGRAFICHECONTATTI" name="AnagraficheContatti">
+      <cols>
+        <col name="IDAnagraficaContatto" nameupper="IDANAGRAFICACONTATTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDContatto" nameupper="IDCONTATTO" type="int" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxAnagraficheContatti" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDAnagrafica" nameupper="IDANAGRAFICA" ascending="true" />
+            <field name="IDContatto" nameupper="IDCONTATTO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxAnagraficheContatti_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkAnagraficheContatti" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDAnagraficaContatto" nameupper="IDANAGRAFICACONTATTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="ANAGRAFICHEEVENTI" name="AnagraficheEventi">
+      <cols>
+        <col name="IDAnagraficaEvento" nameupper="IDANAGRAFICAEVENTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDEvento" nameupper="IDEVENTO" type="int" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxAnagraficheEventi" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDAnagrafica" nameupper="IDANAGRAFICA" ascending="true" />
+            <field name="IDEvento" nameupper="IDEVENTO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxAnagraficheEventi_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkAnagraficheEventi" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDAnagraficaEvento" nameupper="IDANAGRAFICAEVENTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="ANAGRAFICHEWEBLINKS" name="AnagraficheWebLinks">
+      <cols>
+        <col name="IDAnagraficaWebLink" nameupper="IDANAGRAFICAWEBLINK" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDWebLink" nameupper="IDWEBLINK" type="int" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="Principale" nameupper="PRINCIPALE" type="bit" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxAnagraficheWebLinks" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDAnagrafica" nameupper="IDANAGRAFICA" ascending="true" />
+            <field name="IDWebLink" nameupper="IDWEBLINK" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxAnagraficheWebLinks_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkAnagraficheWebLinks" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDAnagraficaWebLink" nameupper="IDANAGRAFICAWEBLINK" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="ANNI" name="Anni">
+      <cols>
+        <col name="IDAnno" nameupper="IDANNO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Anno" nameupper="ANNO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxAnni" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Anno" nameupper="ANNO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxAnni_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Anni__06D894830AD2A005" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDAnno" nameupper="IDANNO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="AUTO" name="Auto">
+      <cols>
+        <col name="IDAuto" nameupper="IDAUTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Marca" nameupper="MARCA" type="nvarchar" maxlength="50" />
+        <col name="Modello" nameupper="MODELLO" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="IDTipoAlimentazione" nameupper="IDTIPOALIMENTAZIONE" type="int" numprec="10" numscale="0" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxAuto" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Marca" nameupper="MARCA" ascending="true" />
+            <field name="Modello" nameupper="MODELLO" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxAuto_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkAuto" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDAuto" nameupper="IDAUTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="BIKE" name="Bike">
+      <cols>
+        <col name="IDGiroBike" nameupper="IDGIROBIKE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Km" nameupper="KM" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Tempo" nameupper="TEMPO" type="datetime" nullable="true" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxBike" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Data" nameupper="DATA" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxBike_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Bike__5080D0441273C1CD" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDGiroBike" nameupper="IDGIROBIKE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="BOLLETTE" name="Bollette">
+      <cols>
+        <col name="IDBolletta" nameupper="IDBOLLETTA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDTipoBolletta" nameupper="IDTIPOBOLLETTA" type="int" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" />
+        <col name="DataRiferimento" nameupper="DATARIFERIMENTO" type="datetime" />
+        <col name="IDDurata" nameupper="IDDURATA" type="int" numprec="10" numscale="0" />
+        <col name="Prezzo" nameupper="PREZZO" type="money" numprec="19" numscale="4" />
+        <col name="Rimborso" nameupper="RIMBORSO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="IDUnitaMisura" nameupper="IDUNITAMISURA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Quantita" nameupper="QUANTITA" type="float" nullable="true" numprec="53" />
+        <col name="DataScadenza" nameupper="DATASCADENZA" type="datetime" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxBollette" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDTipoBolletta" nameupper="IDTIPOBOLLETTA" ascending="true" />
+            <field name="DataScadenza" nameupper="DATASCADENZA" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxBollette_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkBollette" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDBolletta" nameupper="IDBOLLETTA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="CCORRENTE" name="CCorrente">
+      <cols>
+        <col name="IDCCorrente" nameupper="IDCCORRENTE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="NroCCorrente" nameupper="NROCCORRENTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxCCorrente" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="NroCCorrente" nameupper="NROCCORRENTE" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxCCorrente_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__CCorrent__668E4B041A14E395" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDCCorrente" nameupper="IDCCORRENTE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="COLLOQUI" name="Colloqui">
+      <cols>
+        <col name="IDColloquio" nameupper="IDCOLLOQUIO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxColloqui" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Data" nameupper="DATA" ascending="true" />
+            <field name="IDAnagrafica" nameupper="IDANAGRAFICA" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxColloqui_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__colloqui__F5FEC3951DE57479" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDColloquio" nameupper="IDCOLLOQUIO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="CONTATTI" name="Contatti">
+      <cols>
+        <col name="IDContatto" nameupper="IDCONTATTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Nome" nameupper="NOME" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxContatti" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Nome" nameupper="NOME" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxContatti_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkContatti" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDContatto" nameupper="IDCONTATTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="CONTATTIDETTAGLI" name="ContattiDettagli">
+      <cols>
+        <col name="IDContattoDettagli" nameupper="IDCONTATTODETTAGLI" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDContatto" nameupper="IDCONTATTO" type="int" numprec="10" numscale="0" />
+        <col name="IDTipoContatto" nameupper="IDTIPOCONTATTO" type="int" numprec="10" numscale="0" />
+        <col name="Contatto" nameupper="CONTATTO" type="nvarchar" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxContattiDettagli" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDContatto" nameupper="IDCONTATTO" ascending="true" />
+            <field name="Contatto" nameupper="CONTATTO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxContattiDettagli_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkContattiDettagli" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDContattoDettagli" nameupper="IDCONTATTODETTAGLI" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="CVS" name="CVs">
+      <cols>
+        <col name="IDCV" nameupper="IDCV" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxCVS" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Titolo" nameupper="TITOLO" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxCVs_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__CVs__B87D808B21B6055D" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDCV" nameupper="IDCV" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="DURATE" name="Durate">
+      <cols>
+        <col name="IDDurata" nameupper="IDDURATA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Durata" nameupper="DURATA" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxDurate" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Durata" nameupper="DURATA" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxDurate_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkDurate" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDDurata" nameupper="IDDURATA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="EVENTI" name="Eventi">
+      <cols>
+        <col name="IDEvento" nameupper="IDEVENTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDTipoEvento" nameupper="IDTIPOEVENTO" type="int" numprec="10" numscale="0" />
+        <col name="Evento" nameupper="EVENTO" type="nvarchar" maxlength="50" />
+        <col name="DataDa" nameupper="DATADA" type="datetime" />
+        <col name="DataA" nameupper="DATAA" type="datetime" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="HtmlNote" nameupper="HTMLNOTE" type="varchar" nullable="true" maxlength="-1" />
+      </cols>
+      <indexes>
+        <index name="idxEventi" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDTipoEvento" nameupper="IDTIPOEVENTO" ascending="true" />
+            <field name="DataDa" nameupper="DATADA" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxEventi_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkEventi" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDEvento" nameupper="IDEVENTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="FILES" name="Files">
+      <cols>
+        <col name="IDFile" nameupper="IDFILE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDFolder" nameupper="IDFOLDER" type="int" numprec="10" numscale="0" />
+        <col name="Ext" nameupper="EXT" type="nvarchar" nullable="true" maxlength="10" />
+        <col name="FileName" nameupper="FILENAME" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxFiled" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDFolder" nameupper="IDFOLDER" ascending="true" />
+            <field name="FileName" nameupper="FILENAME" ascending="true" />
+            <field name="Ext" nameupper="EXT" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxFiles_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkFiles" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDFile" nameupper="IDFILE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="FOLDERS" name="Folders">
+      <cols>
+        <col name="IDFolder" nameupper="IDFOLDER" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDFolderPadre" nameupper="IDFOLDERPADRE" type="int" numprec="10" numscale="0" />
+        <col name="FolderName" nameupper="FOLDERNAME" type="nvarchar" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxFolders" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDFolderPadre" nameupper="IDFOLDERPADRE" ascending="true" />
+            <field name="FolderName" nameupper="FOLDERNAME" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxFolders_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkFolders" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDFolder" nameupper="IDFOLDER" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="INDICEGRADIMENTO" name="IndiceGradimento">
+      <cols>
+        <col name="IDGradimento" nameupper="IDGRADIMENTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Stelle" nameupper="STELLE" type="int" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxIndiceGradimento" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Stelle" nameupper="STELLE" ascending="true" />
+            <field name="Note" nameupper="NOTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxIndiceGradimento_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkIndiceGradimento" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDGradimento" nameupper="IDGRADIMENTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="INGREDIENTIMENU" name="IngredientiMenu">
+      <cols>
+        <col name="IDIngredientiMenu" nameupper="IDINGREDIENTIMENU" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDMenu" nameupper="IDMENU" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Cosa" nameupper="COSA" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Quanto" nameupper="QUANTO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxIngredientiMenu" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDMenu" nameupper="IDMENU" ascending="true" />
+            <field name="Cosa" nameupper="COSA" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxIngredientiMenu_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Ingredie__6F6790E238996AB5" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDIngredientiMenu" nameupper="IDINGREDIENTIMENU" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="MANUTENZIONEAUTO" name="ManutenzioneAuto">
+      <cols>
+        <col name="IDManutenzioneAuto" nameupper="IDMANUTENZIONEAUTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDAuto" nameupper="IDAUTO" type="int" numprec="10" numscale="0" />
+        <col name="IDOperazioneAuto" nameupper="IDOPERAZIONEAUTO" type="int" numprec="10" numscale="0" />
+        <col name="Km" nameupper="KM" type="int" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="Prezzo" nameupper="PREZZO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="Rimborso" nameupper="RIMBORSO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxManutenzioneAuto" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDAuto" nameupper="IDAUTO" ascending="true" />
+            <field name="IDOperazioneAuto" nameupper="IDOPERAZIONEAUTO" ascending="true" />
+            <field name="Km" nameupper="KM" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxManutenzioneAuto_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkManutenzioneAuto" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDManutenzioneAuto" nameupper="IDMANUTENZIONEAUTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="MENUS" name="Menus">
+      <cols>
+        <col name="IDMenu" nameupper="IDMENU" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Preparazione" nameupper="PREPARAZIONE" type="nvarchar" nullable="true" maxlength="-1" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxMenus" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Titolo" nameupper="TITOLO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxMenus_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Menus__089D3C22403A8C7D" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDMenu" nameupper="IDMENU" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="MENUSIMAGES" name="MenusImages">
+      <cols>
+        <col name="IDMenuImage" nameupper="IDMENUIMAGE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDMenu" nameupper="IDMENU" type="int" numprec="10" numscale="0" />
+        <col name="IDFile" nameupper="IDFILE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxMenuImages" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDMenu" nameupper="IDMENU" ascending="true" />
+            <field name="IDFile" nameupper="IDFILE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxMenusImages_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__MIs__83A267674CA06362" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDMenuImage" nameupper="IDMENUIMAGE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="MESI" name="Mesi">
+      <cols>
+        <col name="IDMese" nameupper="IDMESE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Mese" nameupper="MESE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxMesi" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Mese" nameupper="MESE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxMesi_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Mesi__089D17AE44FF419A" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDMese" nameupper="IDMESE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="OPERAZIONIAUTO" name="OperazioniAuto">
+      <cols>
+        <col name="IDOperazioneAuto" nameupper="IDOPERAZIONEAUTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="OperazioneAuto" nameupper="OPERAZIONEAUTO" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxOperazioniAuto" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="OperazioneAuto" nameupper="OPERAZIONEAUTO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxOperazioniAuto_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkOperazioniAuto" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDOperazioneAuto" nameupper="IDOPERAZIONEAUTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="PCS" name="PCs">
+      <cols>
+        <col name="pcID" nameupper="PCID" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="pcName" nameupper="PCNAME" type="nvarchar" maxlength="100" />
+        <col name="pcTitle" nameupper="PCTITLE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxPCS" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="pcTitle" nameupper="PCTITLE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxPCs_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__PCs__83A267674CA06362" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="pcID" nameupper="PCID" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="PRESENTAZIONI" name="Presentazioni">
+      <cols>
+        <col name="IDPresentazione" nameupper="IDPRESENTAZIONE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxPresentazioni" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Titolo" nameupper="TITOLO" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxPresentazioni_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Presenta__13F127DB5070F446" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDPresentazione" nameupper="IDPRESENTAZIONE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="PROVINCE" name="Province">
+      <cols>
+        <col name="IDProvincia" nameupper="IDPROVINCIA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Citta" nameupper="CITTA" type="nvarchar" maxlength="55" />
+        <col name="Provincia" nameupper="PROVINCIA" type="nvarchar" maxlength="4" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxProvince" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Citta" nameupper="CITTA" ascending="true" />
+            <field name="Provincia" nameupper="PROVINCIA" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxProvince_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkProvince" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDProvincia" nameupper="IDPROVINCIA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="QUANDO" name="Quando">
+      <cols>
+        <col name="IDQuando" nameupper="IDQUANDO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Quando" nameupper="QUANDO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxQuando" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Quando" nameupper="QUANDO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxQuando_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Quando__C2CF02875812160E" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDQuando" nameupper="IDQUANDO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="RIFORNIMENTOAUTO" name="RifornimentoAuto">
+      <cols>
+        <col name="IDRifornimento" nameupper="IDRIFORNIMENTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDAuto" nameupper="IDAUTO" type="int" numprec="10" numscale="0" />
+        <col name="IDEvento" nameupper="IDEVENTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Km" nameupper="KM" type="int" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" />
+        <col name="Prezzo" nameupper="PREZZO" type="money" numprec="19" numscale="4" />
+        <col name="CostoLitro" nameupper="COSTOLITRO" type="money" numprec="19" numscale="4" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxRifornimentoAuto" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDAuto" nameupper="IDAUTO" ascending="true" />
+            <field name="Km" nameupper="KM" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxRifornimentoAuto_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkRifornimentoAuto" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDRifornimento" nameupper="IDRIFORNIMENTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="RUBRICA" name="Rubrica">
+      <cols>
+        <col name="IDRubrica" nameupper="IDRUBRICA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Nome" nameupper="NOME" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Email" nameupper="EMAIL" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="EMail2" nameupper="EMAIL2" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Telefono" nameupper="TELEFONO" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Telefono2" nameupper="TELEFONO2" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxRubrica" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Nome" nameupper="NOME" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxRubrica_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Rubrica__23F4910E5FB337D6" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDRubrica" nameupper="IDRUBRICA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="SALDOCCORRENTE" name="SaldoCCorrente">
+      <cols>
+        <col name="IDSaldoCCorrente" nameupper="IDSALDOCCORRENTE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDCCorrente" nameupper="IDCCORRENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Causale" nameupper="CAUSALE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Movimento" nameupper="MOVIMENTO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="Saldo" nameupper="SALDO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxSaldoCCorrente" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDCCorrente" nameupper="IDCCORRENTE" ascending="true" />
+            <field name="Data" nameupper="DATA" ascending="true" />
+            <field name="Causale" nameupper="CAUSALE" ascending="true" />
+            <field name="Note" nameupper="NOTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxSaldoCCorrente_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__SaldoCCo__BBA812466383C8BA" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDSaldoCCorrente" nameupper="IDSALDOCCORRENTE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="SITIWEB" name="SitiWeb">
+      <cols>
+        <col name="IDSitoWeb" nameupper="IDSITOWEB" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDGradimento" nameupper="IDGRADIMENTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxSitiWeb" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Titolo" nameupper="TITOLO" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxSitiWeb_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkSitiWeb" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDSitoWeb" nameupper="IDSITOWEB" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="SITIWEBLINKS" name="SitiWebLinks">
+      <cols>
+        <col name="IDSitoWebLink" nameupper="IDSITOWEBLINK" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDSitoWeb" nameupper="IDSITOWEB" type="int" numprec="10" numscale="0" />
+        <col name="IDWebLink" nameupper="IDWEBLINK" type="int" numprec="10" numscale="0" />
+        <col name="Principale" nameupper="PRINCIPALE" type="bit" nullable="true" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxSitiWebLinks" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDSitoWeb" nameupper="IDSITOWEB" ascending="true" />
+            <field name="IDWebLink" nameupper="IDWEBLINK" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxSitiWebLinks_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkSitiWebLinks" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDSitoWebLink" nameupper="IDSITOWEBLINK" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="SPEDIZIONI" name="Spedizioni">
+      <cols>
+        <col name="IDSpedizione" nameupper="IDSPEDIZIONE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDTipoSpedizione" nameupper="IDTIPOSPEDIZIONE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxSpedizioni" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDAnagrafica" nameupper="IDANAGRAFICA" ascending="true" />
+            <field name="Data" nameupper="DATA" ascending="true" />
+            <field name="Titolo" nameupper="TITOLO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxSpedizioni_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Spedizio__089BD6386B24EA82" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDSpedizione" nameupper="IDSPEDIZIONE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="SPESE" name="Spese">
+      <cols>
+        <col name="IDSpesa" nameupper="IDSPESA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDEvento" nameupper="IDEVENTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDTipoSpesa" nameupper="IDTIPOSPESA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Pezzo" nameupper="PEZZO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Quantita" nameupper="QUANTITA" type="real" nullable="true" numprec="24" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Prezzo" nameupper="PREZZO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxSpese" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDTipoSpesa" nameupper="IDTIPOSPESA" ascending="true" />
+            <field name="Pezzo" nameupper="PEZZO" ascending="true" />
+            <field name="Data" nameupper="DATA" ascending="true" />
+            <field name="Prezzo" nameupper="PREZZO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxSpese_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkSpese" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDSpesa" nameupper="IDSPESA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="STATIONS" name="Stations">
+      <cols>
+        <col name="stationID" nameupper="STATIONID" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="stationName" nameupper="STATIONNAME" type="nvarchar" maxlength="255" />
+        <col name="Des" nameupper="DES" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxStations" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="stationName" nameupper="STATIONNAME" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxStations_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Stations__F0A7F3E072C60C4A" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="stationID" nameupper="STATIONID" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="STATIONSPATHS" name="StationsPaths">
+      <cols>
+        <col name="stationPathID" nameupper="STATIONPATHID" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="pcID" nameupper="PCID" type="int" numprec="10" numscale="0" />
+        <col name="stationID" nameupper="STATIONID" type="int" numprec="10" numscale="0" />
+        <col name="stationPath" nameupper="STATIONPATH" type="nvarchar" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxStationsPaths" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="pcID" nameupper="PCID" ascending="true" />
+            <field name="stationID" nameupper="STATIONID" ascending="true" />
+            <field name="stationPath" nameupper="STATIONPATH" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxStationsPaths_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__Stations__D11B579E76969D2E" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="stationPathID" nameupper="STATIONPATHID" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="TAGS" name="Tags">
+      <cols>
+        <col name="IDTag" nameupper="IDTAG" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Tag" nameupper="TAG" type="nvarchar" maxlength="55" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTags" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Tag" nameupper="TAG" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxTags_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkTags" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTag" nameupper="IDTAG" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="TIPIALIMENTAZIONE" name="TipiAlimentazione">
+      <cols>
+        <col name="IDTipoAlimentazione" nameupper="IDTIPOALIMENTAZIONE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="TipoAlimentazione" nameupper="TIPOALIMENTAZIONE" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTipiAlimentazione" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="TipoAlimentazione" nameupper="TIPOALIMENTAZIONE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxTipiAlimentazione_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkTipiAlimentazione" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTipoAlimentazione" nameupper="IDTIPOALIMENTAZIONE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="TIPIBOLLETTA" name="TipiBolletta">
+      <cols>
+        <col name="IDTipoBolletta" nameupper="IDTIPOBOLLETTA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="TipoBolletta" nameupper="TIPOBOLLETTA" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTipiBolletta" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="TipoBolletta" nameupper="TIPOBOLLETTA" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxTipiBolletta_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkTipiBolletta" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTipoBolletta" nameupper="IDTIPOBOLLETTA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="TIPICONTATTO" name="TipiContatto">
+      <cols>
+        <col name="IDTipoContatto" nameupper="IDTIPOCONTATTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="TipoContatto" nameupper="TIPOCONTATTO" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTipiContatto" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="TipoContatto" nameupper="TIPOCONTATTO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxTipiContatto_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkTipiContatto" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTipoContatto" nameupper="IDTIPOCONTATTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="TIPIEVENTI" name="TipiEventi">
+      <cols>
+        <col name="IDTipoEvento" nameupper="IDTIPOEVENTO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="TipoEvento" nameupper="TIPOEVENTO" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="Principale" nameupper="PRINCIPALE" type="bit" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTipiEventi" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="TipoEvento" nameupper="TIPOEVENTO" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxTipiEventi_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkTipiEventi" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTipoEvento" nameupper="IDTIPOEVENTO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="TIPINOTEAGENDA" name="TipiNoteAgenda">
+      <cols>
+        <col name="IDTipoNoteAgenda" nameupper="IDTIPONOTEAGENDA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="TipoNoteAgenda" nameupper="TIPONOTEAGENDA" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTipiNoteAgenda" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="TipoNoteAgenda" nameupper="TIPONOTEAGENDA" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxTipiNoteAgenda_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__TipiNote__B70D239509A971A2" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTipoNoteAgenda" nameupper="IDTIPONOTEAGENDA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="TIPISPEDIZIONI" name="TipiSpedizioni">
+      <cols>
+        <col name="IDTipoSpedizione" nameupper="IDTIPOSPEDIZIONE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="TipoSpedizione" nameupper="TIPOSPEDIZIONE" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTipiSpedizioni" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="TipoSpedizione" nameupper="TIPOSPEDIZIONE" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxTipiSpedizioni_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="PK__TipiSped__836EE64F0D7A0286" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTipoSpedizione" nameupper="IDTIPOSPEDIZIONE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="TIPISPESA" name="TipiSpesa">
+      <cols>
+        <col name="IDTipoSpesa" nameupper="IDTIPOSPESA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="CodSpesa" nameupper="CODSPESA" type="nvarchar" maxlength="20" />
+        <col name="TipoSpesa" nameupper="TIPOSPESA" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTipiSpesa" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="CodSpesa" nameupper="CODSPESA" ascending="true" />
+            <field name="TipoSpesa" nameupper="TIPOSPESA" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxTipiSpesa_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkTipiSpesa" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTipoSpesa" nameupper="IDTIPOSPESA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="TIPIUTENTE" name="TipiUtente">
+      <cols>
+        <col name="IDTipoUtente" nameupper="IDTIPOUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="TipoUtente" nameupper="TIPOUTENTE" type="nvarchar" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTipiUtente_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxTipoUtente" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="TipoUtente" nameupper="TIPOUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkTipoUtente" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTipoUtente" nameupper="IDTIPOUTENTE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="UNITAMISURA" name="UnitaMisura">
+      <cols>
+        <col name="IDUnitaMisura" nameupper="IDUNITAMISURA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="UnitaMisura" nameupper="UNITAMISURA" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxUnitaMisura" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="UnitaMisura" nameupper="UNITAMISURA" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxUnitaMisura_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkUnitaMisura" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDUnitaMisura" nameupper="IDUNITAMISURA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="UTENTI" name="Utenti">
+      <cols>
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDTipoUtente" nameupper="IDTIPOUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="Nome" nameupper="NOME" type="nvarchar" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Pwd" nameupper="PWD" type="nvarchar" nullable="true" maxlength="32" />
+        <col name="ResetPwd" nameupper="RESETPWD" type="bit" />
+        <col name="Conn" nameupper="CONN" type="nvarchar" nullable="true" maxlength="32" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxUtenti" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Nome" nameupper="NOME" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxUtenti_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkUtenti" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="UTENTIVISIBILITY" name="UtentiVisibility">
+      <cols>
+        <col name="IDUtenteVisibility" nameupper="IDUTENTEVISIBILITY" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDUtenteView" nameupper="IDUTENTEVIEW" type="int" numprec="10" numscale="0" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxUtentiVisibility" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+            <field name="IDUtenteView" nameupper="IDUTENTEVIEW" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxUtentiVisibility_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkUtentiVisibility" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDUtenteVisibility" nameupper="IDUTENTEVISIBILITY" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="WEBLINKS" name="WebLinks">
+      <cols>
+        <col name="IDWebLink" nameupper="IDWEBLINK" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="WebLink" nameupper="WEBLINK" type="nvarchar" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxWebLinks" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="WebLink" nameupper="WEBLINK" ascending="true" />
+          </fields>
+        </index>
+        <index name="idxWebLinks_onins" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="DtIns" nameupper="DTINS" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkWebLinks" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDWebLink" nameupper="IDWEBLINK" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_AGENDA" name="xx_Agenda">
+      <cols>
+        <col name="IDAgenda" nameupper="IDAGENDA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Data" nameupper="DATA" type="datetime" />
+        <col name="IDTipoNoteAgenda" nameupper="IDTIPONOTEAGENDA" type="int" numprec="10" numscale="0" />
+        <col name="IDQuando" nameupper="IDQUANDO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxAgenda" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Data" nameupper="DATA" ascending="true" />
+            <field name="IDQuando" nameupper="IDQUANDO" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkAgenda" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDAgenda" nameupper="IDAGENDA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_ANNI" name="xx_Anni">
+      <cols>
+        <col name="IDAnno" nameupper="IDANNO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Anno" nameupper="ANNO" type="nvarchar" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxAnni" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Anno" nameupper="ANNO" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkAnni" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDAnno" nameupper="IDANNO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_BIKE" name="xx_Bike">
+      <cols>
+        <col name="IDGiroBike" nameupper="IDGIROBIKE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Km" nameupper="KM" type="int" numprec="10" numscale="0" />
+        <col name="Tempo" nameupper="TEMPO" type="datetime" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="pkBike" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDGiroBike" nameupper="IDGIROBIKE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_CCORRENTE" name="xx_CCorrente">
+      <cols>
+        <col name="IDCCorrente" nameupper="IDCCORRENTE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="NroCCorrente" nameupper="NROCCORRENTE" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxCCorrente" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="NroCCorrente" nameupper="NROCCORRENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkCCorrente" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDCCorrente" nameupper="IDCCORRENTE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_COLLOQUI" name="xx_Colloqui">
+      <cols>
+        <col name="IDColloquio" nameupper="IDCOLLOQUIO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="pkColloqui" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDColloquio" nameupper="IDCOLLOQUIO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_CVS" name="xx_CVs">
+      <cols>
+        <col name="IDCV" nameupper="IDCV" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" maxlength="55" />
+        <col name="Data" nameupper="DATA" type="datetime" />
+        <col name="IDFile" nameupper="IDFILE" type="int" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="pkCVs" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDCV" nameupper="IDCV" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_INGREDIENTIMENU" name="xx_IngredientiMenu">
+      <cols>
+        <col name="IDIngredientiMenu" nameupper="IDINGREDIENTIMENU" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDMenu" nameupper="IDMENU" type="int" numprec="10" numscale="0" />
+        <col name="Cosa" nameupper="COSA" type="nvarchar" maxlength="50" />
+        <col name="Quanto" nameupper="QUANTO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxIngredientiMenu" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDMenu" nameupper="IDMENU" ascending="true" />
+            <field name="Cosa" nameupper="COSA" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkIngredientiMenu" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDIngredientiMenu" nameupper="IDINGREDIENTIMENU" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_MENUS" name="xx_Menus">
+      <cols>
+        <col name="IDMenu" nameupper="IDMENU" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" maxlength="50" />
+        <col name="Preparazione" nameupper="PREPARAZIONE" type="nvarchar" nullable="true" maxlength="-1" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxMenus" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Titolo" nameupper="TITOLO" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkMenus" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDMenu" nameupper="IDMENU" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_MESI" name="xx_Mesi">
+      <cols>
+        <col name="IDMese" nameupper="IDMESE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Mese" nameupper="MESE" type="nvarchar" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxMesi" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Mese" nameupper="MESE" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkMesi" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDMese" nameupper="IDMESE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_PCS" name="xx_PCs">
+      <cols>
+        <col name="pcID" nameupper="PCID" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="pcName" nameupper="PCNAME" type="nvarchar" maxlength="100" />
+        <col name="pcTitle" nameupper="PCTITLE" type="nvarchar" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxPCs" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="pcName" nameupper="PCNAME" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkPCs" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="pcID" nameupper="PCID" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_PRESENTAZIONI" name="xx_Presentazioni">
+      <cols>
+        <col name="IDPresentazione" nameupper="IDPRESENTAZIONE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" maxlength="55" />
+        <col name="Data" nameupper="DATA" type="datetime" />
+        <col name="IDFile" nameupper="IDFILE" type="int" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxPresentazioni" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Titolo" nameupper="TITOLO" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkPresentazioni" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDPresentazione" nameupper="IDPRESENTAZIONE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_QUANDO" name="xx_Quando">
+      <cols>
+        <col name="IDQuando" nameupper="IDQUANDO" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Quando" nameupper="QUANDO" type="nvarchar" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxQuando" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Quando" nameupper="QUANDO" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkQuando" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDQuando" nameupper="IDQUANDO" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_RUBRICA" name="xx_Rubrica">
+      <cols>
+        <col name="IDRubrica" nameupper="IDRUBRICA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="Nome" nameupper="NOME" type="nvarchar" maxlength="50" />
+        <col name="Email" nameupper="EMAIL" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="EMail2" nameupper="EMAIL2" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Telefono" nameupper="TELEFONO" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Telefono2" nameupper="TELEFONO2" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxRubrica" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="Nome" nameupper="NOME" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkRubrica" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDRubrica" nameupper="IDRUBRICA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_SALDOCCORRENTE" name="xx_SaldoCCorrente">
+      <cols>
+        <col name="IDSaldoCCorrente" nameupper="IDSALDOCCORRENTE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDCCorrente" nameupper="IDCCORRENTE" type="int" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" />
+        <col name="Causale" nameupper="CAUSALE" type="nvarchar" maxlength="255" />
+        <col name="Movimento" nameupper="MOVIMENTO" type="money" numprec="19" numscale="4" />
+        <col name="Saldo" nameupper="SALDO" type="money" numprec="19" numscale="4" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxSaldoCCorrente" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDCCorrente" nameupper="IDCCORRENTE" ascending="true" />
+            <field name="Data" nameupper="DATA" ascending="true" />
+            <field name="Note" nameupper="NOTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkSaldoCCorrente" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDSaldoCCorrente" nameupper="IDSALDOCCORRENTE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_SPEDIZIONI" name="xx_Spedizioni">
+      <cols>
+        <col name="IDSpedizione" nameupper="IDSPEDIZIONE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" maxlength="55" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDTipoSpedizione" nameupper="IDTIPOSPEDIZIONE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxSpedizioni" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="IDAnagrafica" nameupper="IDANAGRAFICA" ascending="true" />
+            <field name="Data" nameupper="DATA" ascending="true" />
+            <field name="IDUtente" nameupper="IDUTENTE" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkSpedizioni" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDSpedizione" nameupper="IDSPEDIZIONE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_STATIONS" name="xx_Stations">
+      <cols>
+        <col name="stationID" nameupper="STATIONID" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="stationName" nameupper="STATIONNAME" type="nvarchar" maxlength="255" />
+        <col name="Des" nameupper="DES" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="pkStations" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="stationID" nameupper="STATIONID" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_STATIONSPATHS" name="xx_StationsPaths">
+      <cols>
+        <col name="stationPathID" nameupper="STATIONPATHID" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="pcID" nameupper="PCID" type="int" numprec="10" numscale="0" />
+        <col name="stationID" nameupper="STATIONID" type="int" numprec="10" numscale="0" />
+        <col name="stationPath" nameupper="STATIONPATH" type="nvarchar" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxStationsPaths" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="pcID" nameupper="PCID" ascending="true" />
+            <field name="stationID" nameupper="STATIONID" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkStationsPaths" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="stationPathID" nameupper="STATIONPATHID" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_TIPINOTEAGENDA" name="xx_TipiNoteAgenda">
+      <cols>
+        <col name="IDTipoNoteAgenda" nameupper="IDTIPONOTEAGENDA" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="TipoNoteAgenda" nameupper="TIPONOTEAGENDA" type="nvarchar" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTipiNote" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="TipoNoteAgenda" nameupper="TIPONOTEAGENDA" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkTipiNote" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTipoNoteAgenda" nameupper="IDTIPONOTEAGENDA" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="XX_TIPISPEDIZIONI" name="xx_TipiSpedizioni">
+      <cols>
+        <col name="IDTipoSpedizione" nameupper="IDTIPOSPEDIZIONE" type="int" autonumber="true" numprec="10" numscale="0" />
+        <col name="TipoSpedizione" nameupper="TIPOSPEDIZIONE" type="nvarchar" maxlength="55" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+      </cols>
+      <indexes>
+        <index name="idxTipiSpedizioni" clustered="false" unique="true" primary="false">
+          <fields>
+            <field name="TipoSpedizione" nameupper="TIPOSPEDIZIONE" ascending="true" />
+          </fields>
+        </index>
+        <index name="pkTipiSpedizioni" clustered="true" unique="true" primary="true">
+          <fields>
+            <field name="IDTipoSpedizione" nameupper="IDTIPOSPEDIZIONE" ascending="true" />
+          </fields>
+        </index>
+      </indexes>
+    </table>
+    <table nameupper="ZZ_ACCOUNTS" name="zz_Accounts">
+      <cols>
+        <col name="IDAccount" nameupper="IDACCOUNT" type="int" numprec="10" numscale="0" />
+        <col name="IDSitoWeb" nameupper="IDSITOWEB" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="User" nameupper="USER" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Password" nameupper="PASSWORD" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_AGENDA" name="zz_Agenda">
+      <cols>
+        <col name="IDAgenda" nameupper="IDAGENDA" type="int" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="IDTipoNoteAgenda" nameupper="IDTIPONOTEAGENDA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDQuando" nameupper="IDQUANDO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_ANAGRAFICHE" name="zz_Anagrafiche">
+      <cols>
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" numprec="10" numscale="0" />
+        <col name="Anagrafica" nameupper="ANAGRAFICA" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Citta" nameupper="CITTA" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Telefono" nameupper="TELEFONO" type="nvarchar" nullable="true" maxlength="20" />
+        <col name="Indirizzo" nameupper="INDIRIZZO" type="nvarchar" nullable="true" maxlength="100" />
+        <col name="IDProvincia" nameupper="IDPROVINCIA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Nazione" nameupper="NAZIONE" type="nvarchar" nullable="true" maxlength="15" />
+        <col name="CAP" nameupper="CAP" type="nvarchar" nullable="true" maxlength="5" />
+        <col name="Email" nameupper="EMAIL" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDGradimento" nameupper="IDGRADIMENTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Distanza" nameupper="DISTANZA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="CapitaleSociale" nameupper="CAPITALESOCIALE" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="NroDipendenti" nameupper="NRODIPENDENTI" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_ANAGRAFICHECONTATTI" name="zz_AnagraficheContatti">
+      <cols>
+        <col name="IDAnagraficaContatto" nameupper="IDANAGRAFICACONTATTO" type="int" numprec="10" numscale="0" />
+        <col name="IDContatto" nameupper="IDCONTATTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_ANAGRAFICHEEVENTI" name="zz_AnagraficheEventi">
+      <cols>
+        <col name="IDAnagraficaEvento" nameupper="IDANAGRAFICAEVENTO" type="int" numprec="10" numscale="0" />
+        <col name="IDEvento" nameupper="IDEVENTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_ANAGRAFICHEWEBLINKS" name="zz_AnagraficheWebLinks">
+      <cols>
+        <col name="IDAnagraficaWebLink" nameupper="IDANAGRAFICAWEBLINK" type="int" numprec="10" numscale="0" />
+        <col name="IDWebLink" nameupper="IDWEBLINK" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="Principale" nameupper="PRINCIPALE" type="bit" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_ANNI" name="zz_Anni">
+      <cols>
+        <col name="IDAnno" nameupper="IDANNO" type="int" numprec="10" numscale="0" />
+        <col name="Anno" nameupper="ANNO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_AUTO" name="zz_Auto">
+      <cols>
+        <col name="IDAuto" nameupper="IDAUTO" type="int" numprec="10" numscale="0" />
+        <col name="Marca" nameupper="MARCA" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Modello" nameupper="MODELLO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="IDTipoAlimentazione" nameupper="IDTIPOALIMENTAZIONE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_BIKE" name="zz_Bike">
+      <cols>
+        <col name="IDGiroBike" nameupper="IDGIROBIKE" type="int" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Km" nameupper="KM" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Tempo" nameupper="TEMPO" type="datetime" nullable="true" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_BOLLETTE" name="zz_Bollette">
+      <cols>
+        <col name="IDBolletta" nameupper="IDBOLLETTA" type="int" numprec="10" numscale="0" />
+        <col name="IDTipoBolletta" nameupper="IDTIPOBOLLETTA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="DataRiferimento" nameupper="DATARIFERIMENTO" type="datetime" nullable="true" />
+        <col name="IDDurata" nameupper="IDDURATA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Prezzo" nameupper="PREZZO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="Rimborso" nameupper="RIMBORSO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="IDUnitaMisura" nameupper="IDUNITAMISURA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Quantita" nameupper="QUANTITA" type="float" nullable="true" numprec="53" />
+        <col name="DataScadenza" nameupper="DATASCADENZA" type="datetime" nullable="true" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_CCORRENTE" name="zz_CCorrente">
+      <cols>
+        <col name="IDCCorrente" nameupper="IDCCORRENTE" type="int" numprec="10" numscale="0" />
+        <col name="NroCCorrente" nameupper="NROCCORRENTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_COLLOQUI" name="zz_Colloqui">
+      <cols>
+        <col name="IDColloquio" nameupper="IDCOLLOQUIO" type="int" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_CONTATTI" name="zz_Contatti">
+      <cols>
+        <col name="IDContatto" nameupper="IDCONTATTO" type="int" numprec="10" numscale="0" />
+        <col name="Nome" nameupper="NOME" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_CONTATTIDETTAGLI" name="zz_ContattiDettagli">
+      <cols>
+        <col name="IDContattoDettagli" nameupper="IDCONTATTODETTAGLI" type="int" numprec="10" numscale="0" />
+        <col name="IDContatto" nameupper="IDCONTATTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDTipoContatto" nameupper="IDTIPOCONTATTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Contatto" nameupper="CONTATTO" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_CVS" name="zz_CVs">
+      <cols>
+        <col name="IDCV" nameupper="IDCV" type="int" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_DURATE" name="zz_Durate">
+      <cols>
+        <col name="IDDurata" nameupper="IDDURATA" type="int" numprec="10" numscale="0" />
+        <col name="Durata" nameupper="DURATA" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_EVENTI" name="zz_Eventi">
+      <cols>
+        <col name="IDEvento" nameupper="IDEVENTO" type="int" numprec="10" numscale="0" />
+        <col name="IDTipoEvento" nameupper="IDTIPOEVENTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Evento" nameupper="EVENTO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DataDa" nameupper="DATADA" type="datetime" nullable="true" />
+        <col name="DataA" nameupper="DATAA" type="datetime" nullable="true" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="HtmlNote" nameupper="HTMLNOTE" type="varchar" nullable="true" maxlength="-1" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_FILES" name="zz_Files">
+      <cols>
+        <col name="IDFile" nameupper="IDFILE" type="int" numprec="10" numscale="0" />
+        <col name="IDFolder" nameupper="IDFOLDER" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Ext" nameupper="EXT" type="nvarchar" nullable="true" maxlength="10" />
+        <col name="FileName" nameupper="FILENAME" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_FOLDERS" name="zz_Folders">
+      <cols>
+        <col name="IDFolder" nameupper="IDFOLDER" type="int" numprec="10" numscale="0" />
+        <col name="IDFolderPadre" nameupper="IDFOLDERPADRE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="FolderName" nameupper="FOLDERNAME" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_INDICEGRADIMENTO" name="zz_IndiceGradimento">
+      <cols>
+        <col name="IDGradimento" nameupper="IDGRADIMENTO" type="int" numprec="10" numscale="0" />
+        <col name="Stelle" nameupper="STELLE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_INGREDIENTIMENU" name="zz_IngredientiMenu">
+      <cols>
+        <col name="IDIngredientiMenu" nameupper="IDINGREDIENTIMENU" type="int" numprec="10" numscale="0" />
+        <col name="IDMenu" nameupper="IDMENU" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Cosa" nameupper="COSA" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Quanto" nameupper="QUANTO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_MANUTENZIONEAUTO" name="zz_ManutenzioneAuto">
+      <cols>
+        <col name="IDManutenzioneAuto" nameupper="IDMANUTENZIONEAUTO" type="int" numprec="10" numscale="0" />
+        <col name="IDAuto" nameupper="IDAUTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDOperazioneAuto" nameupper="IDOPERAZIONEAUTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Km" nameupper="KM" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="Prezzo" nameupper="PREZZO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="Rimborso" nameupper="RIMBORSO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_MENUS" name="zz_Menus">
+      <cols>
+        <col name="IDMenu" nameupper="IDMENU" type="int" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Preparazione" nameupper="PREPARAZIONE" type="nvarchar" nullable="true" maxlength="-1" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_MENUSIMAGES" name="zz_MenusImages">
+      <cols>
+        <col name="IDMenuImage" nameupper="IDMENUIMAGE" type="int" numprec="10" numscale="0" />
+        <col name="IDMenu" nameupper="IDMENU" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_MESI" name="zz_Mesi">
+      <cols>
+        <col name="IDMese" nameupper="IDMESE" type="int" numprec="10" numscale="0" />
+        <col name="Mese" nameupper="MESE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_OPERAZIONIAUTO" name="zz_OperazioniAuto">
+      <cols>
+        <col name="IDOperazioneAuto" nameupper="IDOPERAZIONEAUTO" type="int" numprec="10" numscale="0" />
+        <col name="OperazioneAuto" nameupper="OPERAZIONEAUTO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_PCS" name="zz_PCs">
+      <cols>
+        <col name="pcID" nameupper="PCID" type="int" numprec="10" numscale="0" />
+        <col name="pcName" nameupper="PCNAME" type="nvarchar" nullable="true" maxlength="100" />
+        <col name="pcTitle" nameupper="PCTITLE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_PRESENTAZIONI" name="zz_Presentazioni">
+      <cols>
+        <col name="IDPresentazione" nameupper="IDPRESENTAZIONE" type="int" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="IDFile" nameupper="IDFILE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_PROVINCE" name="zz_Province">
+      <cols>
+        <col name="IDProvincia" nameupper="IDPROVINCIA" type="int" numprec="10" numscale="0" />
+        <col name="Citta" nameupper="CITTA" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Provincia" nameupper="PROVINCIA" type="nvarchar" nullable="true" maxlength="4" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_QUANDO" name="zz_Quando">
+      <cols>
+        <col name="IDQuando" nameupper="IDQUANDO" type="int" numprec="10" numscale="0" />
+        <col name="Quando" nameupper="QUANDO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_RIFORNIMENTOAUTO" name="zz_RifornimentoAuto">
+      <cols>
+        <col name="IDRifornimento" nameupper="IDRIFORNIMENTO" type="int" numprec="10" numscale="0" />
+        <col name="IDAuto" nameupper="IDAUTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDEvento" nameupper="IDEVENTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Km" nameupper="KM" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Prezzo" nameupper="PREZZO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="CostoLitro" nameupper="COSTOLITRO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_RUBRICA" name="zz_Rubrica">
+      <cols>
+        <col name="IDRubrica" nameupper="IDRUBRICA" type="int" numprec="10" numscale="0" />
+        <col name="Nome" nameupper="NOME" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Email" nameupper="EMAIL" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="EMail2" nameupper="EMAIL2" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Telefono" nameupper="TELEFONO" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Telefono2" nameupper="TELEFONO2" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_SALDOCCORRENTE" name="zz_SaldoCCorrente">
+      <cols>
+        <col name="IDSaldoCCorrente" nameupper="IDSALDOCCORRENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDCCorrente" nameupper="IDCCORRENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Causale" nameupper="CAUSALE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Movimento" nameupper="MOVIMENTO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="Saldo" nameupper="SALDO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_SITIWEB" name="zz_SitiWeb">
+      <cols>
+        <col name="IDSitoWeb" nameupper="IDSITOWEB" type="int" numprec="10" numscale="0" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDGradimento" nameupper="IDGRADIMENTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_SITIWEBLINKS" name="zz_SitiWebLinks">
+      <cols>
+        <col name="IDSitoWebLink" nameupper="IDSITOWEBLINK" type="int" numprec="10" numscale="0" />
+        <col name="IDSitoWeb" nameupper="IDSITOWEB" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDWebLink" nameupper="IDWEBLINK" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Principale" nameupper="PRINCIPALE" type="bit" nullable="true" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_SPEDIZIONI" name="zz_Spedizioni">
+      <cols>
+        <col name="IDSpedizione" nameupper="IDSPEDIZIONE" type="int" numprec="10" numscale="0" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Titolo" nameupper="TITOLO" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="IDTags" nameupper="IDTAGS" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDTipoSpedizione" nameupper="IDTIPOSPEDIZIONE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_SPESE" name="zz_Spese">
+      <cols>
+        <col name="IDSpesa" nameupper="IDSPESA" type="int" numprec="10" numscale="0" />
+        <col name="IDEvento" nameupper="IDEVENTO" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDTipoSpesa" nameupper="IDTIPOSPESA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Pezzo" nameupper="PEZZO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Quantita" nameupper="QUANTITA" type="real" nullable="true" numprec="24" />
+        <col name="Data" nameupper="DATA" type="datetime" nullable="true" />
+        <col name="Prezzo" nameupper="PREZZO" type="money" nullable="true" numprec="19" numscale="4" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_STATIONS" name="zz_Stations">
+      <cols>
+        <col name="stationID" nameupper="STATIONID" type="int" numprec="10" numscale="0" />
+        <col name="stationName" nameupper="STATIONNAME" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Des" nameupper="DES" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_STATIONSPATHS" name="zz_StationsPaths">
+      <cols>
+        <col name="stationPathID" nameupper="STATIONPATHID" type="int" numprec="10" numscale="0" />
+        <col name="pcID" nameupper="PCID" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="stationID" nameupper="STATIONID" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="stationPath" nameupper="STATIONPATH" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_TAGS" name="zz_Tags">
+      <cols>
+        <col name="IDTag" nameupper="IDTAG" type="int" numprec="10" numscale="0" />
+        <col name="Tag" nameupper="TAG" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_TIPIALIMENTAZIONE" name="zz_TipiAlimentazione">
+      <cols>
+        <col name="IDTipoAlimentazione" nameupper="IDTIPOALIMENTAZIONE" type="int" numprec="10" numscale="0" />
+        <col name="TipoAlimentazione" nameupper="TIPOALIMENTAZIONE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_TIPIBOLLETTA" name="zz_TipiBolletta">
+      <cols>
+        <col name="IDTipoBolletta" nameupper="IDTIPOBOLLETTA" type="int" numprec="10" numscale="0" />
+        <col name="TipoBolletta" nameupper="TIPOBOLLETTA" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="IDAnagrafica" nameupper="IDANAGRAFICA" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_TIPICONTATTO" name="zz_TipiContatto">
+      <cols>
+        <col name="IDTipoContatto" nameupper="IDTIPOCONTATTO" type="int" numprec="10" numscale="0" />
+        <col name="TipoContatto" nameupper="TIPOCONTATTO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_TIPIEVENTI" name="zz_TipiEventi">
+      <cols>
+        <col name="IDTipoEvento" nameupper="IDTIPOEVENTO" type="int" numprec="10" numscale="0" />
+        <col name="TipoEvento" nameupper="TIPOEVENTO" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="Principale" nameupper="PRINCIPALE" type="bit" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_TIPINOTEAGENDA" name="zz_TipiNoteAgenda">
+      <cols>
+        <col name="IDTipoNoteAgenda" nameupper="IDTIPONOTEAGENDA" type="int" numprec="10" numscale="0" />
+        <col name="TipoNoteAgenda" nameupper="TIPONOTEAGENDA" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_TIPISPEDIZIONI" name="zz_TipiSpedizioni">
+      <cols>
+        <col name="IDTipoSpedizione" nameupper="IDTIPOSPEDIZIONE" type="int" numprec="10" numscale="0" />
+        <col name="TipoSpedizione" nameupper="TIPOSPEDIZIONE" type="nvarchar" nullable="true" maxlength="55" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_TIPISPESA" name="zz_TipiSpesa">
+      <cols>
+        <col name="IDTipoSpesa" nameupper="IDTIPOSPESA" type="int" numprec="10" numscale="0" />
+        <col name="CodSpesa" nameupper="CODSPESA" type="nvarchar" nullable="true" maxlength="20" />
+        <col name="TipoSpesa" nameupper="TIPOSPESA" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="250" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_TIPIUTENTE" name="zz_TipiUtente">
+      <cols>
+        <col name="IDTipoUtente" nameupper="IDTIPOUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="TipoUtente" nameupper="TIPOUTENTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_UNITAMISURA" name="zz_UnitaMisura">
+      <cols>
+        <col name="IDUnitaMisura" nameupper="IDUNITAMISURA" type="int" numprec="10" numscale="0" />
+        <col name="UnitaMisura" nameupper="UNITAMISURA" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="50" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_UTENTI" name="zz_Utenti">
+      <cols>
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" numprec="10" numscale="0" />
+        <col name="IDTipoUtente" nameupper="IDTIPOUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="Nome" nameupper="NOME" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Pwd" nameupper="PWD" type="nvarchar" nullable="true" maxlength="32" />
+        <col name="ResetPwd" nameupper="RESETPWD" type="bit" nullable="true" />
+        <col name="Conn" nameupper="CONN" type="nvarchar" nullable="true" maxlength="32" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_UTENTIVISIBILITY" name="zz_UtentiVisibility">
+      <cols>
+        <col name="IDUtenteVisibility" nameupper="IDUTENTEVISIBILITY" type="int" numprec="10" numscale="0" />
+        <col name="IDUtenteView" nameupper="IDUTENTEVIEW" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="IDUtente" nameupper="IDUTENTE" type="int" nullable="true" numprec="10" numscale="0" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+    <table nameupper="ZZ_WEBLINKS" name="zz_WebLinks">
+      <cols>
+        <col name="IDWebLink" nameupper="IDWEBLINK" type="int" numprec="10" numscale="0" />
+        <col name="WebLink" nameupper="WEBLINK" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="Note" nameupper="NOTE" type="nvarchar" nullable="true" maxlength="255" />
+        <col name="DtIns" nameupper="DTINS" type="datetime2" />
+        <col name="DtUpd" nameupper="DTUPD" type="datetime" nullable="true" />
+        <col name="DtDel" nameupper="DTDEL" type="datetime" nullable="true" />
+        <col name="DtRef" nameupper="DTREF" type="datetime" nullable="true" />
+      </cols>
+      <indexes />
+    </table>
+  </tables>
+  <functions>
+    <function name="dbo.getListOfContatti"><![CDATA[
+CREATE FUNCTION [dbo].[getListOfContatti](@idcontatto int)
+RETURNS varchar(max)
+AS      
+
+BEGIN      
+
+ declare @list varchar(max)
+  
+ SELECT @list = coalesce(@list + ', ', '') + t.tipocontatto + ': ' + d.contatto
+  FROM contattidettagli d
+  JOIN tipicontatto t on d.idtipocontatto = t.idtipocontatto
+   WHERE d.idcontatto = @idcontatto
+  
+ RETURN @list
+ 
+END      
+]]></function>
+    <function name="dbo.getListOfTags"><![CDATA[CREATE FUNCTION [dbo].[getListOfTags](@idtags varchar(max))
+RETURNS varchar(max)
+AS      
+
+BEGIN      
+
+ set @idtags = replace(@idtags, '[', '')
+
+ declare @tags varchar(max)
+
+ SELECT @tags = coalesce(@tags + ', ', '') + t.tag
+  FROM dbo.split(@idtags, ']') lst
+  join tags t on t.idtag = item
+  
+ RETURN @tags
+ 
+END      
+]]></function>
+    <function name="dbo.getListOfTagsOfAnagraficaTbl"><![CDATA[
+CREATE FUNCTION [dbo].[getListOfTagsOfAnagraficaTbl](@idanagrafica integer)
+RETURNS @ret TABLE ( idtag int )
+AS      
+begin
+ declare @idtags as varchar(max);
+ select @idtags = idtags from anagrafiche where idanagrafica = @idanagrafica;
+ 
+ insert into @ret (idtag) 
+  SELECT item as idtag
+  FROM dbo.split(replace(@idtags, '[', ''), ']') lst
+  
+ return
+end]]></function>
+    <function name="dbo.getListOfTagsOfSitoTbl"><![CDATA[CREATE FUNCTION [dbo].[getListOfTagsOfSitoTbl](@idsitoweb integer)
+RETURNS @ret TABLE ( idtag int )
+AS      
+begin
+ declare @idtags as varchar(max);
+ select @idtags = idtags from sitiweb where idsitoweb = @idsitoweb;
+ 
+ insert into @ret (idtag) 
+  SELECT item as idtag
+  FROM dbo.split(replace(@idtags, '[', ''), ']') lst
+  
+ return
+end]]></function>
+    <function name="dbo.getListOfTagsTbl"><![CDATA[CREATE FUNCTION [dbo].[getListOfTagsTbl](@idtags varchar(max))
+RETURNS TABLE
+AS      
+ return (SELECT item as idtag
+  FROM dbo.split(replace(@idtags, '[', ''), ']') lst)
+]]></function>
+    <function name="dbo.getPathOfFolder"><![CDATA[CREATE FUNCTION [dbo].[getPathOfFolder](@idfolder int)
+RETURNS varchar(max)
+AS      
+
+BEGIN      
+
+ declare @path varchar(max);
+
+ WITH cartelle (idfolderpadre, idfolder, foldername, livello)
+ AS
+ ( SELECT idfolderpadre, idfolder, foldername, 0 AS livello
+    FROM folders 
+     WHERE idfolder = @idfolder 
+   UNION ALL SELECT e.idfolderpadre, e.idfolder, e.foldername, livello - 1
+    FROM folders e
+    INNER JOIN cartelle d ON d.idfolderpadre = e.idfolder and d.idfolder <> d.idfolderpadre
+  )
+ SELECT @path = coalesce(@path + '/', '') + foldername 
+  FROM cartelle
+  order by livello
+  
+ RETURN @path
+ 
+END      
+
+]]></function>
+    <function name="dbo.getUtenteChilds"><![CDATA[CREATE FUNCTION [dbo].[getUtenteChilds](@idUtente int, @id bit)
+RETURNS varchar(max)
+AS      
+BEGIN
+
+ declare @ids varchar(max);
+
+ if((select t.tipoutente from utenti u 
+    join tipiutente t on t.IDTipoUtente = u.idtipoutente
+    where u.idutente = @idUtente) = 'user')
+    select @ids = coalesce(@ids + ', ', '') + (case when @id = 1 then cast(tbl.idutente as varchar) else tbl.nome end) 
+    from (select u.idutente, u.nome from utenti u 
+	 join dbo.getUtenteVisibilityIds(@idUtente, 0) vids on u.idutente = vids.idutente
+      union select u.idutente, u.nome 
+       from utenti u
+       join tipiutente t on u.idtipoutente = t.idtipoutente
+       where (t.tipoutente = 'anonimo' or u.idutente = @idUtente)
+	    and isnull(u.conn, '') = isnull((select conn from utenti where idutente = @idUtente), '')) tbl
+    else if((select t.tipoutente from utenti u 
+    join tipiutente t on t.IDTipoUtente = u.idtipoutente
+    where u.idutente = @idUtente) = 'admin')
+     select @ids = coalesce(@ids + ', ', '') + (case when @id = 1 then cast(tbl.idutente as varchar) else tbl.nome end) 	    
+	  from (select u.idutente, u.nome
+        from utenti u
+        join tipiutente t on t.IDTipoUtente = u.IDTipoUtente
+        where isnull(u.conn, '') = isnull((select conn from utenti where idutente = @idUtente), '')
+         and u.IDUtente <> @idUtente and t.TipoUtente in ('user', 'admin')
+      union select u.idutente, u.nome
+        from utenti u
+        join tipiutente t on u.idtipoutente = t.idtipoutente
+        where (t.tipoutente = 'anonimo' or u.idutente = @idUtente)
+		 and isnull(u.conn, '') = isnull((select conn from utenti where idutente = @idUtente), '')) tbl
+		 
+ RETURN @ids;
+
+END      
+
+		 ]]></function>
+    <function name="dbo.getUtenteVisibility"><![CDATA[CREATE FUNCTION [dbo].[getUtenteVisibility](@idUtente int, @diretta bit)
+RETURNS varchar(max)
+AS      
+
+BEGIN      
+      
+ declare @nomi varchar(max);
+ 
+ --if(@diretta = 1) 
+ -- SELECT @nomi = coalesce(@nomi + ', ', '') + uv.nome 
+ --  FROM utenti u
+ --  left join utentivisibility v on u.idutente = v.idutente
+ --  left join utenti uv on uv.idutente = v.idutenteview
+ --  where u.idutente = @idUtente
+ --else
+  WITH childs (idutente, nome, livello)
+  AS
+   ( SELECT uv.idutente, uv.nome, 0 as livello 
+    FROM utenti u
+    left join utentivisibility v on u.idutente = v.idutente
+    left join utenti uv on uv.idutente = v.idutenteview
+    where u.idutente = @idUtente
+   UNION ALL SELECT uv.idutenteview, u.nome, livello - 1
+    FROM UtentiVisibility uv
+    inner join childs c on uv.idutente = c.idutente 
+    inner join utenti u on u.idutente = uv.idutenteview
+	where @diretta = 0)
+   select @nomi = coalesce(@nomi + ', ', '') + nome
+    from childs order by livello desc
+  
+ RETURN @nomi;
+
+END      
+]]></function>
+    <function name="dbo.getUtenteVisibilityIds"><![CDATA[CREATE FUNCTION [dbo].[getUtenteVisibilityIds](@idUtente int, @diretta bit)
+RETURNS TABLE
+AS      
+  --return (SELECT uv.idutente
+  -- FROM utenti u
+  -- left join utentivisibility v on u.idutente = v.idutente
+  -- left join utenti uv on uv.idutente = v.idutenteview
+  -- where u.idutente = @idUtente)
+  return (WITH childs (idutente, nome, livello) AS
+   (SELECT uv.idutente, uv.nome, 0 as livello 
+    FROM utenti u
+    left join utentivisibility v on u.idutente = v.idutente
+    left join utenti uv on uv.idutente = v.idutenteview
+    where u.idutente = @idUtente
+   UNION ALL SELECT uv.idutenteview, u.nome, livello - 1
+    FROM UtentiVisibility uv
+    inner join childs c on uv.idutente = c.idutente 
+    inner join utenti u on u.idutente = uv.idutenteview
+	where @diretta = 0)
+   select idutente from childs)
+]]></function>
+    <function name="dbo.getUtentiParentsIds"><![CDATA[CREATE FUNCTION [dbo].[getUtentiParentsIds](@idUtente int, @diretta bit)
+RETURNS TABLE
+AS      
+ return (WITH parents (idutente, nome, livello) AS
+ ( SELECT uv.idutente, uv.nome, 0 as livello 
+  FROM utenti u
+  left join utentivisibility v on u.idutente = v.idutenteview
+  left join utenti uv on uv.idutente = v.idutente
+  where u.idutente = @idUtente
+ UNION ALL SELECT uv.idutente, u.nome, livello - 1
+  FROM UtentiVisibility uv
+  inner join parents c on uv.idutenteview = c.idutente 
+  inner join utenti u on u.idutente = uv.idutente
+  where @diretta = 0)
+  select idutente from parents)
+]]></function>
+    <function name="dbo.split"><![CDATA[CREATE FUNCTION [dbo].[split](@String varchar(8000), @Delimiter char(1) = ',')     
+ returns @temptable TABLE (item varchar(8000))     
+as     
+begin     
+
+ declare @slice varchar(8000)     
+
+ declare @idx int     
+ select @idx = 1;
+ 
+ if len(@String) < 1 or @String is null  
+  return;
+
+ while @idx!= 0
+ begin
+    set @idx = charindex(@Delimiter,@String)
+    if @idx!=0     
+        set @slice = left(@String,@idx - 1)     
+    else     
+        set @slice = @String     
+
+    if(len(@slice)>0)
+        insert into @temptable(Item) values(@slice)     
+
+    set @String = right(@String,len(@String) - @idx)     
+    if len(@String) = 0 break     
+ end 
+ 
+ return
+
+end]]></function>
+  </functions>
+</root>

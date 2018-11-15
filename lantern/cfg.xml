@@ -1,0 +1,444 @@
+﻿<root schema="xmlschema.config">
+
+  <vars>
+    <var name="sitetitle">lantern</var>
+    <var name="homePageName">home</var>
+    <var name="baseClass">deeper.frmwrk.page_cls</var>
+    <var name='addHeaderVarHttp'>HTTP_BROWSER_CONSOLE</var>
+    <var name='addHeaderVar'>BROWSER_CONSOLE</var>
+    <var name='addHeaderValue'>deeper.panel.console.browser</var>
+    <var name='urlToPrev' toclient='true' toparse='true'>{@siteurl}default.aspx?toprev=1</var>
+    <var name='siteurl' toclient='true' toparse='true'>{@siteurl}</var>
+    <var name='lanternconn'>dbconn</var>
+    <var name='tmpFolder' toparse='true'>{@approot}_tmp</var>
+    <var name='backupsFolder' toparse='true'>{@approot}_backups</var>
+    <var name='schema_folder'>schemas</var>
+    <var name='res_folder'>res</var>
+    <var name='scripts_folder'>scripts</var>
+    <var name='fsIndex'>_lnidx.xml</var>
+    <var name='ctrlsFolder' toparse='true'>{@approot}pages_ctrls</var>
+    <var name='filesFolder' toparse='true'>{@approot}_files</var>
+    <var name='filesUrl' toparse='true'>{@siteurl}_files</var>
+    <var name='user_tables'>utenti,tipiutente,utentivisibility</var>
+    <var name='forms_def_confirm' des='di default visualizzare o no il messaggio di conferma'>false</var>
+  </vars>
+
+  <!-- stili -->
+  <styles>
+    <style name='rcvry-sec-err'>
+      <key name='margin-right'>2px</key>
+      <key name='color'>tomato</key>
+    </style>
+  </styles>
+
+  <!-- file system -->
+  <fs>
+    <filetypes>
+      <filetype name="db-backup" title="database backup" des="database backup">
+        <infos>
+          <info name="conn" title="nome connessione" des="connessione database relativa"/>
+          <info name="ver" title="versione" des="versione database relativa"/>
+        </infos>
+      </filetype>
+    </filetypes>
+  </fs>
+
+  <!-- database connections, scripts -->
+  <dbgroups>
+    <dbgroup name='web' schema="my_schema{@ver}.xml" meta="my_meta{@ver}.xml" curver="2017.02.26">
+      <scripts>
+        <script name="reset_db" file="resetdb.xml"/>
+        <script name="init_web" file="initweb.xml"/>
+        <script name="init_tpusers" file="init_tpusers.xml"/>
+        <script name="init_users" file="init_users.xml"/>
+        <script name="remove_idxs_dtins" file="remove_idxs_dtins.xml"/>
+        <script name="clean_zz" file="clean_zz.xml"/>
+        <script name="clean_all" file="clean_all.xml"/>
+      </scripts>
+      <procs base_path="{@approot}{@var='res_folder'}">
+        <!-- group -->
+        <proc code="cc" type="csv" file="csv_cc.xml" des="importazioe saldi c.corrente"/>
+      </procs>
+      </dbgroup>
+    <dbgroup name='dev'/>
+  </dbgroups>
+
+  <dbconns default='dell-pc' openonrequest='true'>
+    <dbconn name="thelantern.it" des="connessione www.thelantern.it" group="web">
+      <formats datetoquery='yyyy-MM-dd HH:mm:ss' datetoquery2='yyyy-MM-dd HH:mm:ss.fffffff'/>
+    </dbconn>
+    <dbconn name="thelantern" des="connessione test on pbell" group="web">
+      <formats datetoquery='yyyy-dd-MM HH:mm:ss' datetoquery2='yyyy-MM-dd HH:mm:ss.fffffff'/>
+    </dbconn>
+    <dbconn name="dell-pc" des="connessione portatile contenente i tuoi dati personali" group="web">
+      <formats datetoquery='yyyy-MM-dd HH:mm:ss' datetoquery2='yyyy-MM-dd HH:mm:ss.fffffff'/>
+    </dbconn>
+    <dbconn name="dbmaster" des="connessione portatile database master" group="dev">
+      <formats datetoquery='yyyy-MM-dd HH:mm:ss' datetoquery2='yyyy-MM-dd HH:mm:ss.fffffff'/>
+    </dbconn>
+  </dbconns>
+
+  <!-- login -->
+  <login active="true" selid="getUser" cookies="lanternWebCookies">
+    <infields>userName,userPwd</infields>
+    <outfields>IDUtente,userType,userTypeDes,userConn</outfields>
+  </login>
+
+  <xmlschemas>
+    <xmlschema name='xmlschema.config' file='{@approot}schemas/schema.config.xsd' des='schema config'/>
+    <xmlschema name='xmlschema.ifs' file='{@approot}schemas/schema.ifs.xsd' des='schema index file system'/>
+  </xmlschemas>
+
+  <images>
+    <image name="basket-white" url="{@siteurl}images/basket-white.png"/>
+    <image name="bill-white" url="{@siteurl}images/bill-white.png"/>
+    <image name="usrgroup-white" url="{@siteurl}images/usrgroup-white.png"/>
+    <image name="party-white" url="{@siteurl}images/party-white.png"/>
+    <image name="fuel-white" url="{@siteurl}images/fuel-white.png"/>
+    <image name="karservice-white" url="{@siteurl}images/karservice-white.png"/>
+    <image name="briefcase-white" url="{@siteurl}images/briefcase-icon-white.png"/>
+    <image name="bar-chart" url="{@siteurl}images/bar-chart-black.png"/>
+  </images>
+
+  <websites>
+    <!--<website name='lanternSite' title='lanternWeb Site' refpage='default.aspx' url='http://localhost/lantern/' root='{@approot}web' des='sito web principale'/>-->
+  </websites>
+
+  <pages href="{@siteurl}default.aspx" menufile="menu-main.xml" header="header" headerprev="headerPrev">
+    <page name='spese' class="{@var='baseClass'}"  icon="coins" imagez="{@imageurl='basket-white'}" xml='{@approot}pages_xml/pageSpese.xml' title='Scontrini e non...' des='registrazione di scontrini e non...'/>
+    <page name='bollette' class="{@var='baseClass'}" image="{@imageurl='bill-white'}" xml='{@approot}pages_xml/pageBollette.xml' title='le Bollette' des='elenco delle bollette'/>
+    <page name='rifornimenti' class="{@var='baseClass'}" image="{@imageurl='fuel-white'}" xml='{@approot}pages_xml/pageRifornimenti.xml' title='Rifornimenti auto' des='elenco rifornimenti auto'/>
+    <page name='manutenzioni' class="{@var='baseClass'}" image="{@imageurl='karservice-white'}" xml='{@approot}pages_xml/pageManutenzioni.xml' title='Manutenzioni auto' des='elenco manutenzioni auto'/>
+    <page name='eventi' class="{@var='baseClass'}" image="{@imageurl='party-white'}" xml='{@approot}pages_xml/pageEventi.xml' title='Eventi' des='eventi particolari, vacanze, cerimonie, etc...'/>
+    <page name='home' title='lantern' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageHome.xml'>
+      <title>dev-version</title>
+    </page>
+    <page name='servervars' class='deeper.pages.variables' title='Variabili lato server' usertypes ='admin' nohistory='true' menu='false' noheaderprev='true'/>
+    <page name='todo' title='Lista della spesa' icon="icon-checkmark" des='cosa cè da fare'/>
+    <page name='login' class='deeper.pages.login' xml='{@approot}pages_xml/pageLogin.xml' nohistory='true' title='Autenticazione utente' menu='false' header="header_nomargins" noheaderprev='true'/>
+    <page name='registrazioni' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageRegistrazioni.xml' title='Elenco movimenti' des="elenco di ogni tipo di entrata o uscita inserita a mano"/>
+    <page name='spesa' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageSpesa.xml' title='Registra lo scontrino' des="me ce l'hai lo scontrino?"/>
+    <page name='bolletta' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageBolletta.xml' title='Il metano ti da una mano' des="ma l'hai fatta la doccia?"/>
+    <page name='auto' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageAuto.xml' title='La tua automobile' des="ma l'hai fatto un giro?"/>
+    <page name='evento' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageEvento.xml' title='Evento' des="il tuo momento speciale"/>
+    <page name='eventoanagrafica' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageEvento.xml' title='Evento' nohistory='true' des="il tuo momento speciale"/>
+    <page name='utenti' class="{@var='baseClass'}" image="{@imageurl='usrgroup-white'}" xml='{@approot}pages_xml/pageUtenti.xml' usertypes='admin' title='Elenco utenti' des="elenco utenti con accesso al sito"/>
+    <page name='utente' xml='{@approot}pages_xml/pageUtente.xml' usertypes='admin' title='Utente' des="utente d'accesso al sito"/>
+    <page name='utentivs' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageVisibilitaUtenti.xml' usertypes='admin' title='Elenco Visibilita Utente' des="utenti visibili dall'utente">
+      <title page='utentevs' select='title'>Elenco Visibilita Utente '{@field='nome'}'</title>
+    </page>
+    <page name='utentevs' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageVisibilitaUtente.xml' usertypes='admin' title='Visibilita Utente' des="visibilita utente d'accesso al sito">
+      <title select='title'>Visibilita Utente '{@field='nome'}'</title>
+    </page>
+    <page name='export' title='Esporta' class="deeper.pages.db_utilities" icon="file-download" usertypes ='admin' des='esportazione del database + files' nohistory='true'/>
+    <page name='import' title='Importa' class="deeper.pages.db_utilities" xml='{@approot}pages_xml/pageImport.xml' icon="file-upload" usertypes ='admin' des='importazione completa del database'/>
+    <page name='import_csv' title='Importa csv esterno' class="deeper.pages.db_utilities" xml='{@approot}pages_xml/pageImport.xml' icon="file-upload" des='importazione dati da file esterno'/>
+    <page name='backups' class="deeper.pages.db_utilities" xml='{@approot}pages_xml/pageBackups.xml' icon='file-zip' title='Backups' usertypes ='admin' des="salva i tuoi dati e i tuoi documenti"/>
+    <page name='backup' class="deeper.pages.backup" xml='{@approot}pages_xml/pageBackup.xml' title='Backup database' des="fai una copia dei tuoi dati e dei tuoi documenti"/>
+    <page name='backup-import' title='Backup Import' class="deeper.pages.backup" xml='{@approot}pages_xml/pageBackupImport.xml' usertypes='admin' des='importazione backup del database e dei documenti'/>
+    <page name='recovery' title='Recovery' des="pannello di controllo" icon='wrench' href="{@siteurl}pages/recovery.aspx" header="header_nomargins" headerprev="headerPrev_nomargins" usertypes='admin' menu="false"/>
+    <page name='test' title='test your libsss' des="testa lo stile" icon='icon-wrench' href="{@siteurl}_test/test.aspx" usertypes='admin' menu="true"/>
+    <page name='table_view' title='Contenuti Tabella {0}' des='contenuti tabella' icon='icon-wrench' href="{@siteurl}default.aspx" class='deeper.pages.checkdelete' header="header_nomargins" headerprev="headerPrev_nomargins" menu="false"/>
+    <page name='tables_check' title='Controllo integrita database' des="integrita elementi e struttura dati" icon='icon-wrench' href="{@siteurl}pages/tables.aspx" header="header_nomargins" headerprev="headerPrev_nomargins" menu="false"/>
+    <page name='tables_upload' title='Allineamento schemi' des="allineamento schema e dati tabelle" icon='icon-wrench' href="{@siteurl}pages/tables.aspx" header="header_nomargins" headerprev="headerPrev_nomargins" menu="false">
+      <title par="type=sch">Allineamento schema alla versione {@qrypar='tover'}</title>
+      <title par="type=data">Allineamento dati</title>
+    </page>
+    <page name='tables_list' title='Elenco tabelle' des="elenco tabelle per un'esplorazione piu accurata" icon='icon-wrench' href="{@siteurl}pages/tables.aspx" header="header_nomargins" headerprev="headerPrev_nomargins" menu="false"/>
+    <page name='rifornimento' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageRifornimento.xml' title='Chi la compra la gasolina!' des="ma l'hai fatto il pieno?"/>
+    <page name='manutenzione' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageManutenzione.xml' title="Ecchi l'aggiusta la machina!" des="ma l'hai fatto il check-in?"/>
+    <page name='autos' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageAutos.xml' title='il parco mobili' des='elenco dei veicoli'/>
+    <page name='tipoContatto' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipoContatto.xml' title='tipo contatto' des='tipo di contatto'/>
+    <page name='tipiContatto' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipiContatto.xml' title='tipi contatti' des='elenco dei tipi di contatto'/>
+    <page name='tipiSpesa' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipiSpesa.xml' title='tipi scontrini' des='elenco dei tipi di scontrini (e non) registrati'/>
+    <page name='tipoSpesa' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipoSpesa.xml' title='tipo scontrino' des='tipo di scontrino (e non) buono, sano e quotidiano'/>
+    <page name='tipiBolletta' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipiBolletta.xml' title='tipi bolletta' des='elenco dei tipi di bolletta'/>
+    <page name='tipoBolletta' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipoBolletta.xml' title='Tipo di bolletta' des="ma cusa lè?"/>
+    <page name='tipiUtente' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipiUtente.xml' title='tipi utente' des='elenco dei tipi utente'/>
+    <page name='tipoUtente' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipoUtente.xml' title='Tipo di utente' des="ma chi lè?"/>
+    <page name='tipiEvento' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipiEvento.xml' title='tipi evento' des='elenco dei tipi di evento'/>
+    <page name='tipoEvento' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipoEvento.xml' title='Tipo di evento' des="ma dove vai?"/>
+    <page name='tipiAlimentazione' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipiAlimentazione.xml' title='tipi carburante' des='elenco dei tipi carburante'/>
+    <page name='tipoAlimentazione' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageTipoAlimentazione.xml' title='Tipo di carburante' des="ma comè il pieno?"/>
+    <page name='durate' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageDurate.xml' title='lista durate' des='elenco delle durate'/>
+    <page name='durata' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageDurata.xml' title='la durata' des='quanto dura?'/>
+    <page name='ums' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageUMs.xml' title='lista unita di misura' des='elenco delle unita di misura'/>
+    <page name='um' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageUM.xml' title='unita di misura' des='quanto vale?'/>
+    <page name='interventi' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageInterventi.xml' title='lista tipi intervento su auto' des='elenco delle operazioni su auto'/>
+    <page name='intervento' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageIntervento.xml' title='tipo di intervento su auto' des="cos'hai combinato?"/>
+    <page name='sitiweb' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageSitiWeb.xml' icon="cloud" title='Siti Web' des="i migliori siti web"/>
+    <page name='sitoweb' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageSitoWeb.xml' title='sito Web' des="ocio al sito!"/>
+    <page name='sitoaccount' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageSitoAccount.xml' title='account sito Web' des="e la password?!?"/>
+    <page name='checkdelete' class='deeper.pages.checkdelete'>
+      <title if="{@cond='page-lnk'}">Elementi collegati</title>
+      <title>Cancellazione {0} e relazioni con gli altri elementi</title>
+    </page>
+    <page name='contatti' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageContatti.xml' icon="contacts-dialer" title='Contatti' des="i tuoi contatti"/>
+    <page name='contatto' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageContatto.xml' title='Contatto' des="il tuo contatto"/>
+    <page name='contattoanagrafica' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageContatto.xml' nohistory='true' title='Contatto' des="il tuo contatto"/>
+    <page name='contattodettagli' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageContattoDettagli.xml' title='Dettaglio Contatto' des="il telefono, la mail, il cellulare, etc..."/>
+    <page name='anagrafiche' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageAnagrafiche.xml' image="{@imageurl='briefcase-white'}" title='Anagrafiche' des="l'insieme delle aziende, societa, etc..."/>
+    <page name='anagrafica' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageAnagrafica.xml' title='Anagrafica' des="l'azienda, la societa, la ditta"/>
+    <page name='province' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageProvince.xml' title='Province' des="codici province"/>
+    <page name='provincia' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageProvincia.xml' title='Provincia' des='codice provincia'/>
+    <page name='rifs' href="{@siteurl}pages/rifs.aspx" class="{@var='baseClass'}" title='Riferimenti' des='i tuoi riferimenti' header="header_nomargins" headerprev="headerPrev_nomargins" menu="false"/>
+    <page name='mm' noheader='true' href="{@siteurl}pages/mm.aspx" xml='{@approot}pages_xml/pageMM.xml' class="{@var='baseClass'}" title='mind map' des='i tuoi schemi' usertypes='admin' menu="true"/>
+    <page name='ccorrente' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageCCorrente.xml' title='Il tuo conto' des="ma l'hai fatto il conto?"/>
+    <page name='ccorrenti' class="{@var='baseClass'}" icon="eur" xml='{@approot}pages_xml/pageCCorrenti.xml' title='Conti Correnti' des='il tuo salvadanaio ufficiale'/>
+    <page name='saldiccorrente' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageSaldiCCorrente.xml' title='Saldi Conto Corrente' des='conta sul conto'/>
+    <page name='checks' class="{@var='baseClass'}" xml='{@approot}pages_xml/pageChecks.xml' icon="chart-pie" title='Check' des="controllo sui conti, statistiche, indici e altro ancora..."/>
+  </pages>
+  
+  <!-- gruppi di moduli -->
+  <grp_modules>
+
+    <!-- vis -->
+    <grp_module name='vis'>
+      <module type='css' href="{@siteurl}js/vis-4.3.0/vis.css"/>
+      <module type='script' href="{@siteurl}js/vis-4.3.0/vis.js"/>
+    </grp_module>
+
+    <!-- canvasjs -->
+    <grp_module name='canvasjs'>
+      <module type='script' href="{@siteurl}js/canvasjs-1.9.6/canvasjs.min.js"/>
+    </grp_module>
+
+    <!-- base common pages -->
+    <grp_module name='base'>
+
+      <!-- styles -->
+      <module type='css' href="{@siteurl}js/jquery-ui-1.11.4.custom/jquery-ui.css"/>
+      <module type='css' href="{@siteurl}js/jquery-ui-1.11.4.custom/jquery-ui.theme.css"/>
+      <module type='css' href="{@siteurl}js/jHtmlArea-0.8/jHtmlArea.css"/>
+      <module type='css' href="{@siteurl}js/MetroJs.Full.0.9.77/metrojs.css"/>
+      <module type='css' href="{@siteurl}js/metro-3.0/css/metro.css"/>
+      <module type='css' href="{@siteurl}js/metro-3.0/css/metro-icons.css"/>
+      <module type='css' href="{@siteurl}js/metro-3.0/css/metro-responsive.css"/>
+      <module type='css' href="{@siteurl}js/metro-3.0/css/metro-schemes.css"/>
+      <module type='css' href="{@siteurl}js/main.css"/>
+      <module type='css' href="{@siteurl}js/lw.css"/>
+      <module type='css' href="{@siteurl}js/forms.css"/>
+      <module type='css' href="{@siteurl}js/grids.css"/>
+
+      <!-- jQuery -->
+      <module type='script' href="{@siteurl}js/jquery-2.2.3/jquery-2.2.3.js"/>
+
+      <!-- jQuery.formatCurrency -->
+      <!--<module type='script' href="{@siteurl}js/jquery.formatCurrency-1.4.0/jquery.formatCurrency-1.4.0.js"/>
+      <module type='script' href="{@siteurl}js/jquery.formatCurrency-1.4.0/jquery.formatCurrency.it-IT.js"/>-->
+
+      <!-- jquery.numberformatter -->
+      <module type='script' href="{@siteurl}js/jquery.numberformatter-1.2.4/jquery.numberformatter-1.2.4.js"/>
+
+      <!-- jQuery.ui -->
+      <module type='script' href="{@siteurl}js/jquery-ui-1.11.4.custom/jquery-ui.js"/>
+
+      <!-- jHtmlArea -->
+      <module type='script' href="{@siteurl}js/jHtmlArea-0.8/jHtmlArea-0.8.js"/>
+
+      <!-- jquery.touchSwipe -->
+      <module type='script' href="{@siteurl}js/jquery.touchSwipe/jquery.touchSwipe.min.js"/>
+
+      <!-- metrojs -->
+      <module type='script' href="{@siteurl}js/MetroJs.Full.0.9.77/metrojs.js"/>
+
+      <!-- metro 3.0 -->
+      <module type='script' href="{@siteurl}js/metro-3.0/js/metro.js"/>
+
+      <!-- base scripts -->
+      <module type='script' href="{@siteurl}js/main.js"/>
+      <module type='script' href="{@siteurl}js/dom_doc.js"/>
+      <module type='script' href="{@siteurl}js/dom_node.js"/>
+      <module type='script' href="{@siteurl}js/strings.js"/>
+      <module type='script' href="{@siteurl}js/grid.js"/>
+      <module type='script' href="{@siteurl}js/form.js"/>
+      <module type='script' href="{@siteurl}js/graph.js"/>
+
+      <!-- common pages functions -->
+      <module type='script' href="{@siteurl}pages_js/pages.js"/>
+    </grp_module>
+
+  </grp_modules>
+
+  <!-- lista di moduli client -->
+  <include>
+    <grp_module name='base'/>
+    <grp_module name='canvasjs'/>
+  </include>
+
+  <scripts>
+    <table name='load_conns'>
+      {@method='conns_list'}
+    </table>
+    <condition name='page-lnk'>
+      {@method='is_equal',{@qrypar='lnk'},1}
+    </condition>
+    <condition name='frm-upd'>
+      {@method='is_equal',{@qrypar='type'},upd}
+    </condition>
+    <condition name='frm-ins'>
+      {@method='is_equal',{@qrypar='type'},ins}
+    </condition>
+    <condition name='frm-sel-an'>
+      {@method='is_equal',{@qrypar='type'},selan}
+    </condition>
+    <condition name='frm-ins-an'>
+      {@method='is_equal',{@qrypar='type'},insan}
+    </condition>
+    <condition name='usr-admin'>
+      {@method='is_equal',{@usr_type},admin}
+    </condition>
+    <condition name='not-admin'>
+      {@method='is_diff',{@usr_type},admin}
+    </condition>
+    <condition name='not-anonimo'>
+      {@method='is_diff',{@usr_type},anonimo}
+    </condition>
+  </scripts>
+
+  <clientscripts>
+    <clientscript name='init-tiles'>
+      <![CDATA[$(window).load(function () {
+      
+        $("[lw-tile=normal]").liveTile();
+        
+        $("[lw-tile=onhover]").liveTile({ playOnHover:true,
+          repeatCount: 0, delay: 0, initDelay: 0,
+          startNow: false
+          /*, animationComplete: function(tileData){
+              $(this).liveTile("play");
+              tileData.animationComplete = function(){};
+          }*/
+      })/*.each(function(idx, ele){
+         var delay = idx * 1000; 
+          $(ele).liveTile("play", delay); })*/;
+          
+      });]]>
+    </clientscript>
+  </clientscripts>
+
+  <sections>
+    <section name='error' des='error'>
+      <![CDATA[<p style='margin-top:25px;margin-bottom:25px;font-size:120%;'><span class='msgErr'>si è verificato un errore: {@field='exception'}</span></p>]]>
+    </section>
+    <section name='headerPrev' des='intestazione pagine'>
+      <![CDATA[<div style='height:50px;'></div>
+      <h1 style='float:left;margin-right:10px;'><a href="javascript:navToPrev()"><span class="mif-arrow-left fg-darker smaller"></span></a></h1><h2>{@pagetitle='{@pagename}'}</h2><h4>{@pagedes='{@pagename}'}</h4>
+      <hr/><div style='height:10px;'></div>]]>
+    </section>
+    <section name='headerPrev_nomargins' des='intestazione pagine'>
+      <![CDATA[<h1 style='float:left;margin-right:10px;'><a href="javascript:navToPrev()"><span class="mif-arrow-left fg-darker smaller"></span></a></h1><h2>{@pagetitle='{@pagename}'}</h2><h4>{@pagedes='{@pagename}'}</h4>
+      <hr/><div style='height:10px;'></div>]]>
+    </section>
+    <section name='header_nomargins' des='intestazione pagine'>
+      <![CDATA[<h2>{@pagetitle='{@pagename}'}</h2><h4>{@pagedes='{@pagename}'}</h4>
+      <hr/><div style='height:10px;'></div>]]>
+    </section>
+    <section name='header' des='intestazione pagine'>
+      <![CDATA[<div style='height:50px;'></div>
+      <h2>{@pagetitle='{@pagename}'}</h2><h4>{@pagedes='{@pagename}'}</h4>
+      <hr/><div style='height:10px;'></div>]]>
+    </section>
+    <section name='emptyMenu' des='altezza del menu'>
+      <![CDATA[<table style='display:block;width:100%;height:40px;table-layout:fixed;'>
+        <tr><td>&nbsp;</td></tr></table>]]>
+    </section>
+    <section name='emptyForm' des='margine superiore della form'>
+      <![CDATA[<table style='display:block;width:100%;height:40px;table-layout:fixed;'>
+        <tr><td>&nbsp;</td></tr></table>]]>
+    </section>
+    <section name='incorso' des='lavori in corso'>
+      <![CDATA[<h4 style='color:tomato'>lavori in corso....</h4>]]>
+    </section>
+    <section name='lw-open' des='apertura list view' keys='{class}'>
+      <![CDATA[ <div class="ltrn-lw {class}"> ]]>
+    </section>
+    <section name='lw-close' des='chiusura list view'>
+      <![CDATA[ </div> ]]>
+    </section>
+    <section name='lw-row' des='parsificazione riga list view' keys='{tooltip-row},{onclick-row},{icon-name},{label-title},{label-des}'>
+      <![CDATA[<div class="ltrn-lwrow" title='{tooltip-row}' onclick="{onclick-row}">
+     <table>
+      <tr><td colspan='2' class='fld-title'>
+       <i class="{icon-name} lw-icon"></i><span class='lbl-title'>{label-title}</span>
+       </td></tr> 
+      <tr><td class='fld-data'>{label-des}</td></tr>
+     </table>
+		</div>]]>
+    </section>
+  </sections>
+
+  <queries>
+    <select name='getUser'>
+      <![CDATA[select u.IDUtente, u.nome as userName, u.pwd as userPwd, u.conn as userConn
+       , t.tipoUtente as userType, u.note + ' - ' + t.note as userTypeDes
+      from utenti u
+      join tipiutente t on u.idtipoutente = t.idtipoutente
+      where u.nome = {@qryText='userName'} and t.tipoutente <> 'anonimo'
+       and (({@qryVoid='userPwd'} <> '' AND u.pwd = {@qryVoid='userPwd'}) or ({@qryVoid='userPwd'} = '' AND u.pwd IS NULL))]]>
+    </select>
+    <select name='user_child_ids'>
+      <![CDATA[select dbo.getUtenteChilds({@qryNumb='idUser'}, 1) as ids]]>
+    </select>
+    <select name='user_childs'>
+      <![CDATA[select dbo.getUtenteChilds({@qryNumb='idUser'}, 0) as childs]]>
+    </select>
+    <update name='reset_session_keys'>
+      <![CDATA[delete from __pageskeys where idutente = {@qryNumb='idutente'} and onsession = 1]]>
+    </update>
+    <update name='save_page_key'>
+      <![CDATA[
+      if({@qryNumb='idutente'} >= 0 and exists(select idpagekey from __pageskeys where idutente = {@qryNumb='idutente'} and keys = {@qryText='keys'} and var = {@qryText='var'}))
+       update __pageskeys set val = {@qryText='val'}, dtupd = getdate() where idutente = {@qryNumb='idutente'} and keys = {@qryText='keys'} and var = {@qryText='var'};
+      else
+       insert into __pageskeys (idutente, keys, var, val, onsession, dtins) 
+        values ({@qryNumb='idutente'}, {@qryText='keys'}, {@qryText='var'}, {@qryText='val'}, {@qryFlag='on_session'}, getdate());
+      ]]>
+    </update>
+    <select name='get_page_key'>
+      <![CDATA[select val from __pageskeys where idutente = {@qryNumb='idutente'} and keys = {@qryText='keys'} and var = {@qryText='var'}]]>
+    </select>
+  </queries>
+
+  <dateformats default='dataSemplice' exportexcel='dataSemplice'>
+    <dateformat name='dataSemplice' serverfmt='yyyy/MM/dd' clientfmt='yyyy/MM/dd'/>
+    <dateformat name='dataOraSemplice' serverfmt='yyyy/MM/dd HH:mm' clientfmt='yyyy/MM/dd HH:mm'/>
+    <dateformat name='dataEstesa' serverfmt='ddd d MMM yyyy' clientfmt='dddd dd mmmm yyyy'/>
+    <dateformat name='dataOraEstesa' serverfmt='ddd d MMM yyyy HH:mm:ss' clientfmt='dddd dd mmmm yyyy HH:mm:ss'/>
+  </dateformats>
+
+  <gridsettings nopagesize='1000' widthcols='100' exportfile='grid' resetonload='true' reset_filters_title='Azzera filtri impostati' exporttitle='Esporta Elenco' exporttype='csv' emptyXmlExcel='~/res/empty.xml'
+                hideitem_tooltip='true' unload_key="page:{@pagename},ctrl:{@ctrlname}">
+    <types>
+      <type name='date_hour' format='dataOraSemplice'/>
+    </types>
+    <dbtypes>
+      <col dbtype='System.Decimal' type='integer'/>
+      <col dbtype='System.Int32' type='integer'/>
+      <col dbtype='System.String' type='text'/>
+      <col dbtype='System.DateTime' type='date'/>
+      <col dbtype='System.DateTime' type='date_hour'/>
+      <col dbtype='System.Double' type='euro'/>
+      <col dbtype='System.Double' type='real'/>
+      <col dbtype='System.Boolean' type='check'/>
+      <col dbtype='System.String' type='link'/>
+    </dbtypes>
+    <schematypes>
+      <col schematype="int" type="integer"/>
+      <col schematype="nvarchar" type="text"/>
+      <col schematype="varchar" type="text"/>
+      <col schematype="datetime" type="date"/>
+      <col schematype="datetime2" type="date_hour"/>
+      <col schematype="money" type="euro"/>
+      <col schematype="float" type="real"/>
+      <col schematype="real" type="real"/>
+      <col schematype="bit" type="check"/>
+    </schematypes>
+  </gridsettings>
+
+  <tilessettings>
+    <setting name='clientScript'>init-tiles</setting>
+  </tilessettings>
+</root>
+
+

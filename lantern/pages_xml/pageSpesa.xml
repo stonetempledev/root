@@ -1,0 +1,144 @@
+<page schema="xmlschema.ctrls">
+  <include>
+    <module type='script' href="{@siteurl}/pages_js/spesa.js"/>
+  </include>
+  <contents>
+    <form name="form-spesa" title="Scontrino" selects="load" updates="update" flds-width="100px,150px,300px">
+      <contents>
+        <row tooltip='tipo spesa effettuata'>
+          <field>
+            <label text='Tipo:' ref="{@pageref='tipiSpesa'}" />
+          </field>
+          <field>
+            <combo field='idtipospesa' fielddes='tipospesa' select='tipiSpesa' onsel_desfield='notetipospesa' required='true' errField='Tipo Spesa' width='200px'/>
+          </field>
+          <field>
+            <input field='notetipospesa' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='eventuale evento associato'>
+          <field>
+            <label text='Evento:' ref="{@pageref='eventi'}"/>
+          </field>
+          <field>
+            <combo field='idevento' fielddes='evento' select='eventi' onsel_desfield='desevento' required='false' errField='Evento' width='200px'/>
+          </field>
+          <field>
+            <input field='desevento' type='text' enabled='false'/>
+          </field>
+        </row>
+        <row tooltip='breve descrizione di cosa hai comprato'>
+          <field>
+            <label text='Dettaglio:'/>
+          </field>
+          <field colspan='2'>
+            <input field='pezzo' type='text' required='false' errField='Pezzo'/>
+          </field>
+        </row>
+        <row tooltip='quanti pezzi hai comprato?'>
+          <field>
+            <label text='Quantità:'/>
+          </field>
+          <field colspan='2'>
+            <input field='quantita' type='int' jskeyup="onchangequantita(this)" required='false' errField='Quantità' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='quando è stata effettuata la spesa?'>
+          <field>
+            <label text='Quando:'/>
+          </field>
+          <field colspan='2'>
+            <input field='data' type='date' enabled='true' formatDate='dataEstesa' required='true' errField='Quando' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='prezzo unitario'>
+          <field>
+            <label text='Prezzo:'/>
+          </field>
+          <field colspan='2'>
+            <input field='prezzo' type='euro' jskeyup="onchangeprezzo(this)" required='true' errField='Prezzo' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='importo totale'>
+          <field>
+            <label text='Totale:'/>
+          </field>
+          <field colspan='2'>
+            <input field='totale' type='euro' enabled='false' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='utente che inserisce i dati'>
+          <field>
+            <label text='Utente:'/>
+          </field>
+          <field>
+            <combo field='idutente' fielddes='utente' select='utenti' onsel_desfield='desutente' required='true' errField='Utente' width='200px'/>
+          </field>
+          <field>
+            <input field='desutente' type='text' enabled='false'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-upd'}" des="caricamento record da modificare">
+          <![CDATA[SELECT s.pezzo, s.quantita, s.data, s.prezzo
+    , s.idtipospesa, t.tipospesa, t.codspesa, t.note as notetipospesa
+    , s.idevento, e.evento, e.note as desevento
+    , s.idutente, u.nome as utente, u.note as desutente
+    , (s.prezzo * isnull(s.quantita, 1)) as totale
+ from spese s
+ left join tipispesa t on t.idtipospesa = s.idtipospesa
+ left join eventi e on e.idevento = s.idevento
+ left join utenti u on u.idutente = s.idutente
+   where s.idspesa = {@qrykey='idsps'}]]>
+        </select>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto oppure ultimo appena inserito">
+          <![CDATA[SELECT NULL as pezzo, NULL as quantita, s.data, NULL as prezzo
+    , s.idtipospesa, t.tipospesa, t.codspesa, t.note as notetipospesa
+    , s.idevento, e.evento, e.note as desevento
+    , u.idutente, u.nome as utente, u.note as desutente, NULL as totale
+    FROM SPESE s 
+    left join tipispesa t on t.idtipospesa = s.idtipospesa
+    left join eventi e on e.idevento = s.idevento
+    left join utenti u on (('{@property='userTypeLogged'}' = 'admin' and u.idutente = s.idutente) or ('{@property='userTypeLogged'}' <> 'admin' and u.idutente = '{@property='userId'}'))
+    WHERE idspesa = (select max(idspesa) from spese)
+    UNION SELECT NULL as pezzo, NULL as quantita, NULL as data, NULL as prezzo
+     , NULL as idtipospesa, NULL as tipospesa, NULL as codspesa, NULL as notetipospesa
+     , NULL as idevento, NULL as evento, NULL as desevento
+     , u.idutente, u.nome as utente, u.note as desutente, NULL as totale
+     from (select 1 as col) tbl
+     left join utenti u on ('{@property='userTypeLogged'}' <> 'admin' and u.idutente = '{@property='userId'}')
+     WHERE (select count(*) from spese) = 0]]>
+        </select>
+        <select name='tipiSpesa' forcombos='idtipospesa, tipospesa, note' des='caricamento tipi spesa in ordine di utilizzo'>
+          <![CDATA[select tbl.* 
+ from (select tp.idtipospesa, tp.tipospesa, tp.note
+  , (select count(*) from spese where spese.idtipospesa = tp.idtipospesa) as conteggio
+  from tipispesa tp) tbl
+  order by tbl.conteggio desc]]>
+        </select>
+        <select name='eventi' forcombos='idevento, evento, note'>
+          <![CDATA[select e.idevento, e.evento, e.note
+      from eventi e
+      where e.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <select name='utenti' forcombos='idutente, nome, note'>
+          <![CDATA[select u.idutente, u.nome, u.note from utenti u
+      join tipiutente t on u.idtipoutente = t.idtipoutente
+      where t.tipoutente <> 'admin' and u.idutente in ({@method='info',string:userVisibility})]]>
+        </select>
+        <update name="update" if="{@cond='frm-upd'}">
+          <![CDATA[update spese set idtipospesa = {@qryNumb='idtipospesa'}, idevento = {@qryNumb='idevento'}
+      , pezzo = {@qryText='pezzo'}, quantita = {@qryNumb='quantita'}, data = {@qryDate='data'}, prezzo = {@qryEuro='prezzo'}, dtupd = getDate()
+      , idutente = {@qryNumb='idutente'}
+        where idspesa = {@qrykey='idsps'}]]>
+        </update>
+        <update name="update" if="{@cond='frm-ins'}">
+          <![CDATA[insert into spese (idtipospesa, idevento, pezzo, quantita, data, prezzo, idutente, dtins) values({@qryNumb='idtipospesa'}, {@qryNumb='idevento'}
+      , {@qryText='pezzo'}, {@qryNumb='quantita'}, {@qryDate='data'}, {@qryEuro='prezzo'}, {@qryNumb='idutente'}, getdate())]]>
+        </update>
+      </queries>
+    </form>
+    <import name="buttons-noconfirm"/>
+  </contents>
+</page>

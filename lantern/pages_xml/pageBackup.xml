@@ -1,0 +1,37 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="form-backup" title="Backup dei dati e dei files" selects="load" hcenter="true" topmargin="100" height="200px">
+      <contents>
+        <row tooltip='titolo backup'>
+          <field>
+            <label text='Titolo:'/>
+          </field>
+          <field>
+            <input field='title' type='text' required='true' errField='Titolo' width='300px'/>
+          </field>
+        </row>
+        <row tooltip='breve descrizione del backup che si sta effettuando'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field>
+            <input field='des' type='text' width='300px'/>
+          </field>
+        </row>
+        <row>
+          <field class='footer' maxspan='true' right='true'>
+            <button type='submit' if="{@cond='frm-ins'}" value='Crea backup'/>
+            <button type='exit' value='Annulla'/>
+          </field>
+        </row>
+      </contents>
+      <queries>
+        <select name='load' if="{@cond='frm-ins'}" des="caricamento record vuoto">
+          <![CDATA[SELECT '{@var='sitetitle'} backup' as title, 'al ' + CONVERT(VARCHAR, getdate(), 113) as des
+      from (select 1 as col) tbl
+    ]]>
+        </select>
+      </queries>
+    </form>
+  </contents>
+</page>

@@ -1,0 +1,38 @@
+<page schema="xmlschema.ctrls">
+  <contents>
+    <form name="import-backup" title="Dati" width="600px" height="200px" hcenter="true" topmargin="100">
+      <contents>
+        <row tooltip='titolo indicativo associato al backup'>
+          <field>
+            <label text='Titolo:'/>
+          </field>
+          <field colspan='2'>
+            <input field='titolo' type='text' errField='Titolo' width='250px'/>
+          </field>
+        </row>
+        <row tooltip='descrizione indicativa associata al backup'>
+          <field>
+            <label text='Note:'/>
+          </field>
+          <field colspan='2'>
+            <input field='notes' type='text' errField='Note'/>
+          </field>
+        </row>
+        <row tooltip='file dati xml'>
+          <field width='150px'>
+            <label text='Pacchetto dati:'/>
+          </field>
+          <field>
+            <input field='pckfile' type='upload' required='true' errField='Pacchetto dati'/>
+          </field>
+        </row>
+        <row>
+          <field class='footer' maxspan='true' right='true'>
+            <button type='submit' value='Importa'/>
+            <button type='exit' value='Annulla'/>
+          </field>
+        </row>
+      </contents>
+    </form>
+  </contents>
+</page>
