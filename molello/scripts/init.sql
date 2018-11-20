@@ -1,84 +1,73 @@
--- DEV_NODES
---  select * from dev_nodes
-if exists (select * from sysobjects where id = object_id('dev_nodes') and objectproperty(id, 'isusertable') = 1)
-begin
- drop table dev_nodes;
-end
+/* MOLELLO
+*/
+
+-- M_NODES
+--  select * from M_NODES
+if exists (select * from sysobjects where id = object_id('m_nodes') and objectproperty(id, 'isusertable') = 1)
+ drop table m_nodes;
 go
 
-create table DEV_NODES (ID_NODE int identity(1,1) not null primary key
-  , COD_TP_NODE varchar(10), COD_STATE_NODE varchar(10), TITLE_NODE varchar(50) not null);
+create table M_NODES (ID_NODE int identity(1,1) not null primary key, NODE_TITLE varchar(50) not null);
 
-create index IDX_DEV_NODES_2 on DEV_NODES (title_node);
-go
-
-
--- DEV_NODES_LINK
---  select * from dev_nodes_link
-if exists (select * from sysobjects where id = object_id('dev_nodes_link') and objectproperty(id, 'isusertable') = 1)
-begin
- drop table dev_nodes_link;
-end
-go
-
-create table DEV_NODES_LINK (ID_NODE int not null, ID_NODE_PARENT int not null);
-
-create unique index IDX_DEV_NODES_LINK on DEV_NODES_LINK (id_node, id_node_parent);
+create index IDX_M_NODES on M_NODES (node_title);
 go
 
 
--- DEV_TP_NODES
---  select * from dev_tp_nodes
-if exists (select * from sysobjects where id = object_id('dev_tp_nodes') and objectproperty(id, 'isusertable') = 1)
-begin
- drop table dev_tp_nodes;
-end
+-- M_LINKS
+--  select * from m_links
+if exists (select * from sysobjects where id = object_id('m_links') and objectproperty(id, 'isusertable') = 1)
+ drop table m_links;
 go
 
-create table DEV_TP_NODES (COD_TP_NODE varchar(10) primary key, TITLE_TP_NODE varchar(50) not null, DES_TP_NODE varchar(250) not null);
-go
+create table M_LINKS (ID_NODE int not null, ID_NODE_PARENT int not null, PATH_IDS varchar(200) not null);
 
-insert into dev_tp_nodes (cod_tp_node, title_tp_node, des_tp_node)
- values ('prj', 'progetto', 'progetto da portare a termine'), ('mission', 'missione', 'missione da portare a termine')
-  , ('task', 'attività', 'attività da portare a termine'), ('expiry', 'scadenza', 'scadenza che verrà')
-  , ('tile', 'piastrella', 'elemento che compone l''insieme'), ('infos', 'informazioni', 'insieme di informazioni');
+create unique index IDX_M_LINKS on M_LINKS (id_node, id_node_parent);
+create index IDX_M_LINKS_2 on M_LINKS (id_node_parent);
+create index IDX_M_LINKS_3 on M_LINKS (id_node);
 go
 
 
--- DEV_STATE_NODES
---  select * from dev_state_nodes
-if exists (select * from sysobjects where id = object_id('dev_state_nodes') and objectproperty(id, 'isusertable') = 1)
-begin
- drop table dev_state_nodes;
-end
+-- M_ITEMS
+--  select * from M_ITEMS
+if exists (select * from sysobjects where id = object_id('m_items') and objectproperty(id, 'isusertable') = 1)
+ drop table m_items;
 go
 
-create table DEV_STATE_NODES (COD_STATE_NODE varchar(10) primary key, TITLE_STATE_NODE varchar(50) not null);
+create table M_ITEMS (ID_ITEM int identity(1,1) not null primary key, ID_NODE int not null, ITEM_TITLE varchar(50) not null);
+
+create unique index IDX_M_ITEMS on M_ITEMS (id_node, item_title);
+create index IDX_M_ITEMS_2 on M_ITEMS (id_node);
 go
 
-insert into dev_state_nodes (cod_state_node, title_state_node)
- values ('begin', 'iniziata'), ('work', 'lavori in corso'), ('susp', 'sospesa'), ('broken', 'interrotta')
-  , ('ok', 'finita');
-go
+---- T_TP_ELEMENTS
+----  select * from t_tp_elements
+--if exists (select * from sysobjects where id = object_id('t_tp_elements') and objectproperty(id, 'isusertable') = 1)
+-- drop table t_tp_elements;
+--go
+
+--create table T_TP_ELEMENTS (COD_TP_ELEMENT varchar(10) primary key, TITLE_TP_ELEMENT varchar(50) not null, DES_TP_ELEMENT varchar(250) not null);
+--go
+
+--insert into t_tp_elements (cod_tp_element, title_tp_element, des_tp_element)
+-- values ('prj', 'progetto', 'progetto da portare a termine')
+--  , ('section', 'sezione', 'elemento che compone l''insieme')
+--  , ('task', 'attività', 'attività/scadenza da portare a termine')
+--  , ('item', 'voce semplice', 'informazioni che vanno a descrivere elementi più complessi');
+--go
 
 
--- test
---  select * from dev_nodes
---  select * from dev_nodes_link
-insert into dev_nodes (cod_tp_node, cod_state_node, title_node)
- values ('mission', null, 'Mercedes Classe A'), ('mission', null, 'Alfa 156'), ('mission', null, 'Jippone');
-insert into dev_nodes (cod_tp_node, cod_state_node, title_node)
- values ('task', null, 'prima vista')
-  , ('expiry', null, 'valutazione a quarto')
-  , ('tile', null, 'annunci');
+---- T_STATES
+----  select * from T_STATES
+--if exists (select * from sysobjects where id = object_id('t_states') and objectproperty(id, 'isusertable') = 1)
+-- drop table t_states;
+--go
 
-insert into dev_nodes_link(id_node, id_node_parent)
- select n.id_node, (select id_node from dev_nodes where title_node = 'Mercedes Classe A')
-  from dev_nodes n where n.title_node = 'prima vista';
-insert into dev_nodes_link(id_node, id_node_parent)
- select n.id_node, (select id_node from dev_nodes where title_node = 'Alfa 156')
-  from dev_nodes n where n.title_node = 'valutazione a quarto';
-insert into dev_nodes_link(id_node, id_node_parent)
- select n.id_node, (select id_node from dev_nodes where title_node = 'Jippone')
-  from dev_nodes n where n.title_node = 'annunci';
-go
+--create table T_STATES (COD_STATE varchar(15) primary key, TITLE_STATE varchar(50) not null);
+--go
+
+--insert into t_states (cod_state, title_state)
+-- values ('started', 'iniziata'), ('in_progress', 'lavori in corso'), ('suspended', 'sospesa'), ('breaked', 'interrotta')
+--  , ('completed', 'finita');
+--go
+
+

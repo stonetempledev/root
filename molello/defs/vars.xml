@@ -7,6 +7,7 @@
     <var name="page-top">{@basepath}\scripts\top.html</var>
     <var name="page-menu">{@basepath}\scripts\menu.html</var>
     <var name="page-body">{@basepath}\scripts\body.html</var>
+    <var name="path-images">{@basepath}\scripts\images</var>
   </vars>
 
 </config>

@@ -1,0 +1,13 @@
+﻿        load_top(@"<li><span onclick='open_node(1)'>ROOT</span><span onclick='to_root()' class='ar'></span></li>
+        <li><span onclick='open_node(2)'>PRIMO NODO</span><span onclick='to_root()' class='ar'></span></li>
+        <li><span onclick='open_node(3)'>SECONDO NODO</span><span onclick='to_root()' class='ar'></span></li>
+        <li><span onclick='open_node(4)'>TERZO NODO</span><span onclick='to_root()' class='ar'></span></li>
+        <li><span onclick='open_node(5)'>QUARTO NODO</span><span onclick='to_root()' class='ar'></span></li>
+        <li><span onclick='open_node(6)'>QUINTO NODO</span><span onclick='to_root()' class='ar'></span></li>
+        <li><span onclick='open_node(7)'>SESTO NODO</span><span onclick='to_root()' class='ar'></span></li>
+        <li><span onclick='open_node(8)'>OTTAVO NODO</span><span onclick='to_root()' class='ar'></span></li>
+        <li><span onclick='open_node(9)'>NONO NODO</span><span onclick='to_root()' class='ar'></span></li>
+        <li><span onclick='open_node(10)'>DECIMO E ULTIMO NODO</span></li>");
+
+		webBrowser1.Document.InvokeScript("test",
+            new String[] { "called from client code" });
