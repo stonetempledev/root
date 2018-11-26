@@ -1,4 +1,4 @@
-﻿namespace molello {
+﻿namespace molello.forms {
   partial class frm_nodes {
     /// <summary>
     /// Required designer variable.

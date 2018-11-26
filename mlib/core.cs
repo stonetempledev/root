@@ -73,6 +73,11 @@ namespace mlib {
                 value = get_val(par, flds, dr);
                 break;
               }
+              // {@null='<FIELD NAME>'}
+              case "null": {
+                value = get_val(par, flds, dr, "null");
+                break;
+              }
               // {@txtqry='<FIELD NAME>'}
               case "txtqry": {
                 string val = get_val(par, flds, dr).ToString().Replace("'", "''");
@@ -99,10 +104,10 @@ namespace mlib {
       } catch (Exception ex) { log.log_err(ex); throw ex; }
     }
 
-    protected static string get_val (string par, Dictionary<string, object> flds = null, DataRow dr = null) {
+    protected static string get_val (string par, Dictionary<string, object> flds = null, DataRow dr = null, string def = "") {
       if (flds == null && dr == null) throw new Exception("il campo '" + par + "' specificato nella query non è stato impostato!");
-      if (flds != null && flds.ContainsKey(par)) return flds[par] != null ? flds[par].ToString() : "";
-      else if (dr != null && dr.Table.Columns.Contains(par)) return dr[par] != DBNull.Value ? dr[par].ToString() : "";
+      if (flds != null && flds.ContainsKey(par)) return flds[par] != null ? flds[par].ToString() : def;
+      else if (dr != null && dr.Table.Columns.Contains(par)) return dr[par] != DBNull.Value ? dr[par].ToString() : def;
       throw new Exception("il campo '" + par + "' specificato nella query non è stato impostato!");
     }
 

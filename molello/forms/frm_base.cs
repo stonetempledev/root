@@ -5,7 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace molello {
+namespace molello.forms {
   public class frm_base : Form {
     protected bool _mdown = false; protected Point _fp;
 

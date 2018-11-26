@@ -7,6 +7,7 @@ using mlib;
 using mlib.xml;
 using mlib.tools;
 using mlib.db;
+using molello.forms;
 
 namespace molello {
   static class app {

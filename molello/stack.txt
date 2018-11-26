@@ -1,0 +1,5 @@
+﻿icone abilitate e disabilitate
+propagazione nella struttura
+ in aggiunta di un nodo
+ in cancellazione di un nodo
+ quando si copia un nodo

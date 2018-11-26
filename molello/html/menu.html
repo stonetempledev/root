@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="x-ua-compatible" content="IE=9">
+  <title></title>
+  <script src="{@basepath}\html\jquery-3.2.1.min.js" type="text/javascript"></script>
+  <script src="{@basepath}\html\common.js" type="text/javascript"></script>
+  <link href="{@basepath}\html\base.css" rel="stylesheet" type="text/css" />
+  <style>
+    body
+    {
+      overflow: auto;
+      font-family: Segoe UI;
+      font-size: 9pt;
+      background-color: white;
+      padding: 0px;
+      margin: 0px;
+      border: 0px;
+    }
+    
+    .puntini
+    {
+      color: gray;
+      margin-left: 3px;
+    }
+    
+    td.bar-menu
+    {
+      text-align: right;
+      border-bottom: 2pt solid lightgray;
+    }
+    
+    td.node
+    {
+      border-bottom: 1pt solid gray;
+      font-size: 120%;
+      cursor: pointer;
+      padding: 5px;
+    }
+    
+    td.copy
+    {
+      font-weight:bold;
+    }
+
+    td.node:hover
+    {
+      background-color: aliceblue;
+    }
+  </style>
+  <script language="javascript">
+    $(document).ready(function () {
+      refresh_bar();
+    });
+
+    function chk_checked(el) { refresh_bar(); window.event.cancelBubble = true; }
+
+    function refresh_bar() {
+
+      // more nodes
+      if ($("input[chk_link_id]:checked").length)
+      { $("#img-remove-nodes").show(); }
+      else { $("#img-remove-nodes").hide(); }
+
+      // single node
+      if ($("input[chk_link_id]:checked").length == 1)
+      { $("#img-edit-nodes").show(); }
+      else { $("#img-edit-nodes").hide(); }
+
+      // can copy
+      if(window.external.can_copy_nodes(get_checked_ids()))
+        $("#img-copy-nodes, #img-add-copy-nodes").show();
+      else $("#img-copy-nodes, #img-add-copy-nodes").hide();
+
+      // can paste
+      if (window.external.can_paste_nodes())
+        $("#img-paste-nodes").show();
+      else $("#img-paste-nodes").hide();
+    }
+
+    function get_checked_ids() {
+      var res = "";
+      $("input[chk_link_id]:checked").each(function (index) {
+        res += (res != "" ? "," : "") + $(this).attr("chk_link_id");
+      });
+      return res;
+    }
+
+    function check_link_id(link_id) {
+      var el = $("input[chk_link_id=" + link_id + "]");
+      if (el.prop("checked")) el.prop("checked", ""); else el.prop("checked", "checked");
+      refresh_bar();
+    }
+
+  </script>
+</head>
+<body>
+  {@field='html'}
+</body>
+</html>

@@ -19,6 +19,7 @@ go
 
 create table M_LINKS (LINK_ID int identity(1,1) not null primary key, PARENT_LINK_ID int, PARENT_NODE_ID int, NODE_ID int not null);
 
+create index IDX_M_LINKS on M_LINKS (parent_link_id);
 --create index IDX_M_LINKS on M_LINKS (node_id, parent_node_id);
 --create index IDX_M_LINKS_2 on M_LINKS (parent_node_id);
 --create index IDX_M_LINKS_3 on M_LINKS (node_id);
@@ -53,7 +54,7 @@ as
   left join m_nodes n on n.node_id = l.node_id
 go
 
----- procedure: nodes_path
+---- procedure: link_path
 -- link_path 8
 if object_id('link_path', 'p') is not null
 	drop proc link_path;
@@ -69,7 +70,31 @@ begin
      where link_id = @link_id
    union all select e.link_id, e.parent_link_id, e.node_id, e.node_title, livello - 1
     from vw_links e
-    inner join cartelle d on d.parent_link_id = e.link_id /*and d.node_id <> d.parent_node_id*/)
- select link_id, parent_link_id, node_id, node_title, livello
-  from cartelle order by livello
+    inner join cartelle d on d.parent_link_id = e.link_id)
+ select c.link_id, c.parent_link_id, c.node_id, c.node_title, c.livello
+   , (select count(*) from m_links where parent_link_id = c.link_id) as cc_childs
+  from cartelle c order by c.livello
+end
+
+
+---- procedure: sub_links
+-- sub_links 8
+if object_id('sub_links', 'p') is not null
+	drop proc sub_links;
+go
+
+create procedure sub_links(@link_id int)
+as
+begin
+ with cartelle (link_id, parent_link_id, node_id, node_title, livello)
+ as
+ (select link_id, parent_link_id, node_id, node_title, 0 as livello
+    from vw_links 
+     where link_id = @link_id
+   union all select e.link_id, e.parent_link_id, e.node_id, e.node_title, livello + 1
+    from vw_links e
+    inner join cartelle d on d.link_id = e.parent_link_id)
+ select c.link_id, c.parent_link_id, c.node_id, c.node_title, c.livello
+   , (select count(*) from m_links where parent_link_id = c.link_id) as cc_childs
+  from cartelle c order by c.livello
 end

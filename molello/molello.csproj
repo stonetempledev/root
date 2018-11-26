@@ -66,36 +66,47 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="frm_add_node.cs">
+    <Compile Include="classes\dal.cs" />
+    <Compile Include="forms\frm_add_node.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frm_add_node.designer.cs">
+    <Compile Include="forms\frm_add_node.designer.cs">
       <DependentUpon>frm_add_node.cs</DependentUpon>
     </Compile>
-    <Compile Include="frm_base.cs">
+    <Compile Include="forms\frm_base.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frm_nodes.cs">
+    <Compile Include="forms\frm_edit_node.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frm_nodes.Designer.cs">
+    <Compile Include="forms\frm_edit_node.designer.cs">
+      <DependentUpon>frm_edit_node.cs</DependentUpon>
+    </Compile>
+    <Compile Include="forms\frm_nodes.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="forms\frm_nodes.Designer.cs">
       <DependentUpon>frm_nodes.cs</DependentUpon>
     </Compile>
-    <Compile Include="frm_popup.cs">
+    <Compile Include="forms\frm_popup.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frm_popup.Designer.cs">
+    <Compile Include="forms\frm_popup.Designer.cs">
       <DependentUpon>frm_popup.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="frm_add_node.resx">
+    <Compile Include="classes\node.cs" />
+    <EmbeddedResource Include="forms\frm_add_node.resx">
       <DependentUpon>frm_add_node.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frm_nodes.resx">
+    <EmbeddedResource Include="forms\frm_edit_node.resx">
+      <DependentUpon>frm_edit_node.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="forms\frm_nodes.resx">
       <DependentUpon>frm_nodes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frm_popup.resx">
+    <EmbeddedResource Include="forms\frm_popup.resx">
       <DependentUpon>frm_popup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -120,10 +131,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="defs\q-nodes.xml">
+    <Content Include="defs\qry-nodes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\images\add-24-black.png">
+    <Content Include="html\images\add-24-black.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="defs\vars.xml">
@@ -132,38 +143,56 @@
     <Content Include="defs\conns.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="html\images\add-copy-24.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="html\images\copy-24.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="html\images\edit-badge.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="html\images\remove-24.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="html\images\remove-32.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="html\images\share-24.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="i.txt" />
-    <Content Include="scripts\images\add-16.png">
+    <Content Include="html\images\add-16.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\images\add-24.png">
+    <Content Include="html\images\add-24.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\images\add-32.png">
+    <Content Include="html\images\add-32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\base.css">
+    <Content Include="html\base.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\body.html">
+    <Content Include="html\body.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\dragscroll.js">
+    <Content Include="html\dragscroll.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\menu.html">
+    <Content Include="html\menu.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\top.html">
+    <Content Include="html\top.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\common.js">
+    <Content Include="html\common.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="scripts\init.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\jquery-3.2.1.min.js">
+    <Content Include="html\jquery-3.2.1.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -173,6 +202,7 @@
       <Name>mlib</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

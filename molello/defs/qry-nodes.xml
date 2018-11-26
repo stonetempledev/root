@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+
+  <queries>
+        
+    <query name="add-node" des="aggiungi nodo alla struttura">
+      <![CDATA[insert into m_nodes (node_title) values ({@txtqry='node_title'});
+      
+      insert into m_links (parent_link_id, parent_node_id, node_id)
+        select {@null='parent_link_id'} as parent_link_id, {@null='parent_node_id'} as parent_node_id, @@IDENTITY
+         from (select 1 as col) t;
+      ]]>
+    </query>
+
+    <query name="get-node" des="leggi il nodo">
+      <![CDATA[select n.node_id, n.node_title
+        from m_nodes n 
+        join m_links l on l.node_id = n.node_id
+        where l.link_id = {@field='link_id'}]]>
+    </query>
+
+    <query name="add-link" des="leggi il nodo">
+      <![CDATA[insert into m_links (parent_link_id, parent_node_id, node_id)
+        select t.parent_link_id, t.parent_node_id, t.node_id
+         from (select {@null='parent_link_id'} as parent_link_id, {@null='parent_node_id'} as parent_node_id, {@field='node_id'} as node_id) t
+          where not exists (select top 1 1 from m_links where isnull(parent_link_id, -1) = isnull(t.parent_link_id, -1) and node_id = t.node_id)]]>
+    </query>
+
+    <query name="set-node" des="aggiorna il nodo">
+      <![CDATA[update m_nodes set node_title = {@txtqry='node_title'}
+        where node_id = {@field='node_id'}]]>
+    </query>
+
+    <query name="get-nodes" des="leggi nodi del nodo">
+      <![CDATA[select l.link_id, n.node_id, n.node_title
+         , (select count(*) from m_links where parent_link_id = l.link_id) as cc_childs
+        from m_links l
+        join m_nodes n on n.node_id = l.node_id
+        where (({@null='parent_link_id'} is null and l.parent_link_id is null)
+         or (l.parent_link_id is not null and l.parent_link_id = {@null='parent_link_id'}))
+        order by n.node_title]]>
+    </query>
+
+    <query name="remove-node" des="togli il nodo dalla struttura">
+      <![CDATA[delete from m_links where parent_link_id = {@field='link_id'};
+      delete from m_links where link_id = {@field='link_id'};
+      
+      delete n from m_nodes n
+       where not exists (select top 1 1 from m_links where node_id = n.node_id)
+        or not exists (select top 1 1 from m_links where parent_node_id = n.node_id);]]>
+    </query>
+
+    <query name="get-link-path" des="elenco dei nodi della gerarchia">
+      <![CDATA[link_path {@field='link_id'}]]>
+    </query>
+  </queries>
+
+</config>
