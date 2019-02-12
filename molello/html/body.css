@@ -1,0 +1,70 @@
+﻿body
+{
+  overflow: auto;
+}
+
+div.item-parent
+{
+  position: relative;
+}
+
+img.item-mc
+{
+  cursor: pointer;
+  opacity: 0.3;
+  z-index: 900;
+  position: absolute;
+  left: 0px;
+}
+
+div.mc-bar
+{
+  position: absolute;
+  left: 16px;
+  padding: 0px;
+  margin: 0px;
+  z-index: 900;
+  height: 16px;
+  width: 80px;
+}
+
+img.item-mc-bm
+{
+  cursor: pointer;
+  opacity: 0.8;
+  margin: 0px;
+  z-index: 900;
+  position: relative;
+  top: -3px;
+}
+
+div.item
+{
+}
+
+div.title
+{
+  font-size: 20pt;
+  margin-bottom: 7px;
+}
+
+div.text
+{
+  margin-bottom: 7px;
+}
+
+[contenteditable=true]:empty:not(:focus):before
+{
+  content: attr(data-text);
+  color: lightgray;
+}
+
+span.label
+{
+  font-weight: bold;
+  background-color: darkgray;
+  color: White;
+  border-radius: 12px;
+  border: 1px solid lightgrey;
+  padding: 0px 10px 3px 10px;
+}

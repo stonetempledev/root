@@ -94,7 +94,7 @@ namespace mlib.db {
 
     static public string str_val (object fld) { return fld == null || fld == DBNull.Value ? "" : fld.ToString(); }
 
-    static public int int_val (object fld) { return fld == null || fld == DBNull.Value ? 0 : Convert.ToInt32(fld); }
+    static public int int_val (object fld, int def = 0) { return fld == null || fld == DBNull.Value ? def : Convert.ToInt32(fld); }
 
     public static string row_to_csv (DataRow dr) {
       string res = "";
@@ -292,13 +292,15 @@ namespace mlib.db {
       return dt_table(cr.parse(qry.text, flds));
     }
 
-    public void exec_qry (config.query qry, core cr, Dictionary<string, object> flds = null) {
+    public string exec_qry (config.query qry, core cr, Dictionary<string, object> flds = null, bool getidentity = false) {
+      string res = null;
       if (qry.tp == config.query.tp_query.do_while) {
         foreach (DataRow dr in dt_table(qry.text_do).Rows)
-          exec(cr.parse(qry.text_while, flds, dr));
+          res = exec(cr.parse(qry.text_while, flds, dr), getidentity);
       } else {
-        foreach (string txt in qry.queries) exec(cr.parse(txt, flds));
+        foreach (string txt in qry.queries) res = exec(cr.parse(txt, flds), getidentity);
       }
+      return res;
     }
 
     public string exec (string sql, bool getidentity = false, bool noidentity = false, bool open_key = false) {

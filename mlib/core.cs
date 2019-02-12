@@ -20,6 +20,8 @@ namespace mlib {
 
     public core (string base_path) { _base_path = base_path; _config = new config(this); }
 
+    #region configs
+
     public void reset_configs () { _cfg_keys.Clear(); _config.reset(); }
 
     public void load_config (xml_doc doc, string doc_key, string vars_key = "", bool page = false) {
@@ -42,6 +44,10 @@ namespace mlib {
         System.Configuration.ConfigurationManager.AppSettings[name].ToString() : "");
     }
 
+    #endregion
+
+    #region parse
+
     public string parse (string text, Dictionary<string, object> flds = null, DataRow dr = null) {
 
       try {
@@ -57,6 +63,8 @@ namespace mlib {
             switch (cnt) {
               // {@basepath}
               case "basepath": text = text.Replace("{@basepath}", _base_path); break;
+              // {@baseurl}
+              case "baseurl": text = text.Replace("{@baseurl}", _base_path.Replace("\\", "/")); break;
               // {@machine-ip}
               case "machine-ip": text = text.Replace("{@machine-ip}", machine_ip()); break;
               // {@machine-name}
@@ -131,5 +139,16 @@ namespace mlib {
     public double eval_double (string expr) { try { return (double)_eval.Evaluate(string.Format("number({0})", expr)); } catch (Exception ex) { log.log_err(expr); throw ex; } }
 
     public bool eval_bool (string expr) { try { return (bool)_eval.Evaluate(string.Format("boolean({0})", expr)); } catch (Exception ex) { log.log_err(expr); throw ex; } }
+
+    #endregion
+
+    #region common
+
+    public static string[] split (string lst) { return lst.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries); }
+    public static int[] split_ints (string lst) {
+      return lst.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => int.Parse(s)).ToArray();
+    }
+
+    #endregion
   }
 }

@@ -1,9 +1,2 @@
-﻿molello
- linea
-  essenziale
-  facile
-  immediato
-  flessibile
- elements
-  node
-   item
+﻿https://jqueryui.com
+http://learn.jquery.com/jquery-ui/getting-started/

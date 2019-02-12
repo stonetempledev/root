@@ -49,7 +49,7 @@ namespace molello.forms {
     }
 
     public static bool edit_node (int link_id) {
-      frm_edit_node f = new frm_edit_node(link_id);
+      frm_edit_node f = new frm_edit_node(link_id) { StartPosition = FormStartPosition.CenterParent };
       f.ShowDialog();
       return f._ok;
     }

@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="x-ua-compatible" content="IE=9">
+  <title></title>
+  <link href="{@basepath}\html\bootstrap.min.css" rel="stylesheet" />
+  <script src="{@basepath}\html\jquery-3.2.1.min.js" type="text/javascript"></script>
+  <script src="{@basepath}\html\bootstrap.bundle.min.js" type="text/javascript"></script>
+  <script src="{@basepath}\html\common.js" type="text/javascript"></script>
+  <style>
+    body
+    {
+      overflow: none;
+      font-family: Segoe UI;
+      font-size: 9pt;
+      background-color: white;
+      padding: 0px;
+      margin: 0px;
+      border: 0px;
+      cursor:pointer;
+    }
+    
+    span.title-txt
+    {
+      font-size: 20pt;
+      margin-left: 10px;
+    }
+    
+    img.close-icon
+    {
+      float: right;
+      cursor: pointer;
+      border: 0px;
+      padding: 2px;
+      margin-right:5px;
+      background-image: url('{@baseurl}/html/images/cancel-24-blue.png');
+      background-repeat: no-repeat;
+      background-position:center center;
+      width:32px;height:32px;
+    }
+    
+    img.close-icon:hover
+    {
+      background-color: rgb(245,150,150);
+      background-image: url('{@baseurl}/html/images/cancel-24-white.png');
+    }
+  </style>
+  <script language="javascript">
+    $(document).ready(function () {
+    });
+
+    function md_close() {
+      if (window.event.button == 1) { window.external.close_window(); return; }
+    }
+
+    function mmove() { window.external.mouse_move(); }
+    function mdown() { window.external.mouse_down(); }
+    function mup() { window.external.mouse_up(); }
+    function dblclick() { window.external.dblclick(); }
+
+  </script>
+</head>
+<body ondblclick='dblclick()' onmousemove='mmove()' onmouseup='mup()' onmousedown='mdown()'>
+  {@field='html'}
+</body>
+</html>

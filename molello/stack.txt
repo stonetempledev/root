@@ -1,5 +1,11 @@
-﻿icone abilitate e disabilitate
-propagazione nella struttura
- in aggiunta di un nodo
- in cancellazione di un nodo
- quando si copia un nodo
+﻿todo list
+modifica di un documento
+ menu di contesto /
+  sposta su
+  sposta giu
+  elimina
+  copia
+  taglia
+  incolla
+  seleziona
+  modifica tipo di elemento

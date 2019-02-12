@@ -2,8 +2,11 @@
 <config>
 
   <conns>
-    <conn name="home" des="connessione pc portatile a casa"
+    <conn name="dell-pc" des="connessione pc portatile a casa"
       conn-string="Data Source=DELL-PC\SQLEXPRESS;Initial Catalog=molello;Integrated Security=True" provider="System.Data.SqlClient"
+      date-format="yyyy-MM-dd HH:mm:ss" timeout='300'/>
+    <conn name="toshiblack" des="connessione sul disco black"
+      conn-string="Data Source=DELL-PC\SQLEXPRESS;Initial Catalog=toshiblack;Integrated Security=True" provider="System.Data.SqlClient"
       date-format="yyyy-MM-dd HH:mm:ss" timeout='300'/>
   </conns>
 
