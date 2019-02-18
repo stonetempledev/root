@@ -37,12 +37,13 @@
     </query>
     
     <query name="get-items-node" des="leggi il contenuto del nodo">
-      <![CDATA[select n.node_id, n.node_title, i.item_id, i.item_type, itit.item_title, it.item_text, il.item_label
+      <![CDATA[select n.node_id, n.node_title, i.item_id, i.item_type, itit.item_title, it.item_text, il.item_label, itd.item_stato, itd.item_cosa
         from m_items i 
         left join m_nodes n on i.node_id = n.node_id
         left join m_items_title itit on itit.item_id = i.item_id
         left join m_items_text it on it.item_id = i.item_id
         left join m_items_label il on il.item_id = i.item_id
+        left join m_items_todo itd on itd.item_id = i.item_id
         where i.node_id = {@field='node_id'} order by i.item_id]]>
     </query>
 
@@ -128,9 +129,10 @@
 
     <query name="reset-items" des="rimuove tutti gli items del nodo">
       <![CDATA[delete from m_items where node_id = {@field='node_id'};
-      delete from m_items_text where not exists (select top 1 1 from m_items i where i.item_id = item_id);
-      delete from m_items_title where not exists (select top 1 1 from m_items i where i.item_id = item_id);
-      delete from m_items_label where not exists (select top 1 1 from m_items i where i.item_id = item_id);]]>
+      delete i from m_items_text i where not exists (select top 1 1 from m_items where i.item_id = item_id);
+      delete i from m_items_title i where not exists (select top 1 1 from m_items where i.item_id = item_id);
+      delete i from m_items_label i where not exists (select top 1 1 from m_items where i.item_id = item_id);
+      delete i from m_items_todo i where not exists (select top 1 1 from m_items where i.item_id = item_id);]]>
     </query>
 
     <query name="updated-node" des="aggiorna la data di aggiornamento del nodo">
@@ -160,6 +162,14 @@
       declare @item_id integer; set @item_id = @@IDENTITY;
       insert into m_items_label (item_id, item_label)
        values(@item_id, {@txtqry='item_label'});]]>
+    </query>
+
+    <query name="add-item-todo" des="aggiunta item todo">
+      <![CDATA[insert into m_items (node_id, item_type)
+       values({@field='node_id'}, '{@field='item_type'}');
+      declare @item_id integer; set @item_id = @@IDENTITY;
+      insert into m_items_todo (item_id, item_stato, item_cosa)
+       values(@item_id, {@txtqry='item_stato'}, {@txtqry='item_cosa'});]]>
     </query>
 
   </queries>

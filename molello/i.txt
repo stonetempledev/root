@@ -1,2 +1,0 @@
-﻿https://jqueryui.com
-http://learn.jquery.com/jquery-ui/getting-started/

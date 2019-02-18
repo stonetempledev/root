@@ -75,6 +75,7 @@ go
 create table M_ITEMS_TITLE (ITEM_ID int not null primary key, ITEM_TITLE varchar(100) not null);
 go
 
+
 ---- table: M_ITEMS_LABEL
 --  select * from m_items_label
 if exists (select * from sysobjects where id = object_id('m_items_label') and objectproperty(id, 'isusertable') = 1)
@@ -83,6 +84,17 @@ go
 
 create table M_ITEMS_LABEL (ITEM_ID int not null primary key, ITEM_LABEL varchar(50) not null);
 go
+
+
+---- table: M_ITEMS_TODO
+--  select * from m_items_todo
+if exists (select * from sysobjects where id = object_id('m_items_todo') and objectproperty(id, 'isusertable') = 1)
+ drop table m_items_todo;
+go
+
+create table M_ITEMS_TODO (ITEM_ID int not null primary key, ITEM_STATO varchar(50) not null, ITEM_COSA varchar(500) not null);
+go
+
 
 ---- view: vw_links
 -- select * from vw_links

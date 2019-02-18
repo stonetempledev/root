@@ -14,8 +14,9 @@ namespace molello.classes {
     public item_title (HtmlAgilityPack.HtmlNode node) : base(node) { _title = node.InnerText; }
 
     public override string html_item () {
-      return html_base(this, string.Format(@"<div class='item title' {1}>{0}</div>", _title, attrs_base(this.tp)));
+      return html_base(this, string.Format(@"<div class='item-title' {1}>{0}</div>", _title, attrs_base(this.tp, "TITOLO...")));
     }
+
     public override void exec_insert (int node_id) {
       if (string.IsNullOrEmpty(_title)) return;
       base_dal.exec_qry("qry-nodes.add-item-title", new Dictionary<string, object>() { { "node_id", node_id }

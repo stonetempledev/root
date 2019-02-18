@@ -11,4 +11,5 @@ function is_url(str) {
   '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
   '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
     return pattern.test(str);
-}
+  }
+  function dump(obj) { var out = ''; for (var i in obj) out += i + ": " + obj[i] + "\n"; return out; }

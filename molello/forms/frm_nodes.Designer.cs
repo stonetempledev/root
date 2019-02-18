@@ -79,7 +79,6 @@
       this.wb_body.ScrollBarsEnabled = false;
       this.wb_body.Size = new System.Drawing.Size(589, 384);
       this.wb_body.TabIndex = 7;
-      this.wb_body.WebBrowserShortcutsEnabled = false;
       // 
       // wb_menu
       // 

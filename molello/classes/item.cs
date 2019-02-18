@@ -6,7 +6,7 @@ using HtmlAgilityPack;
 
 namespace molello.classes {
   public class item {
-    public enum item_type { none, title, text, label }
+    public enum item_type { none, title, text, label, todo }
     public enum item_display { block, inline }
 
     protected static List<item_type> _types = null;
@@ -34,10 +34,13 @@ namespace molello.classes {
 
     #region html
 
-    protected static string attrs_base (item_type tp) {
-      return string.Format("i-type='{0}' onkeydown='return i_keydown(this, event)' contenteditable='true' data-text=\"<{1}>\"", tp.ToString()
-        , (tp == item_type.text ? "SCRIVI IL TESTO" : (tp == item_type.title ? "SCRIVI IL TITOLO" 
-          : (tp == item_type.label ? "SCRIVI L'ETICHETTA" : ""))));
+    protected static string attrs_base (item_type tp, string void_text = "") {
+      return string.Format("i-type='{0}' {1}", tp.ToString()
+        , void_text != "" ? attrs_editable(void_text) : "");
+    }
+
+    protected static string attrs_editable (string void_text) {
+      return string.Format("contenteditable='true' onkeydown='return i_keydown(this, event)' data-text=\"<{0}>\"", void_text);
     }
 
     protected static int _id_item = -1;
@@ -62,6 +65,7 @@ namespace molello.classes {
       if (t == item_type.text) return (new item_text(0, "")).html_item();
       else if (t == item_type.title) return (new item_title(0, "")).html_item();
       else if (t == item_type.label) return (new item_label(0, "")).html_item();
+      else if (t == item_type.todo) return (new item_todo(0, "DA FARE", "")).html_item();
       else throw new Exception("item type '" + t.ToString() + "' not supported!");
     }
 
@@ -84,13 +88,15 @@ namespace molello.classes {
       if (tp == item_type.text) return new item_text(node);
       else if (tp == item_type.title) return new item_title(node);
       else if (tp == item_type.label) return new item_label(node);
+      else if (tp == item_type.todo) return new item_todo(node);
       else throw new Exception("element parsing '" + tp.ToString() + "' not supported!");
     }
 
     public static item transform (item i) {
       if (i is item_label) return new item_text(i.id, ((item_label)i).label);
       else if (i is item_text) return new item_title(i.id, ((item_text)i).text);
-      else if (i is item_title) return new item_label(i.id, ((item_title)i).title);
+      else if (i is item_title) return new item_todo(i.id, "DA FARE", ((item_title)i).title);
+      else if (i is item_todo) return new item_label(i.id, ((item_todo)i).cosa);
       return null;
     }
 

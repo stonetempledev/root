@@ -38,33 +38,58 @@ img.item-mc-bm
   top: -3px;
 }
 
-div.item
+div.item-title
 {
-}
-
-div.title
-{
-  font-size: 20pt;
+  font-size: 15pt;
   margin-bottom: 7px;
 }
 
-div.text
+div.item-text
 {
   margin-bottom: 7px;
+  font-size: 10pt;
 }
 
 [contenteditable=true]:empty:not(:focus):before
 {
   content: attr(data-text);
-  color: lightgray;
+  color: gray;
 }
 
-span.label
+span.item-label
 {
-  font-weight: bold;
-  background-color: darkgray;
-  color: White;
-  border-radius: 12px;
-  border: 1px solid lightgrey;
-  padding: 0px 10px 3px 10px;
+  font-size: 10pt;
+  background-color: whitesmoke;
+  color: darkslategray;
+  border-radius: 8px;
+  border: 1px solid palegreen;
+  padding: 0px 5px 3px 5px;
+}
+
+div.item-todo
+{
+  margin-top: 5px;
+  margin-bottom: 5px;
+  min-height:50px;
+  position: relative;
+}
+
+div.todo-state
+{
+  font-size: 8pt;
+  width: 100px;
+  background-color: lightblue;
+  color: white;
+  text-align: center;
+  padding: 2px;
+  border-radius: 4px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+
+div.todo-cosa
+{
+  font-size: 10pt;
+  margin-left:105px;
 }

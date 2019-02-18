@@ -15,34 +15,35 @@
 
     function i_keydown(el, ev) {
       // ALT + A
-      if (ev.altKey && ev.keyCode == 65) { add_item(el, $(el).attr("i-type"), "after"); return false; }
+      if (ev.altKey && ev.keyCode == 65) { add_item(el, "after"); return false; }
       // ALT + P
-      else if (ev.altKey && ev.keyCode == 80) { add_item(el, $(el).attr("i-type"), "before"); return false; }
+      else if (ev.altKey && ev.keyCode == 80) { add_item(el, "before"); return false; }
       // ALT + S
       else if (ev.altKey && ev.keyCode == 83) { save_doc(); return false; }
     }
 
     function save_doc() { return window.external.save_items($('html')[0].outerHTML); }
 
-    function add_item(el, tp, where) {
-      var par = $(el).parents("[i-parent='true']:first");
-      var div = $(window.external.html_void_item(tp));
+    function add_item(el, where) {
+      var par = $(el).parents("[i-parent='true']:first"), elc = $(el).attr("i-type") ? el : $(el).parents("[i-type]:first");
+      var div = $(window.external.html_void_item($(elc).attr("i-type")));
       if (where == "after") $(par).after(div); else if (where == "before") $(par).before(div);
-      $(div).find("*[i-type]:first").focus();
+      if ($(div).find("*[i-subtype]:first").length > 0) $(div).find("*[i-subtype]:first").focus();
+      else $(div).find("*[i-type]:first").focus();
     }
 
     function over_parent(el) { $(el).find("img[i-mc='true']").show(); }
     function out_parent(el) { if (!issel_item(el)) $(el).find("img[i-mc='true']").hide(); }
     function leave_parent(el) {
       $(el).find("div[i-bar='true']").css("display", "none");
-      $(el).find("div[i-type]").css("opacity", "1");
+      $(el).find("*[i-type]").css("opacity", "1");
     }
 
     function mc_omdown(el, ev) {
       var par = $(el).parents("[i-parent='true']:first");
       $(par).find("[i-dd='true']").css("display", "none");
       $(el).next("div[i-bar='true']").css("display", "none");
-      $(el).nextAll("div[i-type]").css("opacity", "1");
+      $(el).nextAll("*[i-type]").css("opacity", "1");
       if (ev.button == 0) sel_unsel_item(par);
       else if (ev.button == 2) window.external.menu_items(par.attr("id"));
     }
@@ -66,19 +67,19 @@
             if (par.next().length == 0) return;
             par.next().after(par.clone()); par.remove();
           }
-          $("*[i-bar='true'],*[i-mc='true']").hide(); $("div[i-type]").css("opacity", "1");
+          $("*[i-bar='true'],*[i-mc='true']").hide(); $("*[i-type]").css("opacity", "1");
         }
       } catch (e) { alert("errr: " + e.Message); }
     }
 
     function over_mc_item(el) {
       $(el).next("div[i-bar='true']").css("display", "inline");
-      $(el).nextAll("div[i-type]").css("opacity", "0.4");
+      $(el).nextAll("*[i-type]").css("opacity", "0.4");
     }
 
     function out_bar(el) {
       $(el).css("display", "none");
-      $(el).next("div[i-type]").css("opacity", "1");
+      $(el).next("*[i-type]").css("opacity", "1");
     }
 
     function issel_item(el) { return $(el).attr("i-sel") == "true"; }

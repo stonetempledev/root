@@ -14,7 +14,7 @@ namespace molello.classes {
     public item_label (HtmlAgilityPack.HtmlNode node) : base(node, item_display.inline) { _label = node.InnerText; }
 
     public override string html_item () { 
-      return html_base(this, string.Format(@"<span class='item label' {1}>{0}</span>", _label, attrs_base(this.tp))); 
+      return html_base(this, string.Format(@"<span class='item-label' {1}>{0}</span>", _label, attrs_base(this.tp, "ETICHETTA..."))); 
     }
 
     public override void exec_insert (int node_id) {

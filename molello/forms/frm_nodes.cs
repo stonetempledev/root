@@ -323,7 +323,7 @@ namespace molello.forms {
 
     public bool save_items (string h, bool show_err = true) {
       try {
-        //System.IO.File.WriteAllText("c:\\tmp\\doc.html", h);
+        System.IO.File.WriteAllText("c:\\tmp\\doc.html", h);
         classes.node.dal.save_items(_node_id, classes.item.parse_html(h));
         return true;
       } catch (Exception ex) { if (show_err) frm_popup.show_error(ex.Message); return false; }

@@ -14,8 +14,8 @@ namespace molello.classes {
     public item_text (HtmlAgilityPack.HtmlNode node) : base(node) { _text = node.InnerText; }
 
     public override string html_item () {
-      return html_base(this, string.Format(@"<div class='item text' {1}>{0}</div>"
-        , _text, attrs_base(this.tp))); 
+      return html_base(this, string.Format(@"<div class='item-text' {1}>{0}</div>"
+        , _text, attrs_base(this.tp, "TESTO..."))); 
     }
     public override void exec_insert (int node_id) {
       if (string.IsNullOrEmpty(_text)) return;
