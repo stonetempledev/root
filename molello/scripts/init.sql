@@ -86,15 +86,37 @@ create table M_ITEMS_LABEL (ITEM_ID int not null primary key, ITEM_LABEL varchar
 go
 
 
----- table: M_ITEMS_TODO
+---- table: M_ITEMS_TODO, M_TODO_ITEMS, M_TODO_STATI
 --  select * from m_items_todo
 if exists (select * from sysobjects where id = object_id('m_items_todo') and objectproperty(id, 'isusertable') = 1)
  drop table m_items_todo;
 go
 
-create table M_ITEMS_TODO (ITEM_ID int not null primary key, ITEM_STATO varchar(50) not null, ITEM_COSA varchar(500) not null);
+create table M_ITEMS_TODO (ITEM_ID int not null primary key, ITEM_STATO varchar(15) not null, ITEM_PERC int null, ITEM_COSA varchar(500) not null);
 go
 
+--  select * from m_todo_items
+if exists (select * from sysobjects where id = object_id('m_todo_items') and objectproperty(id, 'isusertable') = 1)
+ drop table m_todo_items;
+go
+
+create table M_TODO_ITEMS (ITEM_TODO_ID int identity(1,1) not null primary key, ITEM_ID int not null, ITEM_STATO varchar(15) not null, ITEM_COSA varchar(500) not null);
+go
+
+
+if exists (select * from sysobjects where id = object_id('m_todo_stati') and objectproperty(id, 'isusertable') = 1)
+ drop table m_todo_stati;
+go
+
+create table M_TODO_STATI (TODO_STATO varchar(15) not null primary key, TODO_STATO_TITLE varchar(50) not null, TODO_STATO_SIGLA varchar(3) not null, TODO_STATO_COLOR varchar(25) not null, TODO_STATO_ORDER int not null);
+go
+
+--  select * from m_todo_stati order by 4
+delete from m_todo_stati;
+insert into m_todo_stati (todo_stato, todo_stato_title, todo_stato_sigla, todo_stato_color, todo_stato_order)
+ values ('working', 'IN CORSO', 'IC', 'lime', 10), ('important', 'IMPORTANTE', 'I', 'lightsalmon', 15)
+   , ('next', 'IL PROSSIMO', 'P', 'gold', 20), ('todo', 'DA FARE', 'DF', 'lightblue', 30)
+   , ('slow', 'DOPO', 'D', 'rosybrown', 50), ('done', 'FATTO', 'F', 'greenyellow', 60), ('suspended', 'SOSPESO', 'S', 'plum', 99);
 
 ---- view: vw_links
 -- select * from vw_links
@@ -141,7 +163,7 @@ go
 ---- procedure: sub_links
 -- sub_links '4,2', '7,8'
 if object_id('sub_links', 'p') is not null
-	drop procedure sub_links;
+  drop procedure sub_links;
 go
 
 create procedure sub_links(@link_ids varchar(100), @filter_nodes varchar(100) = null)
@@ -163,6 +185,7 @@ begin
   order by c.livello
 end
 go
+
 
 ---- function: split
 if object_id('split', 'tf') is not null

@@ -1,6 +1,7 @@
 ﻿body
 {
   overflow: auto;
+  padding: 5px;
 }
 
 div.item-parent
@@ -14,7 +15,8 @@ img.item-mc
   opacity: 0.3;
   z-index: 900;
   position: absolute;
-  left: 0px;
+  top: -5px;
+  left: -5px;
 }
 
 div.mc-bar
@@ -25,7 +27,7 @@ div.mc-bar
   margin: 0px;
   z-index: 900;
   height: 16px;
-  width: 80px;
+  width: 110px;
 }
 
 img.item-mc-bm
@@ -61,8 +63,8 @@ span.item-label
   font-size: 10pt;
   background-color: whitesmoke;
   color: darkslategray;
-  border-radius: 8px;
-  border: 1px solid palegreen;
+  border-radius: 4px;
+  border: 1px solid lightblue;
   padding: 0px 5px 3px 5px;
 }
 
@@ -70,26 +72,109 @@ div.item-todo
 {
   margin-top: 5px;
   margin-bottom: 5px;
-  min-height:50px;
+  min-height: 35px;
   position: relative;
+  border-bottom: 1pt solid lightgrey;
 }
 
 div.todo-state
 {
-  font-size: 8pt;
-  width: 100px;
-  background-color: lightblue;
-  color: white;
+  font-size: 16pt;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
   text-align: center;
-  padding: 2px;
-  border-radius: 4px;
+  padding-bottom: 7px;
+  border-radius: 15px 15px 15px 15px;
   position: absolute;
   left: 0px;
   top: 0px;
 }
 
+img.todo-perc
+{
+  cursor: pointer;
+  opacity: 0.5;
+  float: right;
+}
+
+img.todo-perc:hover
+{
+  opacity: 1;
+}
+
+span.todo-sigla
+{
+  cursor: pointer;
+  color: White;
+  margin-bottom: 5px;
+  position: relative;
+  top: -2px;
+}
+
+span.todo-stato
+{
+  font-size: 12pt;
+  cursor: pointer;
+  color: White;
+  position: relative;
+  border-radius: 4px;
+  padding-right: 3px;
+  padding-left: 3px;
+  padding-bottom: 2px;
+  margin: 2px;
+  display:block;
+  text-align:center;
+  width:150px;
+}
+
 div.todo-cosa
 {
   font-size: 10pt;
-  margin-left:105px;
+  margin-left: 40px;
 }
+
+div.todo-item-cosa
+{
+  font-size: 9pt;
+  margin-left: 60px;
+  position:relative;
+  top:-2px;
+}
+
+div.todo-stati
+{
+  font-size: 10pt;
+  margin-left: 105px;
+}
+
+div.todo-percs
+{
+  font-size: 10pt;
+  margin-left: 45px; /*   position: relative;   top: -15px; */
+}
+
+img.todo-item-st
+{
+  float:left;
+  cursor:pointer;
+  margin-left:40px;
+}
+
+div.todo-item
+{
+  margin-bottom:3px;
+}
+
+/*.arrow-todo
+{
+  width: 0;
+  height: 0;
+  position: relative;
+  left: 87px; top:-1px;
+  cursor:pointer;
+  transform: rotate(-135deg);
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 9px solid gray;
+}*/

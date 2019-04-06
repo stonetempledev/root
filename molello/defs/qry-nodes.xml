@@ -37,14 +37,15 @@
     </query>
     
     <query name="get-items-node" des="leggi il contenuto del nodo">
-      <![CDATA[select n.node_id, n.node_title, i.item_id, i.item_type, itit.item_title, it.item_text, il.item_label, itd.item_stato, itd.item_cosa
-        from m_items i 
-        left join m_nodes n on i.node_id = n.node_id
-        left join m_items_title itit on itit.item_id = i.item_id
-        left join m_items_text it on it.item_id = i.item_id
-        left join m_items_label il on il.item_id = i.item_id
-        left join m_items_todo itd on itd.item_id = i.item_id
-        where i.node_id = {@field='node_id'} order by i.item_id]]>
+      <![CDATA[select n.node_id, n.node_title, i.item_id, i.item_type, itit.item_title, it.item_text, il.item_label
+  , itd.item_stato, itd.item_cosa, itd.item_perc
+ from m_items i 
+ left join m_nodes n on i.node_id = n.node_id
+ left join m_items_title itit on itit.item_id = i.item_id
+ left join m_items_text it on it.item_id = i.item_id
+ left join m_items_label il on il.item_id = i.item_id
+ left join m_items_todo itd on itd.item_id = i.item_id
+ where i.node_id = {@field='node_id'} order by i.item_id]]>
     </query>
 
     <query name="add-link" des="leggi il nodo">
@@ -104,6 +105,11 @@
     and ({@field='out_link_id'} < 0 or ({@field='out_link_id'} > 0 and l.link_id <> {@field='out_link_id'})) ]]>
     </query>
 
+    <query name="get-todo-states" des="torna gli stati dei nodi">
+      <![CDATA[select s.todo_stato, s.todo_stato_title, s.todo_stato_sigla, s.todo_stato_color, s.todo_stato_order
+		 from m_todo_stati s order by s.todo_stato_order]]>
+    </query>
+
     <query name="remove-links" des="rimuove tutti i links dalla struttura">
       <![CDATA[delete from m_links where link_id in ({@field='link_ids'});
       
@@ -132,7 +138,8 @@
       delete i from m_items_text i where not exists (select top 1 1 from m_items where i.item_id = item_id);
       delete i from m_items_title i where not exists (select top 1 1 from m_items where i.item_id = item_id);
       delete i from m_items_label i where not exists (select top 1 1 from m_items where i.item_id = item_id);
-      delete i from m_items_todo i where not exists (select top 1 1 from m_items where i.item_id = item_id);]]>
+      delete i from m_items_todo i where not exists (select top 1 1 from m_items where i.item_id = item_id);
+      delete s from m_todo_items ti where not exists (select top 1 1 from m_items where ti.item_id = item_id);]]>
     </query>
 
     <query name="updated-node" des="aggiorna la data di aggiornamento del nodo">
@@ -144,7 +151,7 @@
        values({@field='node_id'}, '{@field='item_type'}');
       declare @item_id integer; set @item_id = @@IDENTITY;
       insert into m_items_text (item_id, item_text)
-       values(@item_id, {@txtqry='item_text'});
+       values(@item_id, {@txtqrycr='item_text'});
       ]]>
     </query>
 
@@ -168,9 +175,10 @@
       <![CDATA[insert into m_items (node_id, item_type)
        values({@field='node_id'}, '{@field='item_type'}');
       declare @item_id integer; set @item_id = @@IDENTITY;
-      insert into m_items_todo (item_id, item_stato, item_cosa)
-       values(@item_id, {@txtqry='item_stato'}, {@txtqry='item_cosa'});]]>
+      insert into m_items_todo (item_id, item_stato, item_cosa, item_perc)
+       values(@item_id, {@txtqry='item_stato'}, {@txtqrycr='item_cosa'}, {@field='item_perc'});]]>
     </query>
+    
 
   </queries>
 

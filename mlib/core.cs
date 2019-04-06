@@ -88,7 +88,13 @@ namespace mlib {
               }
               // {@txtqry='<FIELD NAME>'}
               case "txtqry": {
-                string val = get_val(par, flds, dr).ToString().Replace("'", "''");
+                string val = get_val(par, flds, dr).ToString().Replace("'", "''").Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
+                value = val != "" ? string.Format("'{0}'", val) : "NULL";
+                break;
+              }
+              // {@txtqrycr='<FIELD NAME>'}
+              case "txtqrycr": {
+                string val = get_val(par, flds, dr).ToString().Replace("'", "''").Replace("\r\n", "' + char(13) + '").Replace("\r", " ").Replace("\n", " ");
                 value = val != "" ? string.Format("'{0}'", val) : "NULL";
                 break;
               }

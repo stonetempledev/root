@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Security.Permissions;
 using System.Runtime.InteropServices;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 using mlib;
 using mlib.tools;
 using mlib.db;
@@ -66,15 +67,7 @@ namespace molello.forms {
 
     protected void reload_body () { load_body(html_body()); }
 
-    protected string html_body () {
-      StringBuilder res = new StringBuilder();
-      try {
-        foreach (classes.item i in classes.node.dal.get_items_node(_node_id))
-          res.Append(i.html_item());
-        if (res.Length == 0) res.Append((new classes.item_text(0, "")).html_item());
-        return res.ToString();
-      } catch (Exception ex) { return html_ex(ex); }
-    }
+    protected string html_body () { try { return (new classes.items_doc(_node_id)).html(); } catch (Exception ex) { return html_ex(ex); } }
 
     protected string html_top (int link_id = -1) {
       StringBuilder res = new StringBuilder();
@@ -323,7 +316,7 @@ namespace molello.forms {
 
     public bool save_items (string h, bool show_err = true) {
       try {
-        System.IO.File.WriteAllText("c:\\tmp\\doc.html", h);
+        //System.IO.File.WriteAllText("c:\\tmp\\doc.html", h);
         classes.node.dal.save_items(_node_id, classes.item.parse_html(h));
         return true;
       } catch (Exception ex) { if (show_err) frm_popup.show_error(ex.Message); return false; }
@@ -369,6 +362,7 @@ namespace molello.forms {
     public void menu_items (string id) { _form.menu_items(id); }
     public void menu_nodes () { _form.menu_nodes(); }
     public string transform_items (string h) { return _form.transform_items(h); }
+    public string get_todo_states () { return JsonConvert.SerializeObject(molello.classes.item.todo_stati()); }
   }
 
 }

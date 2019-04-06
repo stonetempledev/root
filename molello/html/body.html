@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="x-ua-compatible" content="IE=9">
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
   <link href="{@basepath}\html\bootstrap.min.css" rel="stylesheet" />
   <link href="{@basepath}\html\body.css" rel="stylesheet" />
   <script src="{@basepath}\html\jquery-3.2.1.min.js" type="text/javascript"></script>
@@ -11,7 +11,10 @@
   <script src="{@basepath}\html\common.js" type="text/javascript"></script>
   <title></title>
   <script language="javascript">
-    $(document).ready(function () { });
+    $(document).ready(function () {
+    });
+
+    function path_images() { return $("#path_images").text(); }
 
     function i_keydown(el, ev) {
       // ALT + A
@@ -20,6 +23,21 @@
       else if (ev.altKey && ev.keyCode == 80) { add_item(el, "before"); return false; }
       // ALT + S
       else if (ev.altKey && ev.keyCode == 83) { save_doc(); return false; }
+    }
+
+    function i_keydown_td(el, ev) {
+      if (!ev.shiftKey && !ev.altKey && !ev.ctrlKey && ev.keyCode == 13) { add_todo_item(el); return false; }
+      return i_keydown(el, ev);
+    }
+
+    function add_todo_item(el) {
+      if ($(el).text() == "") return;
+      var todo = $(el).parents("[i-type='todo']:first"), tdl = $(todo).find("[i-subtype='todo-list']");
+      var tdi = $(tdl).append("<div i-subtype='todo-item' class='todo-item'>"
+        + "<img i-subtype='todo-item-st' code-stato='DF' src='" + path_images() + "\\circle0-16.png' class='todo-item-st'/>"
+        + "<div i-subtype='todo-item-cosa' class='todo-item-cosa' contenteditable='true'"
+        + " onkeydown='return i_keydown_td(this, event)' data-text='TESTO TODO...'></div></div>");
+      $(tdi).find("*[i-subtype='todo-item-cosa']").focus();
     }
 
     function save_doc() { return window.external.save_items($('html')[0].outerHTML); }
@@ -32,7 +50,18 @@
       else $(div).find("*[i-type]:first").focus();
     }
 
-    function over_parent(el) { $(el).find("img[i-mc='true']").show(); }
+    function over_parent(el) {
+      if ($(el).find("img[i-mc='true']").length == 0) {
+        $(el).prepend("<div i-bar='true' class='mc-bar' onmouseleave='out_bar(this)' style='display:none;'>"
+        + " <img class='item-mc-bm' src='" + path_images() + "/refresh-16.png' onmousedown=\"mc_bmdown(this, event, 'change-el')\"/>"
+        + " <img class='item-mc-bm' src='" + path_images() + "/up-16.png' onmousedown=\"mc_bmdown(this, event, 'move-up')\"/>"
+        + " <img class='item-mc-bm' src='" + path_images() + "/down-16.png' onmousedown=\"mc_bmdown(this, event, 'move-down')\"/>"
+        + " <img class='item-mc-bm' src='" + path_images() + "/remove-btn-16.png' onmousedown=\"mc_bmdown(this, event, 'remove')\"/></div>");
+        $(el).prepend("<img i-mc='true' class='item-mc' src='" + path_images() + "/dot-16.png' "
+        + " style='display:none;' onmouseover='over_mc_item(this)' onmousedown='mc_omdown(this, event)'/>");
+      }
+      $(el).find("img[i-mc='true']").show();
+    }
     function out_parent(el) { if (!issel_item(el)) $(el).find("img[i-mc='true']").hide(); }
     function leave_parent(el) {
       $(el).find("div[i-bar='true']").css("display", "none");
@@ -52,7 +81,9 @@
       try {
         if (nm == "change-el") {
           var par = $(el).parents("[i-parent='true']:first");
-          par.after(window.external.transform_items(par.html())).remove();
+          var h = par.html();
+          var h2 = window.external.transform_items(h);
+          par.after(h2).remove();
         } else if (nm == "remove") {
           var par = $(el).parents("[i-parent='true']:first"); par.remove();
           if ($("*[i-parent='true']").length == 0) {
@@ -86,12 +117,74 @@
 
     function sel_unsel_item(par) {
       if (issel_item(par)) {
-        par.attr("i-sel", ""); par.find("img[i-mc='true']").css("opacity", "0.3").attr("src", $("#path_images").text() + "/dot-16.png");
+        par.attr("i-sel", ""); par.find("img[i-mc='true']").css("opacity", "0.3").attr("src", path_images() + "/dot-16.png");
       }
       else {
-        par.attr("i-sel", "true"); par.find("img[i-mc='true']").css("opacity", "0.6").attr("src", $("#path_images").text() + "/check-mark-red-16.png");
+        par.attr("i-sel", "true"); par.find("img[i-mc='true']").css("opacity", "0.6").attr("src", path_images() + "/check-mark-red-16.png");
       }
     }
+
+    function click_perc(ev, el) {
+      event.cancelBubble = true;
+      var todo = $(el).parents("[i-type='todo']:first");
+
+      var perc = todo.find("div[i-subtype='todo-stato']").attr("perc-stato");
+      if (perc == "") perc = 0; else perc = parseInt(perc);
+      if (ev.button == 0) perc = perc + 15;
+      else if (ev.button == 2) perc = perc - 15;
+      if (perc > 100) perc = 100; else if (perc < 0) perc = 0;
+      var ip = 0;
+      if (perc >= 0 && perc <= 5) ip = 0;
+      else if (perc >= 6 && perc <= 20) ip = 1;
+      else if (perc >= 21 && perc <= 40) ip = 2;
+      else if (perc >= 41 && perc <= 55) ip = 3;
+      else if (perc >= 56 && perc <= 70) ip = 4;
+      else if (perc >= 71 && perc <= 94) ip = 5;
+      else if (perc >= 95 && perc <= 100) ip = 6;
+
+      todo.find("[i-subtype='todo-stato']").attr("perc-stato", perc);
+      todo.find("img[i-subtype='todo-stato-perc']").attr("src", path_images() + "\\circle" + ip + "-16.png");
+    }
+
+    function click_stato(el) {
+      var todo = $(el).parents("[i-type='todo']:first");
+      if ($(todo).attr("active-stati") == "true") { hide_stati(todo); return; }
+
+      $(todo).attr("active-stati", "true");
+      var html = "", stati = JSON.parse(window.external.get_todo_states());
+      stati.forEach(function (entry) {
+        html += "<span code-stato='" + entry.stato + "' bck-color='" + entry.color + "' class='todo-stato' sigla='" + entry.sigla + "' onclick='choose_stato(this)' style='background-color:" + entry.color + "'>" + entry.title + "</span>";
+      });
+
+      if (todo.find("div[i-subtype='todo-stati']").length == 0)
+        $(el).parent().append("<div i-subtype='todo-stati' class='todo-stati' onmouseleave='out_stati(this)'>" + html + "</div>");
+      $(todo).find("[i-subtype='todo-cosa']").hide();
+      $(todo).find("[i-subtype='todo-perc']").hide();
+      $(todo).find("[i-subtype='todo-list']").hide();
+      $(todo).find("[i-subtype='todo-stati']").show();
+    }
+
+    function out_todo(el) { hide_stati(el); }
+
+    function out_stati(el) { hide_stati($(el).parents("[i-type='todo']:first")); }
+
+    function hide_stati(el) {
+      $(el).attr("active-stati", "false");
+      $(el).find("[i-subtype='todo-stati']").hide();
+      $(el).find("[i-subtype='todo-perc']").show();
+      $(el).find("[i-subtype='todo-cosa']").show();
+      $(el).find("[i-subtype='todo-list']").show();
+    }
+
+    function choose_stato(el) {
+      var todo = $(el).parents("[i-type='todo']:first");
+      hide_stati(todo);
+      var stato = $(todo).find("[i-subtype='todo-stato']");
+      $(stato).attr("code-stato", $(el).attr("code-stato"));
+      $(todo).find("[i-subtype='title-stato']").text($(el).attr("sigla"));
+      $(stato).css("background-color", $(el).attr("bck-color"));
+    }
+
   </script>
 </head>
 <body>

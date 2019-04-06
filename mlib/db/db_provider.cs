@@ -96,6 +96,8 @@ namespace mlib.db {
 
     static public int int_val (object fld, int def = 0) { return fld == null || fld == DBNull.Value ? def : Convert.ToInt32(fld); }
 
+    static public int? int_n_val (object fld) { return fld == null || fld == DBNull.Value ? (int?)null : Convert.ToInt32(fld); }
+
     public static string row_to_csv (DataRow dr) {
       string res = "";
       foreach (DataColumn dc in dr.Table.Columns) {

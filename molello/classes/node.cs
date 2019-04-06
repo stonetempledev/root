@@ -65,7 +65,15 @@ namespace molello.classes {
         return false;
       }
 
+      public static List<todo_stato> get_todo_states () {
+        return base_dal.dt_qry("qry-nodes.get-todo-states").Rows.Cast<DataRow>()
+          .Select(r => new todo_stato(r["todo_stato"].ToString(), r["todo_stato_title"].ToString(), r["todo_stato_sigla"].ToString()
+            , r["todo_stato_color"].ToString(), Convert.ToInt32(r["todo_stato_order"]))).ToList(); 
+      }
+
       public static List<item> get_items_node (int node_id) {
+        
+        // items
         List<item> res = new List<item>();
         foreach (DataRow dr in base_dal.dt_qry("qry-nodes.get-items-node", new Dictionary<string, object>() { { "node_id", node_id } }).Rows) {
           int id = int_val(dr["item_id"]);
@@ -73,9 +81,10 @@ namespace molello.classes {
           if (tp == item.item_type.text) res.Add(new item_text(id, str_val(dr["item_text"])));
           else if (tp == item.item_type.title) res.Add(new item_title(id, str_val(dr["item_title"])));
           else if (tp == item.item_type.label) res.Add(new item_label(id, str_val(dr["item_label"])));
-          else if (tp == item.item_type.todo) res.Add(new item_todo(id, str_val(dr["item_stato"]), str_val(dr["item_cosa"])));
+          else if (tp == item.item_type.todo) res.Add(new item_todo(id, str_val(dr["item_stato"]), str_val(dr["item_cosa"]), int_n_val(dr["item_perc"])));
           else throw new Exception("item type '" + tp.ToString() + "' not supported for select!");
         }
+
         return res;
       }
 

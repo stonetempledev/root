@@ -15,10 +15,12 @@ namespace molello.classes {
     protected int _id = -1;
     protected item_type _type = item_type.none;
     protected item_display _display = item_display.block;
+    protected item_group _group = new item_group();
 
     public int id { get { return _id; } }
     public item_type tp { get { return _type; } }
     public item_display display { get { return _display; } }
+    public item_group group { get { return _group; } }
 
     public item (int id, item_type tp) { _id = id; _type = tp; }
     public item (int id, item_type tp, item_display display) { _id = id; _type = tp; _display = display; }
@@ -32,6 +34,24 @@ namespace molello.classes {
     public virtual bool can_save () { return true; }
     public virtual void exec_insert (int node_id) { }
 
+    #region static
+
+    protected static List<todo_stato> _todo_stati = null;
+    protected static void check_stati () { if (_todo_stati == null) _todo_stati = classes.node.dal.get_todo_states(); }
+    public static todo_stato get_todo_stato (string stato) { check_stati(); return _todo_stati.FirstOrDefault(x => x.stato == stato); }
+    public static List<todo_stato> todo_stati () { check_stati(); return _todo_stati; }
+    public static string get_text_node (HtmlNode nd) {
+      StringBuilder sb = new StringBuilder();
+      foreach (HtmlNode n in nd.ChildNodes) {
+        if (n is HtmlTextNode) sb.Append(n.InnerText);
+        else if (n.Name.ToUpper() == "BR") sb.Append("\r\n");
+        else if (n.Name.ToUpper() == "P") sb.Append((sb.Length > 0 ? "\r\n" : "") + n.InnerText); 
+      }
+      return sb.ToString();
+    }
+
+    #endregion
+
     #region html
 
     protected static string attrs_base (item_type tp, string void_text = "") {
@@ -39,25 +59,17 @@ namespace molello.classes {
         , void_text != "" ? attrs_editable(void_text) : "");
     }
 
-    protected static string attrs_editable (string void_text) {
-      return string.Format("contenteditable='true' onkeydown='return i_keydown(this, event)' data-text=\"<{0}>\"", void_text);
+    protected static string attrs_editable (string void_text, string kd_fnc = "") {
+      return string.Format("contenteditable='true' onkeydown='return {1}(this, event)' data-text=\"<{0}>\"", void_text, kd_fnc == "" ? "i_keydown" : kd_fnc);
     }
 
     protected static int _id_item = -1;
     protected static string html_base (item i, string item_html) {
       _id_item++;
-      return string.Format(@"<div id='{2}' i-id='{3}' i-parent='true' class='item-parent' style='{4}'
-          onmouseover='over_parent(this)' onmouseout='out_parent(this)' onmouseleave='leave_parent(this)'>
-        <img i-mc='true' class='item-mc' src='{1}/dot-16.png' style='display:none;' 
-          onmouseover='over_mc_item(this)' onmousedown='mc_omdown(this, event)'/>
-        <div i-bar='true' class='mc-bar' onmouseleave='out_bar(this)' style='display:none;'>
-          <img class='item-mc-bm' src='{1}/refresh-16.png' onmousedown=""mc_bmdown(this, event, 'change-el')""/>
-          <img class='item-mc-bm' src='{1}/up-16.png' onmousedown=""mc_bmdown(this, event, 'move-up')""/>
-          <img class='item-mc-bm' src='{1}/down-16.png' onmousedown=""mc_bmdown(this, event, 'move-down')""/>
-          <img class='item-mc-bm' src='{1}/remove-btn-16.png' onmousedown=""mc_bmdown(this, event, 'remove')""/>
-          </div>{0}</div>"
+      return string.Format(@"{5}<div id='{2}' i-id='{3}' i-parent='true' class='item-parent' style='{4}'{5}
+          onmouseover='over_parent(this)' onmouseout='out_parent(this)' onmouseleave='leave_parent(this)'>{5}  {0}</div>"
         , item_html, app._core.config.get_var("vars.path-images").value, "parent_" + _id_item.ToString()
-        , (i != null ? "item_" + i.id.ToString() : ""), i.display == item_display.inline ? "display: inline;" : "" );
+        , (i != null ? "item_" + i.id.ToString() : ""), i.display == item_display.inline ? "display: inline;" : "", Environment.NewLine);
     }
 
     public static string html_void_item (string tp) {
@@ -65,7 +77,7 @@ namespace molello.classes {
       if (t == item_type.text) return (new item_text(0, "")).html_item();
       else if (t == item_type.title) return (new item_title(0, "")).html_item();
       else if (t == item_type.label) return (new item_label(0, "")).html_item();
-      else if (t == item_type.todo) return (new item_todo(0, "DA FARE", "")).html_item();
+      else if (t == item_type.todo) return (new item_todo(0, "todo", "", null)).html_item();
       else throw new Exception("item type '" + t.ToString() + "' not supported!");
     }
 
@@ -95,7 +107,7 @@ namespace molello.classes {
     public static item transform (item i) {
       if (i is item_label) return new item_text(i.id, ((item_label)i).label);
       else if (i is item_text) return new item_title(i.id, ((item_text)i).text);
-      else if (i is item_title) return new item_todo(i.id, "DA FARE", ((item_title)i).title);
+      else if (i is item_title) return new item_todo(i.id, "todo", ((item_title)i).title, null);
       else if (i is item_todo) return new item_label(i.id, ((item_todo)i).cosa);
       return null;
     }
