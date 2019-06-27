@@ -33,11 +33,19 @@
     function add_todo_item(el) {
       if ($(el).text() == "") return;
       var todo = $(el).parents("[i-type='todo']:first"), tdl = $(todo).find("[i-subtype='todo-list']");
-      var tdi = $(tdl).append("<div i-subtype='todo-item' class='todo-item'>"
-        + "<img i-subtype='todo-item-st' code-stato='DF' src='" + path_images() + "\\circle0-16.png' class='todo-item-st'/>"
-        + "<div i-subtype='todo-item-cosa' class='todo-item-cosa' contenteditable='true'"
-        + " onkeydown='return i_keydown_td(this, event)' data-text='TESTO TODO...'></div></div>");
+      var tdi = $(tdl).append($(window.external.html_void_item("todo_item")));
       $(tdi).find("*[i-subtype='todo-item-cosa']").focus();
+    }
+
+    function click_todo_sigla(el) {
+      var sigla = $(el).attr("code-stato"), image = "";
+      if (sigla == "DF") { sigla = "F"; image = "circle-ft-16.png"; }
+      else if (sigla == "F") { sigla = "S"; image = "circle-ic-16.png"; }
+      else if (sigla == "S") { sigla = "IC"; image = "circle-sp-16.png"; }
+      else if (sigla == "IC") { sigla = "DF"; image = "circle0-16.png"; }
+
+      $(el).attr("code-stato", sigla);
+      $(el).attr("src", path_images() + "\\" + image);
     }
 
     function save_doc() { return window.external.save_items($('html')[0].outerHTML); }

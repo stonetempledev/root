@@ -82,7 +82,10 @@ namespace molello.classes {
           else if (tp == item.item_type.title) res.Add(new item_title(id, str_val(dr["item_title"])));
           else if (tp == item.item_type.label) res.Add(new item_label(id, str_val(dr["item_label"])));
           else if (tp == item.item_type.todo) res.Add(new item_todo(id, str_val(dr["item_stato"]), str_val(dr["item_cosa"]), int_n_val(dr["item_perc"])));
-          else throw new Exception("item type '" + tp.ToString() + "' not supported for select!");
+          else if (tp == item.item_type.todo_item) {
+            ((item_todo)res.FirstOrDefault(i => i.id == int_val(dr["item_id"]))).add_item(new todo_item(
+              new todo_stato(str_val(dr["item_stato"])), str_val(dr["item_cosa"])));
+          } else throw new Exception("item type '" + tp.ToString() + "' not supported for select!");
         }
 
         return res;

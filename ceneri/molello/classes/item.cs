@@ -6,7 +6,7 @@ using HtmlAgilityPack;
 
 namespace molello.classes {
   public class item {
-    public enum item_type { none, title, text, label, todo }
+    public enum item_type { none, title, text, label, todo, todo_item }
     public enum item_display { block, inline }
 
     protected static List<item_type> _types = null;
@@ -78,6 +78,7 @@ namespace molello.classes {
       else if (t == item_type.title) return (new item_title(0, "")).html_item();
       else if (t == item_type.label) return (new item_label(0, "")).html_item();
       else if (t == item_type.todo) return (new item_todo(0, "todo", "", null)).html_item();
+      else if (t == item_type.todo_item) return (new todo_item(new todo_stato("DF"), "")).html_item();
       else throw new Exception("item type '" + t.ToString() + "' not supported!");
     }
 

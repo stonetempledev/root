@@ -91,14 +91,14 @@ div.todo-state
   top: 0px;
 }
 
-img.todo-perc
+img.todo-img-perc
 {
   cursor: pointer;
   opacity: 0.5;
-  float: right;
+  vertical-align:top;
 }
 
-img.todo-perc:hover
+img.todo-img-perc:hover
 {
   opacity: 1;
 }
@@ -117,29 +117,30 @@ span.todo-stato
   font-size: 12pt;
   cursor: pointer;
   color: White;
-  position: relative;
   border-radius: 4px;
   padding-right: 3px;
   padding-left: 3px;
   padding-bottom: 2px;
   margin: 2px;
-  display:block;
-  text-align:center;
-  width:150px;
+  display: block;
+  text-align: center;
+  width: 150px;
 }
 
 div.todo-cosa
 {
   font-size: 10pt;
   margin-left: 40px;
+  flex:1;
+  font-weight:bold;
 }
 
 div.todo-item-cosa
 {
   font-size: 9pt;
   margin-left: 60px;
-  position:relative;
-  top:-2px;
+  position: relative;
+  top: -2px;
 }
 
 div.todo-stati
@@ -156,14 +157,15 @@ div.todo-percs
 
 img.todo-item-st
 {
-  float:left;
-  cursor:pointer;
-  margin-left:40px;
+  float: left;
+  cursor: pointer;
+  margin-left: 40px;
 }
 
 div.todo-item
 {
-  margin-bottom:3px;
+  margin-bottom: 3px;
+  padding-left: 10px;
 }
 
 /*.arrow-todo

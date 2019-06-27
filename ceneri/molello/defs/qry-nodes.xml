@@ -37,7 +37,7 @@
     </query>
     
     <query name="get-items-node" des="leggi il contenuto del nodo">
-      <![CDATA[select n.node_id, n.node_title, i.item_id, i.item_type, itit.item_title, it.item_text, il.item_label
+      <![CDATA[select n.node_id, n.node_title, i.item_id, null as sub_item_id, i.item_type, itit.item_title, it.item_text, il.item_label
   , itd.item_stato, itd.item_cosa, itd.item_perc
  from m_items i 
  left join m_nodes n on i.node_id = n.node_id
@@ -45,7 +45,15 @@
  left join m_items_text it on it.item_id = i.item_id
  left join m_items_label il on il.item_id = i.item_id
  left join m_items_todo itd on itd.item_id = i.item_id
- where i.node_id = {@field='node_id'} order by i.item_id]]>
+ where i.node_id = {@field='node_id'} 
+union select n.node_id, null as note_title, ti.item_id, ti.item_todo_id as sub_item_id, 'todo_item' as item_type, null as item_title, null as item_text, null as item_label
+  , ti.item_stato, ti.item_cosa, null as item_perc
+ from m_nodes n
+ join m_items i on i.node_id = n.node_id
+ join m_items_todo it on it.item_id = i.item_id 
+ join m_todo_items ti on ti.item_id = i.item_id
+ where n.node_id = {@field='node_id'}
+ order by 3, 4]]>
     </query>
 
     <query name="add-link" des="leggi il nodo">
@@ -139,7 +147,7 @@
       delete i from m_items_title i where not exists (select top 1 1 from m_items where i.item_id = item_id);
       delete i from m_items_label i where not exists (select top 1 1 from m_items where i.item_id = item_id);
       delete i from m_items_todo i where not exists (select top 1 1 from m_items where i.item_id = item_id);
-      delete s from m_todo_items ti where not exists (select top 1 1 from m_items where ti.item_id = item_id);]]>
+      delete ti from m_todo_items ti where not exists (select top 1 1 from m_items where ti.item_id = item_id);]]>
     </query>
 
     <query name="updated-node" des="aggiorna la data di aggiornamento del nodo">
@@ -176,9 +184,14 @@
        values({@field='node_id'}, '{@field='item_type'}');
       declare @item_id integer; set @item_id = @@IDENTITY;
       insert into m_items_todo (item_id, item_stato, item_cosa, item_perc)
-       values(@item_id, {@txtqry='item_stato'}, {@txtqrycr='item_cosa'}, {@field='item_perc'});]]>
+       values(@item_id, {@txtqry='item_stato'}, {@txtqrycr='item_cosa'}, {@field='item_perc'});
+      select @item_id;]]>
     </query>
-    
+
+    <query name="add-todo-item" des="aggiunta sub-item todo">
+      <![CDATA[insert into m_todo_items (item_id, item_stato, item_cosa)
+       values({@field='item_id'}, '{@field='item_stato'}', {@txtqry='item_cosa'});]]>
+    </query>
 
   </queries>
 
