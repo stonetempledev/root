@@ -7,9 +7,6 @@ using log4net;
 using log4net.Appender;
 using log4net.Repository;
 
-//Here is the once-per-application setup information
-[assembly: log4net.Config.XmlConfigurator(Watch = true)]
-
 namespace mlib.tools {
   public class log {
     static readonly log4net.ILog _log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
