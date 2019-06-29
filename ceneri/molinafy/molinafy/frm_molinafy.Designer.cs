@@ -40,6 +40,8 @@
       this.wb_main.Size = new System.Drawing.Size(559, 314);
       this.wb_main.TabIndex = 0;
       this.wb_main.Navigated += new System.Windows.Forms.WebBrowserNavigatedEventHandler(this.wb_main_Navigated);
+      this.wb_main.Navigating += new System.Windows.Forms.WebBrowserNavigatingEventHandler(this.wb_main_Navigating);
+      this.wb_main.Validating += new System.ComponentModel.CancelEventHandler(this.wb_main_Validating);
       // 
       // lbl_title
       // 

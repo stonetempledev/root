@@ -13,7 +13,7 @@ namespace molinafy {
     private static Random _random = new Random();
 
     static public dynamic get_playlists (sptfy_token token, string user) {
-      WebRequest request = WebRequest.Create(string.Format("https://api.spotify.com/v1/users/{0}/playlists", user));
+      WebRequest request = WebRequest.Create(string.Format("https://api.spotify.com/v1/users/{0}/playlists?limit=50", user));
       request.Method = "GET";
       request.Headers.Add("Authorization", "Bearer " + token.access_token);
       request.ContentType = "application/json; charset=utf-8";

@@ -16,6 +16,7 @@ namespace molinafy {
   public partial class frm_molinafy : frm_base {
     protected string _auth_state = "";
     protected sptfy_token _token = null;
+    protected string _last_url = null;
 
     public frm_molinafy () {
       InitializeComponent();
@@ -54,7 +55,9 @@ namespace molinafy {
 
     private void wb_main_Navigated (object sender, WebBrowserNavigatedEventArgs e) {
       try {
-        string url = wb_main.Url.ToString();
+        string url = wb_main.Url != null ? wb_main.Url.ToString() : null;
+        if (_last_url != null && url != null && _last_url.ToLower() == url.ToLower()) return;
+        _last_url = url;
 
         // get token
         if (url.ToLower().Contains(app.var("sptfy.url-redirect".ToLower()))) {
@@ -80,6 +83,15 @@ namespace molinafy {
         load_html(wb_main, app._core.parse(System.IO.File.ReadAllText(app.var("pages.err"))
           , new Dictionary<string, object>() { { "description", ex.Message } }));
       }
+    }
+
+    private void wb_main_Navigating (object sender, WebBrowserNavigatingEventArgs e) {
+      string url = e.Url != null ? e.Url.ToString() : "";
+      if (url.ToLower().Contains(app.var("sptfy.url-redirect".ToLower()))) e.Cancel = true;
+    }
+
+    private void wb_main_Validating (object sender, CancelEventArgs e) {
+      int n = 0;
     }
 
   }

@@ -24,9 +24,9 @@ namespace molinafy {
     }
 
     protected void load_html (WebBrowser wb, string html) {
-      if (wb.Tag == null || wb.Tag != null && wb.Tag.ToString() != "molinafy-blank") {
+      if (wb.Tag == null || wb.Tag != null && wb.Tag.ToString() != "page-blank") {
         wb.Navigate("about:blank");
-        wb.Tag = "molinafy-blank";
+        wb.Tag = "page-blank";
       }
 
       if (wb.Document == null) wb.DocumentText = html;
