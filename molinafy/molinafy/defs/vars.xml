@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+
+  <vars>
+    <var name="db-connection">conns.dell-pc</var>
+    <var name="page-doc">{@basepath}\html\doc.html</var>
+    <var name="path-images">C:\_todd\root\molinafy\_images</var>
+  </vars>    
+
+</config>

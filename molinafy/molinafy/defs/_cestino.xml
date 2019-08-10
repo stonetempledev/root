@@ -1,0 +1,185 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+
+  <queries>
+
+    <!--  <query name="nav-link" des="navigazione nodo, aggiornamento contatori">
+      <![CDATA[update m_links set last_nav = getdate(), cc_nav = isnull(cc_nav, 0) + 1
+       where link_id = {@field='link_id'}]]>
+    </query>
+
+    <query name="get-links-node" des="leggi il nodo">
+      <![CDATA[select l.link_id, l.parent_link_id, n.node_id, n.node_title
+         , (select count(*) from m_links where parent_link_id = l.link_id) as cc_childs
+         , (select count(*) from m_links where node_id = n.node_id and link_id <> l.link_id) as cc_links
+        from m_nodes n 
+        join m_links l on l.node_id = n.node_id
+        where l.link_id in ({@field='link_ids'})]]>
+    </query>
+
+    <query name="get-last-nav" des="l'ultimo link navigato">
+      <![CDATA[select l.link_id, l.node_id from m_links l
+       where l.last_nav = (select max(last_nav) from m_links)]]>
+    </query>
+    
+    <query name="get-items-node" des="leggi il contenuto del nodo">
+      <![CDATA[select n.node_id, n.node_title, i.item_id, null as sub_item_id, i.item_type, itit.item_title, it.item_text, il.item_label
+  , itd.item_stato, itd.item_cosa, itd.item_perc
+ from m_items i 
+ left join m_nodes n on i.node_id = n.node_id
+ left join m_items_title itit on itit.item_id = i.item_id
+ left join m_items_text it on it.item_id = i.item_id
+ left join m_items_label il on il.item_id = i.item_id
+ left join m_items_todo itd on itd.item_id = i.item_id
+ where i.node_id = {@field='node_id'} 
+union select n.node_id, null as note_title, ti.item_id, ti.item_todo_id as sub_item_id, 'todo_item' as item_type, null as item_title, null as item_text, null as item_label
+  , ti.item_stato, ti.item_cosa, null as item_perc
+ from m_nodes n
+ join m_items i on i.node_id = n.node_id
+ join m_items_todo it on it.item_id = i.item_id 
+ join m_todo_items ti on ti.item_id = i.item_id
+ where n.node_id = {@field='node_id'}
+ order by 3, 4]]>
+    </query>
+
+    <query name="add-link" des="leggi il nodo">
+      <![CDATA[insert into m_links (parent_link_id, parent_node_id, node_id, dt_ins)
+        select t.parent_link_id, t.parent_node_id, t.node_id, getdate()
+         from (select {@null='parent_link_id'} as parent_link_id
+           , (select node_id from m_links where link_id = {@null='parent_link_id'}) as parent_node_id, {@field='node_id'} as node_id) t
+          where not exists (select top 1 1 from m_links where isnull(parent_link_id, -1) = isnull(t.parent_link_id, -1) 
+           and node_id = t.node_id)]]>
+    </query>
+
+    <query name="copy-node" des="copia il nodo">
+      <![CDATA[
+       declare @node_id integer;
+
+       insert into m_nodes (node_title, dt_ins)
+        select top 1 t2.node_title, getdate()
+        from (select node_title, 0 as ordine from m_nodes
+         where node_id = {@field='node_id'}
+        union select n.node_title + t.item, 1 as ordine from m_nodes n
+         join dbo.split('_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30', ',') t on 1 = 1
+         where n.node_id = {@field='node_id'}) t2 
+         where not exists (select top 1 1 from m_links l 
+          join m_nodes n on n.node_id = l.node_id
+          where isnull(l.parent_link_id, -1) = isnull({@null='parent_link_id'}, -1) and n.node_title = t2.node_title)
+         order by t2.ordine, t2.node_title
+
+       select @node_id = @@identity;
+        
+       insert into m_links (parent_link_id, parent_node_id, node_id, dt_ins)
+        select t.parent_link_id, t.parent_node_id, t.node_id, getdate()
+         from (select {@null='parent_link_id'} as parent_link_id
+           , (select node_id from m_links where link_id = {@null='parent_link_id'}) as parent_node_id, @node_id as node_id) t
+          where not exists (select top 1 1 from m_links where isnull(parent_link_id, -1) = isnull(t.parent_link_id, -1) 
+           and node_id = t.node_id)]]>
+    </query>
+
+    <query name="set-node" des="aggiorna il nodo">
+      <![CDATA[update m_nodes set node_title = {@txtqry='node_title'}, dt_upd = getdate()
+        where node_id = {@field='node_id'}]]>
+    </query>
+
+    <query name="get-nodes" des="leggi nodi del nodo">
+      <![CDATA[select l.link_id, n.node_id, n.node_title
+         , (select count(*) from m_links where parent_link_id = l.link_id) as cc_childs
+         , (select count(*) from m_links where node_id = n.node_id and link_id <> l.link_id) as cc_links
+        from m_links l
+        join m_nodes n on n.node_id = l.node_id
+        where (({@null='parent_link_id'} is null and l.parent_link_id is null)
+         or (l.parent_link_id is not null and l.parent_link_id = {@null='parent_link_id'}))
+        order by n.node_title]]>
+    </query>
+
+    <query name="get-all-nodes-link" des="torna tutti i link del nodo specificato">
+      <![CDATA[select l.link_id, l.parent_link_id, l.parent_node_id, l.node_id 
+		 from m_links l where l.node_id in ({@field='node_ids'})
+    and ({@field='out_link_id'} < 0 or ({@field='out_link_id'} > 0 and l.link_id <> {@field='out_link_id'})) ]]>
+    </query>
+
+    <query name="get-todo-states" des="torna gli stati dei nodi">
+      <![CDATA[select s.todo_stato, s.todo_stato_title, s.todo_stato_sigla, s.todo_stato_color, s.todo_stato_order
+		 from m_todo_stati s order by s.todo_stato_order]]>
+    </query>
+
+    <query name="remove-links" des="rimuove tutti i links dalla struttura">
+      <![CDATA[delete from m_links where link_id in ({@field='link_ids'});
+      
+      delete n from m_nodes n
+       where not exists (select top 1 1 from m_links where node_id = n.node_id);]]>
+    </query>
+
+    <query name="get-link-path" des="elenco dei nodi babbi della gerarchia">
+      <![CDATA[link_path '{@field='link_ids'}']]>
+    </query>
+
+    <query name="get-link-path-filter" des="elenco dei nodi babbi della gerarchia">
+      <![CDATA[link_path '{@field='link_ids'}', '{@field='filter_nodes'}']]>
+    </query>
+
+    <query name="get-sublink-path" des="elenco dei nodi figli della gerarchia">
+      <![CDATA[sub_links '{@field='link_ids'}']]>
+    </query>
+
+    <query name="get-sublink-path-filter" des="elenco dei nodi figli della gerarchia">
+      <![CDATA[sub_links '{@field='link_ids'}', '{@field='filter_nodes'}']]>
+    </query>
+
+    <query name="reset-items" des="rimuove tutti gli items del nodo">
+      <![CDATA[delete from m_items where node_id = {@field='node_id'};
+      delete i from m_items_text i where not exists (select top 1 1 from m_items where i.item_id = item_id);
+      delete i from m_items_title i where not exists (select top 1 1 from m_items where i.item_id = item_id);
+      delete i from m_items_label i where not exists (select top 1 1 from m_items where i.item_id = item_id);
+      delete i from m_items_todo i where not exists (select top 1 1 from m_items where i.item_id = item_id);
+      delete ti from m_todo_items ti where not exists (select top 1 1 from m_items where ti.item_id = item_id);]]>
+    </query>
+
+    <query name="updated-node" des="aggiorna la data di aggiornamento del nodo">
+      <![CDATA[update m_nodes set dt_upd = getdate() where node_id = {@field='node_id'};]]>
+    </query>
+
+    <query name="add-item-text" des="aggiunta item text">
+      <![CDATA[insert into m_items (node_id, item_type)
+       values({@field='node_id'}, '{@field='item_type'}');
+      declare @item_id integer; set @item_id = @@IDENTITY;
+      insert into m_items_text (item_id, item_text)
+       values(@item_id, {@txtqrycr='item_text'});
+      ]]>
+    </query>
+
+    <query name="add-item-title" des="aggiunta item title">
+      <![CDATA[insert into m_items (node_id, item_type)
+       values({@field='node_id'}, '{@field='item_type'}');
+      declare @item_id integer; set @item_id = @@IDENTITY;
+      insert into m_items_title (item_id, item_title)
+       values(@item_id, {@txtqry='item_title'});]]>
+    </query>
+
+    <query name="add-item-label" des="aggiunta item label">
+      <![CDATA[insert into m_items (node_id, item_type)
+       values({@field='node_id'}, '{@field='item_type'}');
+      declare @item_id integer; set @item_id = @@IDENTITY;
+      insert into m_items_label (item_id, item_label)
+       values(@item_id, {@txtqry='item_label'});]]>
+    </query>
+
+    <query name="add-item-todo" des="aggiunta item todo">
+      <![CDATA[insert into m_items (node_id, item_type)
+       values({@field='node_id'}, '{@field='item_type'}');
+      declare @item_id integer; set @item_id = @@IDENTITY;
+      insert into m_items_todo (item_id, item_stato, item_cosa, item_perc)
+       values(@item_id, {@txtqry='item_stato'}, {@txtqrycr='item_cosa'}, {@field='item_perc'});
+      select @item_id;]]>
+    </query>
+
+    <query name="add-todo-item" des="aggiunta sub-item todo">
+      <![CDATA[insert into m_todo_items (item_id, item_stato, item_cosa)
+       values({@field='item_id'}, '{@field='item_stato'}', {@txtqry='item_cosa'});]]>
+    </query>
+-->
+    
+  </queries>
+
+</config>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace mlib.tiles {
+namespace mlib {
   public class user {
     public enum type_user { none, admin, normal }
 

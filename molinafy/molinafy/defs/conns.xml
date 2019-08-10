@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+
+  <conns>
+    <conn name="dell-pc" des="connessione pc portatile a casa"
+      conn-string="Data Source=DELL-PC\SQLEXPRESS;Initial Catalog=molinafy;User ID=sa;Password=Molina32!" provider="System.Data.SqlClient"
+      date-format="yyyy-MM-dd HH:mm:ss" timeout='300'/>
+  </conns>
+
+</config>

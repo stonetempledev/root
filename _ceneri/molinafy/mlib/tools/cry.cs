@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.IO;
 using System.Xml;
 
-namespace mlib.tools {
+namespace mlib {
   public class cry {
 
     #region sha

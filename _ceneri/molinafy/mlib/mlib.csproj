@@ -71,6 +71,7 @@
     <Compile Include="tools\log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="tools\strings.cs" />
+    <Compile Include="tools\sys.cs" />
     <Compile Include="xml\def_node.cs" />
     <Compile Include="xml\nano_doc.cs" />
     <Compile Include="xml\xml_doc.cs" />

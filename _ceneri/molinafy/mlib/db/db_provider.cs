@@ -5,9 +5,8 @@ using System.Web;
 using System.Data.Common;
 using System.Xml;
 using System.Linq;
-using mlib.tools;
 
-namespace mlib.db {
+namespace mlib {
   public enum dbType { none, oledb, odbc, sqlserver, mysql, access, xml }
 
   public enum fieldType {
@@ -26,7 +25,7 @@ namespace mlib.db {
     protected DbTransaction _trans = null;
     protected Dictionary<string, string> _keys = null;
 
-    public db_provider (mlib.tools.config.conn cnn) :
+    public db_provider (mlib.config.conn cnn) :
       this(cnn.name, cnn.conn_string, cnn.provider, cnn.timeout > 0 ? cnn.timeout : -1, cnn.des, cnn.date_format) { }
 
     public db_provider (string name, string conn_string, string prov_name, int timeout = -1, string des = ""
@@ -42,7 +41,7 @@ namespace mlib.db {
       }
     }
 
-    public static db_provider create_provider (mlib.tools.config.conn cnn) {
+    public static db_provider create_provider (mlib.config.conn cnn) {
       return create_provider(cnn.name, cnn.conn_string, cnn.provider, cnn.timeout > 0 ? cnn.timeout : -1, cnn.des, cnn.date_format, cnn.key, cnn.sql_key);
     }
 

@@ -15,10 +15,6 @@ bootstrap
  @media (max-width: 1199.98px) { ... }
  // xl - Extra large devices (large desktops)
 
-users
- admin/Homme33! (cablata criptata)
- molina/Lollo32!
-
 test build: c:\tmp\tltest
 test site: http://localhost/tltest
 fabio.molinaroli@mail.com, Euphoria32!
