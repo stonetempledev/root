@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
+  <link href="{@basepath}\html\bootstrap.min.css" rel="stylesheet" />
+  <link href="{@basepath}\html\doc.css" rel="stylesheet" />
+  <script src="{@basepath}\html\jquery-3.2.1.min.js" type="text/javascript"></script>
+  <script src="{@basepath}\html\bootstrap.bundle.min.js" type="text/javascript"></script>
+  <script src="{@basepath}\html\common.js" type="text/javascript"></script>
+  <title></title>
+  <script language="javascript">
+    $(document).ready(function () { init_doc(); });
+
+    function path_images() { return $("#path_images").text(); }
+
+    function ele_keydown(el, ev) {
+      // INVIO
+      if (ev.keyCode == 13) {
+        if (!ev.altKey && !ev.ctrlKey && !ev.shiftKey) { add_paragraph($(el)[0].outerHTML); return false; }
+        else if (ev.altKey) { alert("sezione"); return false; }
+      }
+
+      //      // ALT + A
+      //      if (ev.altKey && ev.keyCode == 65) { add_item(el, "after"); return false; }
+      //      // ALT + P
+      //      else if (ev.altKey && ev.keyCode == 80) { add_item(el, "before"); return false; }
+      //      // ALT + S
+      //      else if (ev.altKey && ev.keyCode == 83) { save_doc(); return false; }
+    }
+
+  </script>
+</head>
+<body>
+  <div style='display: none'>
+    <span id='path_images'>{@var='vars.path-images'}</span>
+  </div>
+  {@field='html'}
+</body>
+</html>

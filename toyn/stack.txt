@@ -1,0 +1,6 @@
+/ fallo andare
+ . testa iscrizione utente
+ . testa invio mail
+. conns - date-format -> datetime-format, date-format
+. thecommands.exe
+ rem C:\_lib\thecommands\bin\Release\thecommands.exe --crypt_folder:%dest_folder%\configs dir:*.xml add_ext:tlenc pwd:qswdef34!£

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+
+  <vars>
+    <var name="db-connection">conns.dell-pc</var>
+    <var name="site-path">C:\_todd\root\molinafy\_root</var>
+    <var name="prefixes">http://localhost:8989/,http://{@local-ip}:8989/</var>
+    <var name="indexes">index.html,index.txt</var>
+    <var name="pages-ext">.html,.htm</var>
+    <var name="err-page">err.html</var>
+    <var name="login-page">/login</var>
+    <var name="exclude-logged">\images\spotify-32.png,\js\bootstrap.min.css,\js\body.css,\js\jquery-3.2.1.min.js,\js\bootstrap.min.js,\js\bootstrap.bundle.min.js,\js\common.js,\login,favicon.ico</var>
+  </vars>    
+
+</config>

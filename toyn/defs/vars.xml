@@ -1,0 +1,7 @@
+﻿<config>
+
+  <vars>
+    <var name="db-connection" machine="dell-pc">conns.home</var>
+  </vars>
+
+</config>

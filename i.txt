@@ -1,7 +1,2 @@
-TempleOfTheDev
- github.hub
-  stonetempledev, molinagarden@gmail.com
-  repositories
-  https://github.com/stonetempledev/root.git
- todo
-  .molinafy
+lantern
+toyn - Temple Of Your Notes

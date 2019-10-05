@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "toyn", "http://localhost/toyn", "{ED59C2AC-404F-434A-890E-9A721AAC5F36}"
+	ProjectSection(WebsiteProperties) = preProject
+		UseIISExpress = "false"
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		ProjectReferences = "{DF53A516-E84C-464B-844B-B8C7D0E56974}|mlib.dll;"
+		Debug.AspNetCompiler.VirtualPath = "/toyn"
+		Debug.AspNetCompiler.PhysicalPath = "..\toyn\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\toyn\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/toyn"
+		Release.AspNetCompiler.PhysicalPath = "..\toyn\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\toyn\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mlib", "..\mlib\mlib.csproj", "{DF53A516-E84C-464B-844B-B8C7D0E56974}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ED59C2AC-404F-434A-890E-9A721AAC5F36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED59C2AC-404F-434A-890E-9A721AAC5F36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED59C2AC-404F-434A-890E-9A721AAC5F36}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{ED59C2AC-404F-434A-890E-9A721AAC5F36}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{ED59C2AC-404F-434A-890E-9A721AAC5F36}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ED59C2AC-404F-434A-890E-9A721AAC5F36}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED59C2AC-404F-434A-890E-9A721AAC5F36}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{ED59C2AC-404F-434A-890E-9A721AAC5F36}.Release|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{ED59C2AC-404F-434A-890E-9A721AAC5F36}.Release|Mixed Platforms.Build.0 = Debug|Any CPU
+		{ED59C2AC-404F-434A-890E-9A721AAC5F36}.Release|x86.ActiveCfg = Debug|Any CPU
+		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

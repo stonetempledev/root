@@ -16,26 +16,26 @@ namespace mlib {
     protected config _config = null;
     public config config { get { return _config; } }
 
-    public core(string base_path) { _base_path = base_path; _config = new config(this); }
+    public core (string base_path) { _base_path = base_path; _config = new config(this); }
 
     #region configs
 
-    public void reset_configs() { _cfg_keys.Clear(); _config.reset(); }
+    public void reset_configs () { _cfg_keys.Clear(); _config.reset(); }
 
-    public void load_config(xml_doc doc, string doc_key, string vars_key = "", bool page = false) {
+    public void load_config (xml_doc doc, string doc_key, string vars_key = "", bool page = false) {
       try {
         if (!_cfg_keys.Keys.Contains(doc_key)) _cfg_keys.Add(doc_key, "doc_path");
         _config.load_doc(doc_key, vars_key, doc, page);
       } catch (Exception ex) { _cfg_keys.Clear(); throw ex; }
     }
 
-    public void load_page_config(xml_doc doc, string doc_key) { load_config(doc, doc_key, page: true); }
+    public void load_page_config (xml_doc doc, string doc_key) { load_config(doc, doc_key, page: true); }
 
-    public void reset_page_config() { _config.remove_for_page(); }
+    public void reset_page_config () { _config.remove_for_page(); }
 
     public List<string> config_keys { get { return _cfg_keys.Keys.ToList(); } }
 
-    public string app_setting(string name, bool throw_err = true) {
+    public string app_setting (string name, bool throw_err = true) {
       if (throw_err && System.Configuration.ConfigurationManager.AppSettings[name] == null)
         throw new Exception("non c'è la variabile '" + name + "' nel config!");
       return parse(System.Configuration.ConfigurationManager.AppSettings[name] != null ?
@@ -46,7 +46,7 @@ namespace mlib {
 
     #region parse
 
-    public string parse(string text, Dictionary<string, object> flds = null, DataRow dr = null) {
+    public string parse (string text, Dictionary<string, object> flds = null, DataRow dr = null) {
 
       try {
 
@@ -78,26 +78,26 @@ namespace mlib {
             switch (cmd) {
               // {@field='<FIELD NAME>'}
               case "field": {
-                  value = get_val(par, flds, dr);
-                  break;
-                }
+                value = get_val(par, flds, dr);
+                break;
+              }
               // {@null='<FIELD NAME>'}
               case "null": {
-                  value = get_val(par, flds, dr, "null");
-                  break;
-                }
+                value = get_val(par, flds, dr, "null");
+                break;
+              }
               // {@txtqry='<FIELD NAME>'}
               case "txtqry": {
-                  string val = get_val(par, flds, dr).ToString().Replace("'", "''").Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
-                  value = val != "" ? string.Format("'{0}'", val) : "NULL";
-                  break;
-                }
+                string val = get_val(par, flds, dr).ToString().Replace("'", "''").Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
+                value = val != "" ? string.Format("'{0}'", val) : "NULL";
+                break;
+              }
               // {@txtqrycr='<FIELD NAME>'}
               case "txtqrycr": {
-                  string val = get_val(par, flds, dr).ToString().Replace("'", "''").Replace("\r\n", "' + char(13) + '").Replace("\r", " ").Replace("\n", " ");
-                  value = val != "" ? string.Format("'{0}'", val) : "NULL";
-                  break;
-                }
+                string val = get_val(par, flds, dr).ToString().Replace("'", "''").Replace("\r\n", "' + char(13) + char(10) + '").Replace("\r", " ").Replace("\n", " ");
+                value = val != "" ? string.Format("'{0}'", val) : "NULL";
+                break;
+              }
               // {@var='<name key>'}
               case "var": value = config.get_var(par).value; break;
               // {@setting='<name key>'}
@@ -118,20 +118,20 @@ namespace mlib {
       } catch (Exception ex) { log.log_err(ex); throw ex; }
     }
 
-    protected static string get_val(string par, Dictionary<string, object> flds = null, DataRow dr = null, string def = "") {
+    protected static string get_val (string par, Dictionary<string, object> flds = null, DataRow dr = null, string def = "") {
       if (flds == null && dr == null) throw new Exception("il campo '" + par + "' specificato nella query non è stato impostato!");
       if (flds != null && flds.ContainsKey(par)) return flds[par] != null ? flds[par].ToString() : def;
       else if (dr != null && dr.Table.Columns.Contains(par)) return dr[par] != DBNull.Value ? dr[par].ToString() : def;
       throw new Exception("il campo '" + par + "' specificato nella query non è stato impostato!");
     }
 
-    public static string machine_name(bool lower = true) {
+    public static string machine_name (bool lower = true) {
       try {
         return lower ? System.Environment.MachineName.ToLower() : System.Environment.MachineName;
       } catch { return ""; }
     }
 
-    public static string machine_ip(string def = "") {
+    public static string machine_ip (string def = "") {
       try {
         var host = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
         foreach (var ip in host.AddressList) {
@@ -142,16 +142,16 @@ namespace mlib {
       } catch { return def; }
     }
 
-    public double eval_double(string expr) { try { return (double)_eval.Evaluate(string.Format("number({0})", expr)); } catch (Exception ex) { log.log_err(expr); throw ex; } }
+    public double eval_double (string expr) { try { return (double)_eval.Evaluate(string.Format("number({0})", expr)); } catch (Exception ex) { log.log_err(expr); throw ex; } }
 
-    public bool eval_bool(string expr) { try { return (bool)_eval.Evaluate(string.Format("boolean({0})", expr)); } catch (Exception ex) { log.log_err(expr); throw ex; } }
+    public bool eval_bool (string expr) { try { return (bool)_eval.Evaluate(string.Format("boolean({0})", expr)); } catch (Exception ex) { log.log_err(expr); throw ex; } }
 
     #endregion
 
     #region common
 
-    public static string[] split(string lst) { return lst.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries); }
-    public static int[] split_ints(string lst) {
+    public static string[] split (string lst) { return lst.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries); }
+    public static int[] split_ints (string lst) {
       return lst.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => int.Parse(s)).ToArray();
     }
 

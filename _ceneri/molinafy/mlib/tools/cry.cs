@@ -11,7 +11,15 @@ namespace mlib {
 
     #region sha
 
-    public static string encode_tobase64 (string password) {
+    public static string sha1_toasciibit (string password) {
+      return BitConverter.ToString(HashAlgorithm.Create("SHA1").ComputeHash(Encoding.ASCII.GetBytes(password))).Replace("-", "");
+    }
+
+    public static string sha1_tounicodebit (string password) {
+      return BitConverter.ToString(HashAlgorithm.Create("SHA1").ComputeHash(Encoding.Unicode.GetBytes(password))).Replace("-", "");
+    }
+
+    public static string sha1_tobase64 (string password) {
       return Convert.ToBase64String(HashAlgorithm.Create("SHA1").ComputeHash(Encoding.Unicode.GetBytes(password)));
     }
 
