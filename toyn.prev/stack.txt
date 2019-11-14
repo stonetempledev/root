@@ -1,8 +1,0 @@
-/ elements.aspx
- documentazione completa e cazzuta del TOYN 
-. send mail provider
-. thecommands.exe
- rem C:\_lib\thecommands\bin\Release\thecommands.exe --crypt_folder:%dest_folder%\configs dir:*.xml add_ext:tlenc pwd:qswdef34!£
-parkeggiate
- ~ nodes
-

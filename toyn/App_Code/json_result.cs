@@ -7,10 +7,11 @@ using System.Web;
 /// Summary description for json_result
 /// </summary>
 public class json_result {
-  public enum type_result { none, ok, error };
+  public enum type_result { none = 0, ok = 1, error = -1};
   public type_result result { get; set; }
-  public string des { get; set; }
-  public json_result(type_result tr, string des = "") {
-    this.result = tr; this.des = des;
+  public string des_result { get { return this.result.ToString(); } }
+  public string message { get; set; }
+  public json_result(type_result tr, string message = "") {
+    this.result = tr; this.message = message;
   }
 }

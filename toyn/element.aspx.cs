@@ -28,28 +28,33 @@ public partial class _element : tl_page {
   protected override void OnInit(EventArgs e) {
     base.OnInit(e);
 
-    // elab requests
+    // elab requests & cmds
     try {
-      var json = String.Empty;
-
+      string json = String.Empty;
       Request.InputStream.Position = 0;
       using (var inputStream = new StreamReader(Request.InputStream)) {
         json = inputStream.ReadToEnd();
       }
-      JObject jo = JObject.Parse(json);
 
-      Response.Clear();
-      Response.ContentType = "application/json";
-      string js = JsonConvert.SerializeObject(new json_result(json_result.type_result.ok));
-      Response.Write(js);
-      Response.Flush();
-      Response.End();
-      return;
+      if (!string.IsNullOrEmpty(json)) {
+        
+        json_result res = new json_result(json_result.type_result.ok);
+        
+        try {
+          JObject jo = JObject.Parse(json);
+          throw new Exception("ostia la ostai adfaf sd sd kljgsdf df vxcvx sdfs d fert e   d f dgdf gd fg df gdf gd fg d");
+        } catch (Exception ex) { res = new json_result(json_result.type_result.error, ex.Message); }
 
-    } catch (Exception ex) { }
+        Response.Clear();
+        Response.ContentType = "application/json";
+        Response.Write(JsonConvert.SerializeObject(res));
+        Response.Flush();
+        Response.End();
 
-    // elab cmds
-    try {
+        return;
+      }
+
+
       cmd c = new cmd(qry_val("cmd"));
 
       // check cmd

@@ -1,10 +1,10 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="default.master.cs" Inherits="_default"
   ClientIDMode="Static" %>
 
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en">
 <head id="Head1" runat="server">
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>the Lantern</title>
   <link href="js/bs-4.1/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
