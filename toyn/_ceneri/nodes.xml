@@ -1,0 +1,47 @@
+﻿<config namespace="page">
+  <blocks>
+    <!-- top bar -->
+    <p-node><![CDATA[<li><span onclick='open_node({@id_node@})'>{@title@}</span><span onclick='to_root()' class="ar"></span></li>]]></p-node>
+    <p-node-last><![CDATA[<li><span onclick='open_node({@id_node@})'>{@title@}</span></li>]]></p-node-last>
+    <!-- menu -->
+    <v-menu><![CDATA[<li><a vmenu='true' href="{@href@}">{@title@}</a></li>]]></v-menu>
+    <v-menu-childs>
+      <![CDATA[<li><a vmenu='true' class='has-arrow' href="{@href@}">{@title@}<div class='mm-circle-arr'><span class='mm-arrow'></span></div></a>
+    <ul aria-expanded="true" class="collapse">{@childs@}</ul></li>]]></v-menu-childs>
+  </blocks>
+  
+  <queries>
+    <query name="exists-node">
+      <![CDATA[select top 1 1 from nodes nd 
+      where nd.title_node = {@txtqry='title'}]]>
+    </query>
+    <query name="add-node">
+      <![CDATA[declare @parent_id int;
+      if ({@txtqry='to-id'} <> '' and {@txtqry='to-id'} <> '-1')
+       set @parent_id = cast({@txtqry='to-id'} as integer);
+     
+     declare @node_id int;     
+     insert into nodes (id_parent_node, title_node, des_node, id_utente, path_node, dt_ins)
+      select t2.*
+       from (select @parent_id as id_parent_node, {@txtqry='title'} as title, {@txtqry='notes'} as des_node
+         , {@field='id_utente'} as id_utente, '...' as path_node, getdate() as dt_ins
+        from (select 1 as col) t) t2;
+        
+     select @node_id = SCOPE_IDENTITY();
+     update nodes set path_node = dbo.node_path_id(id_node) where id_node = @node_id;]]>
+    </query>
+    <query name="view-nodes">
+      <![CDATA[select nd.id_node, nd.id_parent_node, nd.title_node, nd.des_node, isnull(nd.dt_upd, nd.dt_ins) as dt_node
+        from nodes nd order by nd.id_node]]>
+    </query>
+    <query name="view-nodes-childs">
+      <![CDATA[select nd.id_node, nd.id_parent_node, nd.title_node, nd.des_node, isnull(nd.dt_upd, nd.dt_ins) as dt_node
+        from nodes nd where path_node like '{@field='path_node'}%' order by nd.id_node]]>
+    </query>
+    <query name="path-node">
+      <![CDATA[select nd.path_node as path_ids, dbo.node_path(nd.id_node) as path_titles
+        from nodes nd where nd.id_node = {@field='node_id'}]]>
+    </query>
+  </queries>
+</config>
+

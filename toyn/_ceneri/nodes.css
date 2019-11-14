@@ -1,0 +1,124 @@
+﻿
+.col-btn
+{
+    -ms-flex: 0 0 5%;
+    flex: 0 0 5%;
+    max-width: 5%;
+}
+
+.col-bar
+{
+    -ms-flex: 0 0 95%;
+    flex: 0 0 95%;
+    max-width: 95%;
+}
+
+/* breadcrumb */
+
+.bread
+{
+    overflow: hidden;
+    list-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+.bread li
+{
+    display: table-cell;
+    padding-left: 25px;
+}
+.bread ul
+{
+    padding: 0px;
+    display: table;
+}
+.bread li span
+{
+    color: white;
+    white-space: nowrap;
+    padding: 5px;
+    position: relative;
+    top: 2px;
+    vertical-align: middle;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+/* topbar */
+
+.topbar-btn
+{
+    background-color: tomato;
+    height: 36px;
+    padding-top: 2px;
+    padding-left: 5px;
+    z-index: 1000;
+}
+
+.topbar-btn img
+{
+    background-color: tomato;
+}
+
+.topbar
+{
+    background-color: tomato;
+    height: 36px;
+    padding: 0px;
+}
+
+.topbar span.ar
+{
+    border: solid white;
+    border-width: 0px 2px 2px 0px;
+    display: inline-block;
+    padding: 7px;
+    margin-left: 8px;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    position: relative;
+    top: 5px;
+    cursor: pointer;
+}
+
+/* sidebar */
+
+.sidebar
+{
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -100;
+    padding: 97px 0 0;
+}
+.sidebar-sticky
+{
+    position: relative;
+    top: 0;
+    height: calc(100vh - 60px);
+    padding-top: .5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* sidebar-nav */
+
+.sidebar-nav
+{
+    background: #212529;
+    position: relative;
+    top: 0;
+    height: calc(100vh - 60px);
+    padding-top: .5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.sidebar-nav ul
+{
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    background: #343a40;
+}
+

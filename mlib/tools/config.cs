@@ -242,8 +242,10 @@ namespace mlib.tools {
     }
 
     public bool exists_var (string name) { return _vars.ContainsKey(name); }
-    public var get_var (string name) { if (!_vars.ContainsKey(name)) throw new Exception("la variabile '" + name + "' non esiste!"); return _vars[name]; }
-    public folder get_folder (string name) { if (!_folders.ContainsKey(name)) throw new Exception("il folder '" + name + "' non esiste!"); return _folders[name]; }
+    public string var_value(string name) { if (!_vars.ContainsKey(name)) throw new Exception("la variabile '" + name + "' non esiste!"); return _vars[name].value; }
+    public var get_var(string name) { if (!_vars.ContainsKey(name)) throw new Exception("la variabile '" + name + "' non esiste!"); return _vars[name]; }
+    public string var_value_par(string name, string par) { if (!_vars.ContainsKey(name)) throw new Exception("la variabile '" + name + "' non esiste!"); return _vars[name].value.Replace("[@par]", par); }
+    public folder get_folder(string name) { if (!_folders.ContainsKey(name)) throw new Exception("il folder '" + name + "' non esiste!"); return _folders[name]; }
     public conn get_conn (string name) { if (!_conns.ContainsKey(name)) throw new Exception("la connessione '" + name + "' non esiste!"); return _conns[name]; }
     public table get_table (string name) { if (!_tables.ContainsKey(name)) throw new Exception("la tabella '" + name + "' non esiste!"); return _tables[name]; }
     public html_block get_block (string name) { if (!_blocks.ContainsKey(name)) throw new Exception("il blocco html '" + name + "' non esiste!"); return _blocks[name]; }

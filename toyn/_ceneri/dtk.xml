@@ -1,0 +1,27 @@
+﻿<docuteck>
+  <el name="command" des="insieme di istruzioni e parole chiave che indicano un'azione per il TOYN">
+    <el name="command action" des="azione principale del comando"></el>
+    <el name="command object" des="oggetto principale del comando"></el>
+    <el name="sub-command" des="istruzione secondaria del comando"></el>
+    <el name="command sub-object" des="oggetto secondario del comando"></el>
+  </el>
+  <el name="user" des="utente loggato nel TOYN">
+    <el name="user type" type="attributo" des="tipo di utente">
+      <values>
+        <val>administrator</val>
+        <val>normal</val>
+      </values>
+    </el>
+    <el name="user name" type="attributo" des="nome univoco utente"/>
+    <el name="user email" type="attributo" des="email associata all'utente"/>
+  </el>
+  <el name="node" des="contenitore generico di oggetti">
+    <el name="node parent id" type="attributo" des="identificatore univoco del nodo contenitore"/>
+    <el name="node id" type="attributo" des="identificatore univoco del nodo"/>
+    <el name="node title" type="attributo" des="titolo visualizzato per il nodo"/>
+    <el name="node des" type="attributo" des="descrizione nodo"/>
+    <el name="user node" type="attributo" des="utente che ha creato e può vedere il nodo"/>
+    <el name="node objects" type="lista" des="lista degli oggetti contenuti"/>
+    <el name="child nodes" type="lista" des="lista dei nodi contenuti"/>
+  </el>
+</docuteck>
