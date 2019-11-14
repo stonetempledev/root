@@ -30,19 +30,26 @@ public partial class _element : tl_page {
 
     // elab requests & cmds
     try {
-      string json = String.Empty;
-      Request.InputStream.Position = 0;
-      using (var inputStream = new StreamReader(Request.InputStream)) {
-        json = inputStream.ReadToEnd();
-      }
 
-      if (!string.IsNullOrEmpty(json)) {
-        
+      if (Request.Headers["toyn-post"] != null) {
         json_result res = new json_result(json_result.type_result.ok);
-        
+
         try {
-          JObject jo = JObject.Parse(json);
-          throw new Exception("ostia la ostai adfaf sd sd kljgsdf df vxcvx sdfs d fert e   d f dgdf gd fg df gdf gd fg d");
+          string json = String.Empty;
+          Request.InputStream.Position = 0;
+          using (var inputStream = new StreamReader(Request.InputStream)) {
+            json = inputStream.ReadToEnd();
+          }
+
+          if (!string.IsNullOrEmpty(json)) {
+            JObject jo = JObject.Parse(json);
+            if (jo["action"].ToString() == "save_element") {
+              string xml = jo["xml"].ToString();
+              xml_doc d = new xml_doc() { xml = xml };
+              d.save("c:\\tmp\\o.xml");
+            }
+          } else throw new Exception("nessun dato da elaborare!");
+
         } catch (Exception ex) { res = new json_result(json_result.type_result.error, ex.Message); }
 
         Response.Clear();

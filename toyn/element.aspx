@@ -28,6 +28,38 @@
       _editor.autoFormatRange({ line: 0, ch: 0 }, { line: totalLines });
       _editor.focus();
       _editor.setCursor(0);
+
+      _editor.on("beforeChange", function (cm, change) {
+        if (change.origin === "paste") {
+          //change.cancel(); 
+          var newText = ["{e sti cazzi}"];
+          change.update(null, null, newText);
+        }
+
+      });
+
+      //      _editor.on('inputRead', function (cm, event) {
+      //        // event -> object{
+      //        //  origin: string, can be '+input', '+move' or 'paste'
+      //        //  doc for origins >> http://codemirror.net/doc/manual.html#selection_origin
+      //        //  from: object {line, ch},
+      //        //  to: object {line, ch},
+      //        //  removed: array of removed strings
+      //        //  text: array of pasted strings
+      //        // } 
+      //        if (event.origin == 'paste') {
+      //          var tot_l = 0;
+      //          event.text.forEach(function (l) {
+      //            tot_l += l.length;
+      //          });
+      //          //alert(tot_l);
+      //          //                  var text = event.text; 
+      //          var new_text = '{e sti cazzi}';
+      //          cm.refresh();
+      //          cm.replaceRange(new_text, event.from, { line: event.to.line });
+      //        }
+      //      });
+
     });
 
     function mod_xml() { window.location.href = $("#url_xml").val(); return false; }
@@ -41,6 +73,7 @@
           url: location.protocol + '//' + location.host + location.pathname,
           data: JSON.stringify(doc),
           contentType: "application/json; charset=utf-8",
+          headers: { "toyn-post": "true" },
           dataType: "json", cache: false,
           success: function (data) {
             if (data.des_result == "ok") status_text("documento salvato con successo");
@@ -68,6 +101,7 @@
       $("#lbl_status_err").show().text(txt);
       window.setTimeout(function () { $("#lbl_status_err").hide(); }, 5000);
     }
+
 
   </script>
 </asp:Content>
@@ -98,10 +132,9 @@
         <div class='bg-secondary' style='display: block; padding: 5px;'>
           <button class='btn btn-outline-light btn-sm' onclick='return save_xml()'>
             Salva e torna al documento</button>
-          <span id='lbl_status' class="h6 text-light float-right text-wrap" style='margin: 4px;display:none;'>
-          </span>
-          <span id='lbl_status_err' class="badge badge-danger float-right text-wrap" style='padding: 5px; margin: 4px;display:none;'>
-          </span>
+          <span id='lbl_status' class="h6 text-light" style='margin: 4px; display: none;'>
+          </span><span id='lbl_status_err' class="badge badge-danger" style='white-space: normal;
+            with: calc(100% - 150px); padding: 5px; margin: 4px; display: none;'></span>
         </div>
         <!-- doc -->
         <textarea id='doc_xml' runat='server'></textarea>
