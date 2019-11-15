@@ -31,65 +31,28 @@
 
       _editor.on("beforeChange", function (cm, change) {
         if (change.origin === "paste") {
-          //change.cancel(); 
-          var newText = ["{e sti cazzi}"];
-          change.update(null, null, newText);
+          // change.cancel(); 
+          // var newText = ["{e sti cazzi}", "{e sta cippa}", "{e sta cazzarolla}", "{e la madonna}", "{e il signore}"];
+          // change.update(null, null, newText);
         }
 
       });
-
-      //      _editor.on('inputRead', function (cm, event) {
-      //        // event -> object{
-      //        //  origin: string, can be '+input', '+move' or 'paste'
-      //        //  doc for origins >> http://codemirror.net/doc/manual.html#selection_origin
-      //        //  from: object {line, ch},
-      //        //  to: object {line, ch},
-      //        //  removed: array of removed strings
-      //        //  text: array of pasted strings
-      //        // } 
-      //        if (event.origin == 'paste') {
-      //          var tot_l = 0;
-      //          event.text.forEach(function (l) {
-      //            tot_l += l.length;
-      //          });
-      //          //alert(tot_l);
-      //          //                  var text = event.text; 
-      //          var new_text = '{e sti cazzi}';
-      //          cm.refresh();
-      //          cm.replaceRange(new_text, event.from, { line: event.to.line });
-      //        }
-      //      });
-
     });
 
     function mod_xml() { window.location.href = $("#url_xml").val(); return false; }
 
     function save_xml() {
       try {
-        var doc = { "action": "save_element", "xml": _editor.getValue() };
-
-        $.ajax({
-          type: "POST",
-          url: location.protocol + '//' + location.host + location.pathname,
-          data: JSON.stringify(doc),
-          contentType: "application/json; charset=utf-8",
-          headers: { "toyn-post": "true" },
-          dataType: "json", cache: false,
-          success: function (data) {
-            if (data.des_result == "ok") status_text("documento salvato con successo");
-            else status_err("si è verificato un errore nel salvataggio del documento"
-             + (data.message ? ": " + data.message : "") + "!");
-          },
-          error: function (req, txt_status, err) {
-            show_alert("Attenzione!", err);
-          }
-        }).fail(function (jqXHR, status, err) {
-          show_alert("Attenzione!", err);
-        });
-        return false;
-
-        window.location.href = $("#url_view").val();
-      } catch (e) { show_alert("Attenzione!", e.message); return false; }
+        var result = post_data({ "action": "save_element", "xml": _editor.getValue() });
+        if (result) {
+          if (result.des_result == "ok") {
+            status_text("documento salvato con successo");
+            window.setTimeout(function () { window.location.href = $("#url_view").val(); }, 2000);
+          } else status_err("si è verificato un errore nel salvataggio del documento"
+             + (result.message ? ": " + result.message : "") + "!");
+        }
+      } catch (e) { show_alert("Attenzione!", e.message); }
+      return false;
     }
 
     function status_text(txt) {
@@ -134,7 +97,7 @@
             Salva e torna al documento</button>
           <span id='lbl_status' class="h6 text-light" style='margin: 4px; display: none;'>
           </span><span id='lbl_status_err' class="badge badge-danger" style='white-space: normal;
-            with: calc(100% - 150px); padding: 5px; margin: 4px; display: none;'></span>
+            padding: 5px; margin: 4px; display: none;'></span>
         </div>
         <!-- doc -->
         <textarea id='doc_xml' runat='server'></textarea>

@@ -29,9 +29,11 @@ public partial class _element : tl_page {
     base.OnInit(e);
 
     // elab requests & cmds
+    bool elab_request = false;
     try {
 
       if (Request.Headers["toyn-post"] != null) {
+        elab_request = true;
         json_result res = new json_result(json_result.type_result.ok);
 
         try {
@@ -55,12 +57,14 @@ public partial class _element : tl_page {
         Response.Clear();
         Response.ContentType = "application/json";
         Response.Write(JsonConvert.SerializeObject(res));
-        Response.Flush();
-        Response.End();
+        //Response.Flush();
+        //Response.End();
+        Response.Flush(); 
+        Response.SuppressContent = true;  
+        HttpContext.Current.ApplicationInstance.CompleteRequest(); 
 
         return;
       }
-
 
       cmd c = new cmd(qry_val("cmd"));
 
@@ -108,17 +112,20 @@ public partial class _element : tl_page {
 
         // menu
         StringBuilder sb = new StringBuilder();
-        parse_menu(el, sb);
+        parse_menu(el, sb, true);
         menu.InnerHtml = sb.ToString();
 
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
     } catch (Exception ex) {
-      blocks blk = new blocks();
-      blk.add("err-label", "ERRORE: " + ex.Message);
-      contents_xml.Visible = false;
-      contents.Visible = true;
-      contents.InnerHtml = blk.parse_blocks(_core);
+      log.log_err(ex);
+      if (!elab_request) {
+        blocks blk = new blocks();
+        blk.add("err-label", "ERRORE: " + ex.Message);
+        contents_xml.Visible = false;
+        contents.Visible = true;
+        contents.InnerHtml = blk.parse_blocks(_core);
+      }
     }
   }
 
@@ -170,32 +177,34 @@ public partial class _element : tl_page {
 
   protected string element_ref_id(element e) { return e.has_element_content ? e.element_content.content_id.ToString() : "root"; }
 
-  protected void parse_menu(element e, StringBuilder sb) {
+  protected void parse_menu(element e, StringBuilder sb, bool for_xml = false) {
     bool root = false;
     if (sb.Length == 0) { sb.AppendFormat("<ul class='nav flex-column'>\n"); root = true; }
     if (e.has_title) parse_title_menu(e.element_level, element_ref_id(e), e.title, sb
-      , open_element_id: (e.element_level == _max_level && e.has_child_elements ? e.element_id : 0), back_element_id: e.back_element_id);
+      , open_element_id: (e.element_level == _max_level && e.has_child_elements ? e.element_id : 0)
+      , back_element_id: e.back_element_id, for_xml: for_xml);
     bool first = true;
     foreach (element_content ec in e.childs.OrderBy(x => x.content_id)) {
       if (ec.content_type == element_content.element_content_type.title) {
         if (first && e.element_level >= 1) { sb.Append("<ul>"); first = false; }
-        parse_title_menu(e.element_level + 1, ec.content_id.ToString(), ec.title, sb);
+        parse_title_menu(e.element_level + 1, ec.content_id.ToString(), ec.title, sb, for_xml: for_xml);
       } else if (ec.content_type == element_content.element_content_type.element) {
         if (first && e.element_level >= 1) { sb.Append("<ul>"); first = false; }
-        parse_menu(ec.element_child, sb);
+        parse_menu(ec.element_child, sb, for_xml);
       }
     }
     sb.AppendFormat("{0}\n", !first ? "</ul>" : "");
     if (root) { sb.AppendFormat("</ul>\n"); }
   }
 
-  protected void parse_title_menu(int level, string ref_id, title ce, StringBuilder sb, bool close = true, int open_element_id = 0, int back_element_id = 0) {
+  protected void parse_title_menu(int level, string ref_id, title ce, StringBuilder sb, bool close = true, int open_element_id = 0
+    , int back_element_id = 0, bool for_xml = false) {
     sb.AppendFormat(@"<li>{6}<a {3} style='{4}' href='#title_{1}'>{0}</a>{5}{2}"
       , ce.text, ref_id, close ? "</li>" : ""
       , level == 0 ? "class='h5'" : "", level == 0 ? "color:steelblue;"
         : (level == 1 ? "color:skyblue;margin-top:10px;padding-top:5px;border-top:1pt solid dimgray;display:block;" : "font-size:90%;color:lightcyan;")
-        , open_element_id > 0 ? "<a style='margin-left:5px;font-size:90%;color:lightcyan;' href=\"" + get_url_cmd("view element id:" + open_element_id.ToString()) + "\">(...)</a>" : ""
-        , back_element_id > 0 ? "<a href=\"" + get_url_cmd("view element id:" + back_element_id.ToString())
+        , !for_xml && open_element_id > 0 ? "<a style='margin-left:5px;font-size:90%;color:lightcyan;' href=\"" + get_url_cmd("view element id:" + open_element_id.ToString()) + "\">(...)</a>" : ""
+        , !for_xml && back_element_id > 0 ? "<a href=\"" + get_url_cmd("view element id:" + back_element_id.ToString())
         + "\" style='margin-right:10px;'><img src='images/left-chevron-24.png' width='20' height='20'></a>" : "");
   }
 

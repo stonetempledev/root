@@ -3,7 +3,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head >
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>the Lantern</title>
@@ -22,14 +22,35 @@
     }
   </style>
   <script language="javascript">
-    //    $(window).resize(function () { $(document.body).css('padding-top', ($("#navbar").height() + 20) + 'px'); });
-    //    $(window).on("load", function () { $(document.body).css('padding-top', ($("#navbar").height() + 20) + 'px'); });
     function get_dev_size() { return $('#dev-size-detector').find('div:visible').first().attr('id'); }
+
     function show_alert(title, body) {
       $("#alert_ok_title").text(title);
       $("#alert_ok_body").text(body);
       $('#alert_ok').modal('show');
     }
+
+    function post_data(doc) {
+      try {
+        var result = null;
+        $.ajax({
+          type: "POST",
+          url: location.protocol + '//' + location.host + location.pathname,
+          data: JSON.stringify(doc),
+          contentType: "application/json; charset=utf-8",
+          headers: { "toyn-post": "true" },
+          dataType: "json", async: false,
+          success: function (data) { result = data; },
+          error: function (req, txt_status, err) {
+            show_alert("Attenzione!", err);
+          }
+        }).fail(function (jqXHR, status, err) {
+          show_alert("Attenzione!", err);
+        });
+        return result;
+      } catch (e) { show_alert("Attenzione!", e.message); return null; }
+    }
+
   </script>
 </head>
 <body>
