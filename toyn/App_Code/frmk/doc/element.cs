@@ -18,12 +18,11 @@ using mlib.xml;
 using mlib.tiles;
 
 namespace toyn {
-  public class element {
+  public class element : child {
     protected List<element_content> _childs;
 
     public core core { get; set; }
     public int element_level { get; set; }
-    public int element_id { get; set; }
     public element_content element_content { get; set; }
     public bool has_element_content { get { return this.element_content != null; } }
     public string element_type { get; set; }
@@ -31,29 +30,33 @@ namespace toyn {
     public title title { get; set; }
     public bool has_title { get { return this.title != null; } }
     public bool has_child_elements { get; set; }
+    public bool hide_element { get; set; }
     public List<element_content> childs { get { return _childs; } }
     public int back_element_id { get; set; }
 
     public element(core c, int element_level, int element_id, string element_type, string element_code, string element_title
-      , string element_title_ref = "", bool has_child_elements = false, int back_element_id = 0) {
+      , string element_title_ref = "", bool has_child_elements = false, int back_element_id = 0, bool hide_element = false)
+      : base(null, element_id) {
       this.core = c;
       this.element_level = element_level;
-      this.element_id = element_id;
-      this.element_type = element_type; 
+      this.element_type = element_type;
       this.element_code = element_code;
       this.title = new toyn.title(this, element_title, element_title_ref);
       this.has_child_elements = has_child_elements;
       this.back_element_id = back_element_id;
+      this.hide_element = hide_element;
       _childs = new List<element_content>();
     }
 
+    public element(core c) : base(null) { this.core = c; this.title = new toyn.title(this); _childs = new List<element_content>(); }
+
     #region childs
 
-    public element add_element(int content_id, element e) { _childs.Add(new element_content(this, content_id, e)); return e; }
-    public title add_title(int content_id, title t) { _childs.Add(new element_content(this, content_id, t)); return t; }
-    public text add_text(int content_id, text t) { _childs.Add(new element_content(this, content_id, t)); return t; }
-    public value add_value(int content_id, value v) { _childs.Add(new element_content(this, content_id, v)); return v; }
-    public account add_account(int content_id, account a) { _childs.Add(new element_content(this, content_id, a)); return a; }
+    public element add_element(element e, int content_id = 0) { _childs.Add(new element_content(this, e, content_id)); return e; }
+    public title add_title(title t, int content_id = 0) { _childs.Add(new element_content(this, t, content_id)); return t; }
+    public text add_text(text t, int content_id = 0) { _childs.Add(new element_content(this, t, content_id)); return t; }
+    public value add_value(value v, int content_id = 0) { _childs.Add(new element_content(this, v, content_id)); return v; }
+    public account add_account(account a, int content_id = 0) { _childs.Add(new element_content(this, a, content_id)); return a; }
 
     public element get_element(int i) { check_type(i, element_content.element_content_type.element); return (element)_childs[i].child; }
     public title get_title(int i) { check_type(i, element_content.element_content_type.title); return (title)_childs[i].child; }
@@ -67,6 +70,76 @@ namespace toyn {
 
     public int c_childs { get { return _childs.Count; } }
     public element_content.element_content_type content_type(int i) { return _childs[i].content_type; }
+
+    public int max_level() {
+      int l = this.element_level;
+      foreach (element ec in childs.Where(c => c.child is element && !((element)c.child).hide_element).Select(c => c.element_child))
+        l = ec.max_level();
+      return l;
+    }
+
+    #endregion
+
+    #region xml
+
+    public xml_doc get_xml(int max_level) {
+      xml_doc doc = new xml_doc() { xml = "<element/>" };
+      add_xml_node(max_level, doc.root_node);
+      return doc;
+    }
+
+    public override void add_xml_node(int max_level, xml_node nd) {
+      nd.set_attrs(new Dictionary<string, string>() { { "title", this.title.text}, { "ref", this.title.title_ref_value}
+        , { "code", this.element_code}, { "type", this.element_type}, { "id", this.id.ToString() } });
+
+      if (!this.hide_element) {
+        foreach (element_content ec in this.childs.OrderBy(x => x.content_id))
+          ec.child.add_xml_node(max_level, ec.content_type == element_content.element_content_type.element ? nd.add_node(!ec.element_child.hide_element ? "element" : "hide_element") : nd);
+      }
+    }
+
+    public static element load_xml(core c, string xml) {
+      xml_doc d = new xml_doc() { xml = xml };
+      element e = new element(c);
+      e.load_xml_node(null, d.root_node);
+      foreach (xml_node nd in d.root_node.childs()) 
+        e.add_child_node(nd);
+      return e;
+    }
+
+    protected void add_child_node(xml_node nd) {
+      string name = nd.name;
+      if (xml_elements.account.ToString() == name)
+        this.add_account(account.load_xml(this, nd));
+      else if (xml_elements.element.ToString() == name)
+        this.add_element(element.load_xml(this, nd));
+      else if (xml_elements.hide_element.ToString() == name)
+        this.add_element(element.load_xml(this, nd));
+      else if (xml_elements.text.ToString() == name)
+        this.add_text(text.load_xml(this, nd));
+      else if (xml_elements.title.ToString() == name)
+        this.add_title(title.load_xml(this, nd));
+      else if (xml_elements.value.ToString() == name)
+        this.add_value(value.load_xml(this, nd));
+      else throw new Exception("l'elemento '" + name + "' non viene ancora gestito!");
+    }
+
+    public static element load_xml(element e, xml_node nd){
+      element el = new element(e.core); el.load_xml_node(e, nd);
+      foreach (xml_node ndc in nd.childs())
+        el.add_child_node(ndc);
+      return el;
+    }
+
+    public override void load_xml_node(element el, xml_node nd) {
+      this.id = nd.get_int("id", 0);
+      this.element = el;
+      this.title.text = nd.get_attr("title");
+      this.title.title_ref = nd.get_attr("ref");
+      this.element_code = nd.get_attr("code");
+      this.element_type = nd.get_attr("type");
+      this.hide_element = nd.name == xml_elements.hide_element.ToString();
+    }
 
     #endregion
   }

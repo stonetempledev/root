@@ -6,6 +6,8 @@
   <link href="js/codemirror-5.49.2/lib/codemirror.css" rel="stylesheet" type="text/css" />
   <script src="js/codemirror-5.49.2/lib/codemirror.js" type="text/javascript"></script>
   <script src="js/codemirror-5.49.2/lib/formatting.js" type="text/javascript"></script>
+  <script src="js/codemirror-5.49.2/addon/fold/xml-fold.js"></script>
+  <script src="js/codemirror-5.49.2/addon/edit/matchtags.js"></script>
   <script src="js/codemirror-5.49.2/xml.js" type="text/javascript"></script>
   <style>
     .CodeMirror
@@ -18,11 +20,8 @@
     var _editor = null;
     $(document).ready(function () {
       _editor = CodeMirror.fromTextArea(doc_xml, {
-        mode: 'xml',
-        lineNumbers: true,
-        lineWrapping: true,
-        readOnly: false,
-        autofocus: true
+        mode: 'xml', lineNumbers: true, lineWrapping: true, readOnly: false,
+        autofocus: true, matchTags: { bothTags: true }, extraKeys: { "Ctrl-J": "toMatchingTag" }
       });
       var totalLines = _editor.lineCount();
       _editor.autoFormatRange({ line: 0, ch: 0 }, { line: totalLines });
@@ -31,17 +30,35 @@
 
       _editor.on("beforeChange", function (cm, change) {
         if (change.origin === "paste") {
-          // change.cancel(); 
-          // var newText = ["{e sti cazzi}", "{e sta cippa}", "{e sta cazzarolla}", "{e la madonna}", "{e il signore}"];
-          // change.update(null, null, newText);
+          var new_txt = check_paste_xml(change.text), pos_cursor = _editor.getCursor();
+          if (new_txt == null) { change.cancel(); return; }
+          change.update(null, null, new_txt.replace(/\r/g, '').split("\n"));
+          window.setTimeout(function () {
+            var tot_lines = _editor.lineCount();
+            _editor.autoFormatRange({ line: 0, ch: 0 }, { line: tot_lines });
+            _editor.setCursor(pos_cursor);
+          }, 200);
         }
 
       });
     });
 
+    function check_paste_xml(text_xml) {
+      try {
+        var result = post_data({ "action": "check_paste_xml", "text_xml": text_xml });
+        if (result) {
+          if (result.des_result == "ok") {
+            return result.contents;
+          } else status_err("il formato xml non è corretto"
+             + (result.message ? ": " + result.message : "") + "!");
+        }
+      } catch (e) { show_alert("Attenzione!", e.message); }
+      return null;
+    }
+
     function mod_xml() { window.location.href = $("#url_xml").val(); return false; }
 
-    function save_xml() {
+    function save_element() {
       try {
         var result = post_data({ "action": "save_element", "xml": _editor.getValue() });
         if (result) {
@@ -51,6 +68,13 @@
           } else status_err("si è verificato un errore nel salvataggio del documento"
              + (result.message ? ": " + result.message : "") + "!");
         }
+      } catch (e) { show_alert("Attenzione!", e.message); }
+      return false;
+    }
+
+    function back_element() {
+      try {
+        window.location.href = $("#url_view").val();
       } catch (e) { show_alert("Attenzione!", e.message); }
       return false;
     }
@@ -81,9 +105,9 @@
       <!-- view -->
       <div id="contents" class="col-md-9 ml-sm-auto" style='padding: 0px;' runat='server'>
         <!-- view bar -->
-        <div class='bg-secondary' style='width: 100%; position: fixed; padding: 5px;'>
-          <button class='btn btn-outline-light btn-sm' onclick='return mod_xml()'>
-            Modifica XML</button>
+        <div class='col-md-9 ml-sm-auto' style='height:45px;display:block; position: fixed; padding: 5px;background-color:lightgray;'>
+          <button class='btn btn-outline-light btn-sm' style='float:right;' onclick='return mod_xml()'>
+            <img src="images/xml-24.png" /></button>
         </div>
         <!-- doc -->
         <div id="contents_doc" style='padding: 5px; padding-top: 40px;' runat='server'>
@@ -92,11 +116,13 @@
       <!-- xml -->
       <div id="contents_xml" class="col-md-9 ml-sm-auto" style='padding: 0px;' runat='server'>
         <!-- xml bar -->
-        <div class='bg-secondary' style='display: block; padding: 5px;'>
-          <button class='btn btn-outline-light btn-sm' onclick='return save_xml()'>
-            Salva e torna al documento</button>
-          <span id='lbl_status' class="h6 text-light" style='margin: 4px; display: none;'>
-          </span><span id='lbl_status_err' class="badge badge-danger" style='white-space: normal;
+        <div style='height:45px;display: block; padding: 5px;background-color:lightgray;'>
+          <button class='btn btn-outline-light btn-sm float-right' style='margin-right:5px;' onclick='return save_element()'>
+            <img src="images/upload-24.png" /></button>
+          <button class='btn btn-outline-light btn-sm float-right' style='margin-right:5px;' onclick='return back_element()'>
+            <img src="images/file-24.png" /></button>
+          <span id='lbl_status' class="h6 text-dark float-right" style='margin: 4px; display: none;'>
+          </span><span id='lbl_status_err' class="badge badge-danger float-right" style='white-space: normal;
             padding: 5px; margin: 4px; display: none;'></span>
         </div>
         <!-- doc -->

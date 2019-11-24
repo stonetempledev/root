@@ -59,6 +59,17 @@ namespace mlib.xml {
       }
       return this;
     }
+    public xml_node set_attrs(string[,] attrs) {
+      if (attrs != null) {
+        bool name = true; string[] nv = new string[2];
+        foreach (string attr in attrs) {
+          nv[name ? 0 : 1] = attr;
+          if (!name) set_attr(nv[0], nv[1]);
+          name = !name;
+        }
+      }
+      return this;
+    }
 
     // nodes
     public xml_node add_node(string name) { return _node == null ? null : new xml_node(_node.AppendChild(_node.OwnerDocument.CreateElement(name))); }

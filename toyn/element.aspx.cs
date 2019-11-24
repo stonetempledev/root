@@ -23,8 +23,6 @@ using toyn;
 
 public partial class _element : tl_page {
 
-  protected int _max_level = 3;
-
   protected override void OnInit(EventArgs e) {
     base.OnInit(e);
 
@@ -37,6 +35,7 @@ public partial class _element : tl_page {
         json_result res = new json_result(json_result.type_result.ok);
 
         try {
+
           string json = String.Empty;
           Request.InputStream.Position = 0;
           using (var inputStream = new StreamReader(Request.InputStream)) {
@@ -45,23 +44,42 @@ public partial class _element : tl_page {
 
           if (!string.IsNullOrEmpty(json)) {
             JObject jo = JObject.Parse(json);
+            // save_element
             if (jo["action"].ToString() == "save_element") {
-              string xml = jo["xml"].ToString();
-              xml_doc d = new xml_doc() { xml = xml };
-              d.save("c:\\tmp\\o.xml");
+
+              // carico l'xml
+              element el = element.load_xml(this.core, jo["xml"].ToString());
+
+              // salvo il documento
+
+            } else if (jo["action"].ToString() == "check_paste_xml") {
+              StringBuilder text_xml = new StringBuilder();
+              foreach (JValue j in jo["text_xml"] as JArray)
+                text_xml.AppendLine(j.Value.ToString());
+              xml_doc d = new xml_doc(); try { d.load_xml("<root>" + text_xml.ToString() + "</root>"); } catch { d = null; }
+              if (d != null) {
+                foreach (xml_node n in d.nodes("//*")) {
+                  if (Enum.GetNames(typeof(child.xml_elements)).Contains(n.name))
+                    n.set_attr("id", "");
+                }
+                text_xml.Clear();
+                foreach (xml_node cn in d.root_node.childs())
+                  text_xml.AppendLine(cn.node.OuterXml);
+                res.contents = text_xml.ToString();
+              } else res.contents = text_xml.ToString();
             }
           } else throw new Exception("nessun dato da elaborare!");
 
-        } catch (Exception ex) { res = new json_result(json_result.type_result.error, ex.Message); }
+        } catch (Exception ex) { log.log_err(ex); res = new json_result(json_result.type_result.error, ex.Message); }
 
         Response.Clear();
         Response.ContentType = "application/json";
         Response.Write(JsonConvert.SerializeObject(res));
         //Response.Flush();
         //Response.End();
-        Response.Flush(); 
-        Response.SuppressContent = true;  
-        HttpContext.Current.ApplicationInstance.CompleteRequest(); 
+        Response.Flush();
+        Response.SuppressContent = true;
+        HttpContext.Current.ApplicationInstance.CompleteRequest();
 
         return;
       }
@@ -76,6 +94,7 @@ public partial class _element : tl_page {
         string element_id = c.sub_cmd("id");
         if (element_id == "") throw new Exception("NON HAI SPECIFICATO QUALE ELEMENTO APRIRE!");
         element el = load_element(int.Parse(element_id));
+        int max_level = el.max_level();
         if (el == null) throw new Exception("ELEMENTO INESISTENTE!");
 
         // client vars
@@ -83,13 +102,13 @@ public partial class _element : tl_page {
 
         // document
         StringBuilder sb = new StringBuilder();
-        parse_doc(el, sb);
+        parse_doc(max_level, el, sb);
         contents_doc.InnerHtml = sb.ToString();
         contents_xml.Visible = false;
 
         // menu
         sb.Clear();
-        parse_menu(el, sb);
+        parse_menu(max_level, el, sb);
         menu.InnerHtml = sb.ToString();
 
       }
@@ -98,6 +117,7 @@ public partial class _element : tl_page {
         string element_id = c.sub_cmd("id");
         if (element_id == "") throw new Exception("NON HAI SPECIFICATO QUALE ELEMENTO EDITARE!");
         element el = load_element(int.Parse(element_id));
+        int max_level = el.max_level();
         if (el == null) throw new Exception("ELEMENTO INESISTENTE!");
 
         // client vars
@@ -106,13 +126,11 @@ public partial class _element : tl_page {
         // xml document
         contents_xml.Visible = true;
         contents.Visible = false;
-        xml_doc doc = new xml_doc() { xml = "<el/>" };
-        add_element_node(doc.root_node, el, true);
-        doc_xml.Value = doc.xml;
+        doc_xml.Value = el.get_xml(max_level).xml;
 
         // menu
         StringBuilder sb = new StringBuilder();
-        parse_menu(el, sb, true);
+        parse_menu(max_level, el, sb, true);
         menu.InnerHtml = sb.ToString();
 
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
@@ -142,31 +160,28 @@ public partial class _element : tl_page {
       // element
       if (db_provider.int_val(re["child_id"]) == 0) {
         element el = new element(_core, db_provider.int_val(re["element_level"]), db_provider.int_val(re["element_id"]), db_provider.str_val(re["element_type"]), db_provider.str_val(re["element_code"])
-         , db_provider.str_val(re["element_title"]), db_provider.str_val(re["element_ref"]), db_provider.int_val(re["has_childs_elements"]) == 1, db_provider.int_val(re["back_element_id"]));
+         , db_provider.str_val(re["element_title"]), db_provider.str_val(re["element_ref"]), db_provider.int_val(re["has_childs_elements"]) == 1, db_provider.int_val(re["back_element_id"])
+         , db_provider.int_val(re["hide_element"]) == 1);
         elements.Add(el);
 
         if (db_provider.int_val(re["element_level"]) == 0) res = el;
 
         // element_parent
         if (db_provider.int_val(re["element_parent_id"]) > 0)
-          elements.First(e => e.element_id == db_provider.int_val(re["element_parent_id"])).add_element(db_provider.int_val(re["element_content_id"]), el);
+          elements.First(e => e.id == db_provider.int_val(re["element_parent_id"])).add_element(el, db_provider.int_val(re["element_content_id"]));
       }
         // child
       else {
         element_content.element_content_type et = (element_content.element_content_type)Enum.Parse(typeof(element_content.element_content_type), db_provider.str_val(re["element_type"]));
-        element ep = elements.FirstOrDefault(e => e.element_id == db_provider.int_val(re["element_id"]));
+        element ep = elements.FirstOrDefault(e => e.id == db_provider.int_val(re["element_id"]));
         if (et == element_content.element_content_type.account)
-          ep.add_account(db_provider.int_val(re["child_content_id"]),
-            new account(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_value"]), db_provider.str_val(re["child_notes"])));
+          ep.add_account(new account(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_value"]), db_provider.str_val(re["child_notes"])), db_provider.int_val(re["child_content_id"]));
         else if (et == element_content.element_content_type.title)
-          ep.add_title(db_provider.int_val(re["child_content_id"]),
-            new title(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_text"]), db_provider.str_val(re["child_ref"])));
+          ep.add_title(new title(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_text"]), db_provider.str_val(re["child_ref"])), db_provider.int_val(re["child_content_id"]));
         else if (et == element_content.element_content_type.text)
-          ep.add_text(db_provider.int_val(re["child_content_id"]),
-            new text(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_text"]), db_provider.str_val(re["child_style"])));
+          ep.add_text(new text(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_text"]), db_provider.str_val(re["child_style"])), db_provider.int_val(re["child_content_id"]));
         else if (et == element_content.element_content_type.value)
-          ep.add_value(db_provider.int_val(re["child_content_id"]),
-            new value(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_value"]), db_provider.str_val(re["child_ref"]), db_provider.str_val(re["child_notes"])));
+          ep.add_value(new value(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_value"]), db_provider.str_val(re["child_ref"]), db_provider.str_val(re["child_notes"])), db_provider.int_val(re["child_content_id"]));
       }
     }
 
@@ -177,20 +192,20 @@ public partial class _element : tl_page {
 
   protected string element_ref_id(element e) { return e.has_element_content ? e.element_content.content_id.ToString() : "root"; }
 
-  protected void parse_menu(element e, StringBuilder sb, bool for_xml = false) {
+  protected void parse_menu(int max_level, element e, StringBuilder sb, bool for_xml = false) {
     bool root = false;
     if (sb.Length == 0) { sb.AppendFormat("<ul class='nav flex-column'>\n"); root = true; }
     if (e.has_title) parse_title_menu(e.element_level, element_ref_id(e), e.title, sb
-      , open_element_id: (e.element_level == _max_level && e.has_child_elements ? e.element_id : 0)
+      , open_element_id: (e.element_level == max_level && e.has_child_elements ? e.id : 0)
       , back_element_id: e.back_element_id, for_xml: for_xml);
     bool first = true;
     foreach (element_content ec in e.childs.OrderBy(x => x.content_id)) {
       if (ec.content_type == element_content.element_content_type.title) {
         if (first && e.element_level >= 1) { sb.Append("<ul>"); first = false; }
         parse_title_menu(e.element_level + 1, ec.content_id.ToString(), ec.title, sb, for_xml: for_xml);
-      } else if (ec.content_type == element_content.element_content_type.element) {
+      } else if (ec.content_type == element_content.element_content_type.element && !ec.element_child.hide_element) {
         if (first && e.element_level >= 1) { sb.Append("<ul>"); first = false; }
-        parse_menu(ec.element_child, sb, for_xml);
+        parse_menu(max_level, ec.element_child, sb, for_xml);
       }
     }
     sb.AppendFormat("{0}\n", !first ? "</ul>" : "");
@@ -203,8 +218,8 @@ public partial class _element : tl_page {
       , ce.text, ref_id, close ? "</li>" : ""
       , level == 0 ? "class='h5'" : "", level == 0 ? "color:steelblue;"
         : (level == 1 ? "color:skyblue;margin-top:10px;padding-top:5px;border-top:1pt solid dimgray;display:block;" : "font-size:90%;color:lightcyan;")
-        , !for_xml && open_element_id > 0 ? "<a style='margin-left:5px;font-size:90%;color:lightcyan;' href=\"" + get_url_cmd("view element id:" + open_element_id.ToString()) + "\">(...)</a>" : ""
-        , !for_xml && back_element_id > 0 ? "<a href=\"" + get_url_cmd("view element id:" + back_element_id.ToString())
+        , open_element_id > 0 ? "<a style='margin-left:5px;font-size:90%;color:lightcyan;' href=\"" + get_url_cmd((!for_xml ? "view" : "xml") + " element id:" + open_element_id.ToString()) + "\">(...)</a>" : ""
+        , back_element_id > 0 ? "<a href=\"" + get_url_cmd((!for_xml ? "view" : "xml") + " element id:" + back_element_id.ToString())
         + "\" style='margin-right:10px;'><img src='images/left-chevron-24.png' width='20' height='20'></a>" : "");
   }
 
@@ -212,51 +227,72 @@ public partial class _element : tl_page {
 
   #region document
 
-  protected void parse_doc(element e, StringBuilder sb) {
-    if (e.has_title) parse_title(e.element_level, element_ref_id(e), e.element_code, e.element_type, e.title, sb);
-    foreach (element_content ec in e.childs.OrderBy(x => x.content_id)) {
-      if (ec.content_type == element_content.element_content_type.title)
-        parse_title(e.element_level + 1, ec.content_id.ToString(), "", "", ec.title, sb);
-      else if (ec.content_type == element_content.element_content_type.text)
-        parse_text(e.element_level + 1, ec.text, sb);
-      else if (ec.content_type == element_content.element_content_type.value)
-        parse_value(e.element_level + 1, ec.value, sb);
-      else if (ec.content_type == element_content.element_content_type.account)
-        parse_account(e.element_level + 1, ec.account, sb);
-      else if (ec.content_type == element_content.element_content_type.element)
-        parse_doc(ec.element_child, sb);
+  protected void parse_doc(int max_level, element e, StringBuilder sb) {
+    if (e.has_title) parse_title_element(e, sb);
+    if (!e.hide_element) {
+      foreach (element_content ec in e.childs.OrderBy(x => x.content_id)) {
+        if (ec.content_type == element_content.element_content_type.title)
+          parse_title(e.element_level + 1, ec.content_id.ToString(), ec.title, sb);
+        else if (ec.content_type == element_content.element_content_type.text)
+          parse_text(e.element_level + 1, ec.text, sb);
+        else if (ec.content_type == element_content.element_content_type.value)
+          parse_value(e.element_level + 1, ec.value, sb);
+        else if (ec.content_type == element_content.element_content_type.account)
+          parse_account(e.element_level + 1, ec.account, sb);
+        else if (ec.content_type == element_content.element_content_type.element)
+          parse_doc(max_level, ec.element_child, sb);
+      }
     }
-
-    // {@cmdurl='view cmds'}
-    if (e.element_level == _max_level && e.has_child_elements)
-      sb.AppendFormat("<a style='font-weight:bold;font-size:90%;display:block;' href=\"{0}\">vedi sotto-elementi...</a>"
-        , get_url_cmd("view element id:" + e.element_id.ToString()));
   }
 
-  protected void parse_title(int level, string ref_id, string code, string type, title ce, StringBuilder sb) {
+  protected void parse_title(int level, string ref_id, title ce, StringBuilder sb, element hide_element = null) {
     bool view_level = false;
-    string a = string.Format("<a id='title_{0}' class='anchor'></a>", ref_id), st = (level == 1 ? "style='border-top:1pt solid lightgrey;margin-top:45px;padding-top:15px;margin-bottom:0px;padding-bottom:0px;'"
-      : (level >= 2 ? "style='color:dimgray;margin-bottom:0px;padding-bottom:0px;'" : ""));
-    if (ce.title_ref != "")
+    string a = string.Format("<a id='title_{0}' class='anchor'></a>", ref_id)
+      , st = (level == 1 ? "style='color:dimgray;border-top:1pt solid lightgrey;margin-top:45px;padding-top:15px;margin-bottom:0px;padding-bottom:0px;'"
+      : (level >= 2 ? "style='color:dimgray;margin-bottom:0px;padding-bottom:0px;'" : "style='color:dimgray;'"));
+    string title_ref = ce.title_ref; bool title_ref_cmd = ce.title_ref_cmd;
+    if (hide_element != null) { title_ref = get_url_cmd("view element id:" + hide_element.element_content.element.id.ToString()); title_ref_cmd = true; }
+    if (title_ref != "")
       sb.AppendFormat("{5}<{0} {4}><a href='{2}' {3}>{1}</a></{0}>", level == 0 ? "h1" : (level == 1 ? "h2"
-        : (level == 2 ? "h4" : (level == 3 ? "h5" : "h5"))), (view_level ? level.ToString() + ": " : "") + ce.text
-        , ce.title_ref, !ce.title_ref_cmd ? "target='blank'" : "", st, a);
+        : (level == 2 ? "h4" : (level == 3 ? "h5" : "h5"))), (view_level ? level.ToString() + ": " : "") + ce.text + (hide_element != null ? "..." : "")
+        , title_ref, !title_ref_cmd ? "target='blank'" : "", st, a);
     else
       sb.AppendFormat("{3}<{0} {2}><span>{1}</span></{0}>", level == 0 ? "h1" : (level == 1 ? "h2"
         : (level == 2 ? "h3" : (level == 3 ? "h4" : "h5"))), (view_level ? level.ToString() + ": " : "") + ce.text, st, a);
 
-    if (!string.IsNullOrEmpty(code) || !string.IsNullOrEmpty(type)) {
-      string hc = !string.IsNullOrEmpty(code) ? string.Format("<span style='font-size:90%;color:darkgray;margin-right:5px;'><b>element code</b>: {0}</span>", code) : "";
-      string tp = !string.IsNullOrEmpty(type) ? string.Format("<span style='font-size:90%;color:darkgray;margin-right:5px;'><b>element type</b>: {0}</span>", type) : "";
-      sb.AppendFormat("<p style='padding:0px;margin:0px;margin-bottom:15px;'>{0}{1}</p>", tp, hc);
-    } else sb.AppendFormat("<br/>");
+    sb.AppendFormat("<br/>");
   }
 
+  protected void parse_title_element(element e, StringBuilder sb) {
+    int level = e.element_level; string ref_id = element_ref_id(e);
+    string code = e.element_code; string type = e.element_type;
+    bool view_level = false;
+    string a = string.Format("<a id='title_{0}' class='anchor'></a>", ref_id)
+      , st = (level == 1 ? "style='border-top:1pt solid lightgrey;margin-top:45px;padding-top:15px;margin-bottom:0px;padding-bottom:0px;'"
+      : (level >= 2 ? "style='margin-bottom:0px;padding-bottom:0px;'" : ""));
+    string title_ref = e.title.title_ref; bool title_ref_cmd = e.title.title_ref_cmd;
+    if (e.hide_element) { title_ref = get_url_cmd("view element id:" + e.element_content.element.id.ToString()); title_ref_cmd = true; }
+    if (title_ref != "")
+      sb.AppendFormat("{5}<{0} {4}><a href='{2}' {3}>{1}</a></{0}>", level == 0 ? "h1" : (level == 1 ? "h2"
+        : (level == 2 ? "h4" : (level == 3 ? "h5" : "h5"))), (view_level ? level.ToString() + ": " : "") + e.title.text + (e.hide_element ? "..." : "")
+        , title_ref, !title_ref_cmd ? "target='blank'" : "", st, a);
+    else
+      sb.AppendFormat("{3}<{0} {2}><span>{1}</span></{0}>", level == 0 ? "h1" : (level == 1 ? "h2"
+        : (level == 2 ? "h3" : (level == 3 ? "h4" : "h5"))), (view_level ? level.ToString() + ": " : "") + e.title.text, st, a);
+
+    if ((!string.IsNullOrEmpty(code) || !string.IsNullOrEmpty(type)) && !e.hide_element) {
+      sb.AppendFormat("<p class='lead' style='font-size:90%;color:darkgray;padding:0px;margin:0px;margin-bottom:15px;'>{0}{2}{1}</p>"
+        , !string.IsNullOrEmpty(code) ? string.Format("code: <span style='font-weight:bold;'>{0}</span>", code) : ""
+        , !string.IsNullOrEmpty(type) ? string.Format("type: <span style='font-weight:bold;'>{0}</span>", type) : ""
+        , !string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(type) ? ", ": "");
+    } else sb.AppendFormat("<br/>");
+  }
+  
   protected void parse_text(int level, text te, StringBuilder sb) {
-    string style = te.is_style() ? string.Format("style='{0}'"
-      , string.Join("", te.get_styles().Select(s => s == text.text_styles.bold ? "font-weight:bold;"
-        : (s == text.text_styles.underline ? "font-style:italic;" : "")))) : "";
-    sb.AppendFormat("<p class='lead' {1}>{0}</p>", te.text_content, style);
+    string fs = level > 1 ? "font-size:95%;" : "", style = (te.is_style() ? string.Join(""
+      , te.get_styles().Select(s => s == text.text_styles.bold ? "font-weight:bold;"
+        : (s == text.text_styles.underline ? "font-style:italic;" : ""))) : "") + fs;
+    sb.AppendFormat("<p class='lead' level='{2}' {1}>{0}</p>", te.text_content, style != "" ? "style='" + style + "'" : "", level);
   }
 
   protected void parse_value(int level, value v, StringBuilder sb) {
@@ -277,54 +313,6 @@ public partial class _element : tl_page {
   }
 
   #endregion
-
-  #region xml document
-
-  protected void add_element_node(xml_node nd, element e, bool root = false) {
-    xml_node ne = root ? nd : nd.add_node("el");
-    ne.set_attr("id", e.element_id.ToString());
-    ne.set_attr("title", e.title.text);
-    ne.set_attr("ref", e.title.title_ref_value);
-    ne.set_attr("code", e.element_code);
-    ne.set_attr("type", e.element_type);
-    foreach (element_content ec in e.childs.OrderBy(x => x.content_id)) {
-      if (ec.content_type == element_content.element_content_type.title)
-        add_title_node(ne, ec.title);
-      else if (ec.content_type == element_content.element_content_type.text)
-        add_text_node(ne, ec.text);
-      else if (ec.content_type == element_content.element_content_type.value)
-        add_value_node(ne, ec.value);
-      else if (ec.content_type == element_content.element_content_type.account)
-        add_account_node(ne, ec.account);
-      else if (ec.content_type == element_content.element_content_type.element)
-        add_element_node(ne, ec.element_child);
-    }
-  }
-
-  protected void add_title_node(xml_node el, title t) {
-    xml_node nd = el.add_node("title", t.text);
-    nd.set_attr("ref", t.title_ref_value);
-  }
-  protected void add_text_node(xml_node el, text t) {
-    xml_node nd = el.add_node("text");
-    nd.text = t.text_content;
-    nd.set_attr("style", t.text_style);
-  }
-  protected void add_value_node(xml_node el, value v) {
-    xml_node nd = el.add_node("val", v.value_content);
-    nd.set_attr("ref", v.value_ref_value);
-    nd.set_attr("notes", v.value_notes);
-  }
-
-  protected void add_account_node(xml_node el, account a) {
-    xml_node nd = el.add_node("account");
-    nd.set_attr("user", a.account_user);
-    nd.set_attr("password", a.account_password);
-    nd.set_attr("notes", a.account_notes);
-  }
-
-  #endregion
-
 
   protected override void OnLoad(EventArgs e) {
     base.OnLoad(e);

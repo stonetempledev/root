@@ -24,7 +24,7 @@ namespace toyn {
     public int content_id { get; set; }
     public element element { get; set; }
     public element_content_type content_type { get; set; }
-    public object child { get; set; }
+    public child child { get; set; }
 
     public element element_child { get { return this.child as element; } }
     public title title { get { return this.child as title; } }
@@ -34,23 +34,23 @@ namespace toyn {
 
     protected Dictionary<int, object> _childs = null;
 
-    public element_content(element e, int content_id, element child) {
+    public element_content(element e, element child, int content_id = 0) {
       this.element = e; this.content_id = content_id; this.child = child; child.element_content = this; this.content_type = element_content_type.element;
     }
 
-    public element_content(element e, int content_id, title child) {
+    public element_content(element e, title child, int content_id = 0) {
       this.element = e; this.content_id = content_id; this.child = child; child.element_content = this; this.content_type = element_content_type.title;
     }
 
-    public element_content(element e, int content_id, text child) {
+    public element_content(element e, text child, int content_id = 0) {
       this.element = e; this.content_id = content_id; this.child = child; child.element_content = this; this.content_type = element_content_type.text;
     }
 
-    public element_content(element e, int content_id, value child) {
+    public element_content(element e, value child, int content_id = 0) {
       this.element = e; this.content_id = content_id; this.child = child; child.element_content = this; this.content_type = element_content_type.value;
     }
 
-    public element_content(element e, int content_id, account child) {
+    public element_content(element e, account child, int content_id = 0) {
       this.element = e; this.content_id = content_id; this.child = child; child.element_content = this; this.content_type = element_content_type.account;
     }
   }

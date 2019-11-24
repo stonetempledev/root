@@ -11,7 +11,8 @@ public class json_result {
   public type_result result { get; set; }
   public string des_result { get { return this.result.ToString(); } }
   public string message { get; set; }
-  public json_result(type_result tr, string message = "") {
-    this.result = tr; this.message = message;
+  public string contents { get; set; }
+  public json_result(type_result tr, string message = "", string contents = "") {
+    this.result = tr; this.message = message; this.contents = contents;
   }
 }

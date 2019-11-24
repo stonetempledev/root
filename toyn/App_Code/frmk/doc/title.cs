@@ -7,7 +7,7 @@ using mlib.xml;
 
 namespace toyn {
   public class title : child {
-    public bool has_title_id { get { return this.child_id > 0; } }
+    public bool has_title_id { get { return this.id > 0; } }
     public string text { get; set; }
 
     protected string _title_ref;
@@ -20,9 +20,27 @@ namespace toyn {
       this.text = text; this.title_ref = title_ref;
     }
 
-    public title(element el, string text, string title_ref)
-      : base(el, -1) {
+    public title(element el, string text, string title_ref) : base(el, -1) {
       this.text = text; this.title_ref = title_ref;
+    }
+
+    public title(element el) : base(el) { }
+
+    public override void add_xml_node(int max_level, xml_node el) {
+      if (!this.has_title_id) throw new Exception("titolo non accessibile dal documento xml!");
+      xml_node nd = el.add_node("title", this.text);
+      nd.set_attrs(new string[,] { { "ref", this.title_ref_value }, { "id", this.id.ToString() } });
+    }
+
+    public static title load_xml(element el, xml_node nd) {
+      title t = new title(el); t.load_xml_node(el, nd); return t;
+    }
+
+    public override void load_xml_node(element el, xml_node nd) {
+      this.element = el;
+      this.id = nd.get_int("id", 0);
+      this.title_ref = nd.get_attr("ref");
+      this.text = nd.text;
     }
   }
 }

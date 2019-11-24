@@ -19,9 +19,29 @@ namespace toyn {
       return ts.Split(new char[] { ',' }).Select(x => (text_styles)Enum.Parse(typeof(text_styles), x)).ToArray();
     }
 
+    public text(element el) : base(el) { }
+
     public text(element el, int text_id, string text_content, string text_style = "")
       : base(el, text_id) {
       this.text_content = text_content; this.text_style = text_style;
     }
+
+    public override void add_xml_node(int max_level, xml_node el) {
+      xml_node nd = el.add_node("text");
+      nd.text = this.text_content;
+      nd.set_attrs(new string[,] { { "style", this.text_style }, { "id", this.id.ToString() } });
+    }
+
+    public static text load_xml(element el, xml_node nd) {
+      text t = new text(el); t.load_xml_node(el, nd); return t;
+    }
+
+    public override void load_xml_node(element el, xml_node nd) {
+      this.element = el;
+      this.id = nd.get_int("id", 0);
+      this.text_content = nd.text;
+      this.text_style = nd.get_attr("style");
+    }
+
   }
 }
