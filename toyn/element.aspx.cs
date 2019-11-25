@@ -47,10 +47,9 @@ public partial class _element : tl_page {
             // save_element
             if (jo["action"].ToString() == "save_element") {
 
-              // carico l'xml
-              element el = element.load_xml(this.core, jo["xml"].ToString());
-
-              // salvo il documento
+              // carico l'xml e salvo tutto
+              int element_id = Convert.ToInt32(jo["element_id"]);
+              List<element> els = element.load_xml(this.core, jo["xml"].ToString());
 
             } else if (jo["action"].ToString() == "check_paste_xml") {
               StringBuilder text_xml = new StringBuilder();
@@ -59,7 +58,10 @@ public partial class _element : tl_page {
               xml_doc d = new xml_doc(); try { d.load_xml("<root>" + text_xml.ToString() + "</root>"); } catch { d = null; }
               if (d != null) {
                 foreach (xml_node n in d.nodes("//*")) {
-                  if (Enum.GetNames(typeof(child.xml_elements)).Contains(n.name))
+                  if (n.name == child.xml_elements.hide_element.ToString()) {
+                    if (n.get_attr("id") != "" && n.get_attr("from_id") == "") 
+                      n.set_attr("from_id", n.get_attr("id"));
+                  } else if (Enum.GetNames(typeof(child.xml_elements)).Contains(n.name))
                     n.set_attr("id", "");
                 }
                 text_xml.Clear();
@@ -122,6 +124,7 @@ public partial class _element : tl_page {
 
         // client vars
         url_view.Value = master.url_cmd("view element id:" + element_id);
+        id_element.Value = element_id.ToString();
 
         // xml document
         contents_xml.Visible = true;

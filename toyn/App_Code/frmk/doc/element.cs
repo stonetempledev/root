@@ -98,13 +98,17 @@ namespace toyn {
       }
     }
 
-    public static element load_xml(core c, string xml) {
-      xml_doc d = new xml_doc() { xml = xml };
-      element e = new element(c);
-      e.load_xml_node(null, d.root_node);
-      foreach (xml_node nd in d.root_node.childs()) 
-        e.add_child_node(nd);
-      return e;
+    public static List<element> load_xml(core c, string xml) {
+      xml_doc d = new xml_doc() { xml = "<root>" + xml + "</root>" };
+      List<element> res = new List<element>();
+      foreach (xml_node ne in d.select_nodes("/root/element")) {
+        element e = new element(c);
+        e.load_xml_node(null, ne);
+        foreach (xml_node nd in ne.childs())
+          e.add_child_node(nd);
+        res.Add(e);
+      }
+      return res;
     }
 
     protected void add_child_node(xml_node nd) {
@@ -124,7 +128,7 @@ namespace toyn {
       else throw new Exception("l'elemento '" + name + "' non viene ancora gestito!");
     }
 
-    public static element load_xml(element e, xml_node nd){
+    public static element load_xml(element e, xml_node nd) {
       element el = new element(e.core); el.load_xml_node(e, nd);
       foreach (xml_node ndc in nd.childs())
         el.add_child_node(ndc);

@@ -30,17 +30,34 @@
 
       _editor.on("beforeChange", function (cm, change) {
         if (change.origin === "paste") {
-          var new_txt = check_paste_xml(change.text), pos_cursor = _editor.getCursor();
+          var new_txt = check_paste_xml(change.text), pos_cursor = _editor.getCursor()
+            , spos = _editor.getScrollInfo();
           if (new_txt == null) { change.cancel(); return; }
-          change.update(null, null, new_txt.replace(/\r/g, '').split("\n"));
-          window.setTimeout(function () {
-            var tot_lines = _editor.lineCount();
-            _editor.autoFormatRange({ line: 0, ch: 0 }, { line: tot_lines });
-            _editor.setCursor(pos_cursor);
-          }, 200);
+          if (new_txt.trim().startsWith("<")) {
+            change.update(null, null, new_txt.replace(/\r/g, '').split("\n"));
+            window.setTimeout(function () {
+              var tot_lines = _editor.lineCount();
+              _editor.autoFormatRange({ line: 0, ch: 0 }, { line: tot_lines });
+              _editor.scrollIntoView(spos);
+              _editor.setCursor(pos_cursor);
+            }, 200);
+          }
         }
 
       });
+
+      _editor.on("copy", function (cm, e) {
+        try {
+          var tm = _editor.getAllMarks();
+          if (tm.length) {
+            //var textContent = _editor.getRange(tm[0].find().from, tm[1].find().to)
+            _editor.setSelection(tm[0].find().from, tm[1].find().to);
+          }
+          //e.preventDefault();
+
+        } catch (e) { alert(e.message); }
+      });
+
     });
 
     function check_paste_xml(text_xml) {
@@ -60,7 +77,7 @@
 
     function save_element() {
       try {
-        var result = post_data({ "action": "save_element", "xml": _editor.getValue() });
+        var result = post_data({ "action": "save_element", "element_id": $("#id_element").val(), "xml": _editor.getValue() });
         if (result) {
           if (result.des_result == "ok") {
             status_text("documento salvato con successo");
@@ -95,6 +112,7 @@
 <asp:Content ContentPlaceHolderID="contents" runat="Server">
   <input id='url_xml' type='hidden' runat='server' />
   <input id='url_view' type='hidden' runat='server' />
+  <input id='id_element' type='hidden' runat='server' />
   <div class="container-fluid">
     <div class="row">
       <!-- menu -->
@@ -105,8 +123,9 @@
       <!-- view -->
       <div id="contents" class="col-md-9 ml-sm-auto" style='padding: 0px;' runat='server'>
         <!-- view bar -->
-        <div class='col-md-9 ml-sm-auto' style='height:45px;display:block; position: fixed; padding: 5px;background-color:lightgray;'>
-          <button class='btn btn-outline-light btn-sm' style='float:right;' onclick='return mod_xml()'>
+        <div class='col-md-9 ml-sm-auto' style='height: 45px; display: block; position: fixed;
+          padding: 5px; background-color: lightgray;'>
+          <button class='btn btn-outline-light btn-sm' style='float: right;' onclick='return mod_xml()'>
             <img src="images/xml-24.png" /></button>
         </div>
         <!-- doc -->
@@ -116,10 +135,12 @@
       <!-- xml -->
       <div id="contents_xml" class="col-md-9 ml-sm-auto" style='padding: 0px;' runat='server'>
         <!-- xml bar -->
-        <div style='height:45px;display: block; padding: 5px;background-color:lightgray;'>
-          <button class='btn btn-outline-light btn-sm float-right' style='margin-right:5px;' onclick='return save_element()'>
+        <div style='height: 45px; display: block; padding: 5px; background-color: lightgray;'>
+          <button class='btn btn-outline-light btn-sm float-right' style='margin-right: 5px;'
+            onclick='return save_element()'>
             <img src="images/upload-24.png" /></button>
-          <button class='btn btn-outline-light btn-sm float-right' style='margin-right:5px;' onclick='return back_element()'>
+          <button class='btn btn-outline-light btn-sm float-right' style='margin-right: 5px;'
+            onclick='return back_element()'>
             <img src="images/file-24.png" /></button>
           <span id='lbl_status' class="h6 text-dark float-right" style='margin: 4px; display: none;'>
           </span><span id='lbl_status_err' class="badge badge-danger float-right" style='white-space: normal;
