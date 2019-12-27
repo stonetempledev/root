@@ -15,10 +15,10 @@ namespace toyn {
     public string value_ref { get { return get_ref(_val_ref); } set { _val_ref = value; } }
     public bool value_ref_cmd { get { return _val_ref.StartsWith("{@cmdurl='"); } }
 
-    public value(element el) : base(el) { }
+    public value(element el) : base(el, content_type.value) { }
 
     public value(element el, int value_id, string value_content, string value_ref = "", string value_notes = "")
-      : base(el, value_id) {
+      : base(el, content_type.value, value_id) {
       this.value_content = value_content; this.value_ref = value_ref; this.value_notes = value_notes;
     }
 

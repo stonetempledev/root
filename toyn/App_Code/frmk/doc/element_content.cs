@@ -19,11 +19,8 @@ using mlib.tiles;
 
 namespace toyn {
   public class element_content {
-    public enum element_content_type { element, title, text, value, account }
 
     public int content_id { get; set; }
-    public element element { get; set; }
-    public element_content_type content_type { get; set; }
     public child child { get; set; }
 
     public element element_child { get { return this.child as element; } }
@@ -34,24 +31,24 @@ namespace toyn {
 
     protected Dictionary<int, object> _childs = null;
 
-    public element_content(element e, element child, int content_id = 0) {
-      this.element = e; this.content_id = content_id; this.child = child; child.element_content = this; this.content_type = element_content_type.element;
+    public element_content(element child, int content_id = 0) {
+      this.content_id = content_id; this.child = child; child.element_content = this; 
     }
 
-    public element_content(element e, title child, int content_id = 0) {
-      this.element = e; this.content_id = content_id; this.child = child; child.element_content = this; this.content_type = element_content_type.title;
+    public element_content(title child, int content_id = 0) {
+      this.content_id = content_id; this.child = child; child.element_content = this; 
     }
 
-    public element_content(element e, text child, int content_id = 0) {
-      this.element = e; this.content_id = content_id; this.child = child; child.element_content = this; this.content_type = element_content_type.text;
+    public element_content(text child, int content_id = 0) {
+      this.content_id = content_id; this.child = child; child.element_content = this; 
     }
 
-    public element_content(element e, value child, int content_id = 0) {
-      this.element = e; this.content_id = content_id; this.child = child; child.element_content = this; this.content_type = element_content_type.value;
+    public element_content(value child, int content_id = 0) {
+      this.content_id = content_id; this.child = child; child.element_content = this; 
     }
 
-    public element_content(element e, account child, int content_id = 0) {
-      this.element = e; this.content_id = content_id; this.child = child; child.element_content = this; this.content_type = element_content_type.account;
+    public element_content(account child, int content_id = 0) {
+     this.content_id = content_id; this.child = child; child.element_content = this; 
     }
   }
 }

@@ -115,6 +115,12 @@ namespace mlib.db {
       return res;
     }
 
+    public static string str_qry(string value) {
+      if (value == null) return "NULL";
+      return "'" + value.Replace("'", "''") + "'";
+    }
+
+
     #endregion
 
     #region base functions

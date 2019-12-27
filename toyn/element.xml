@@ -2,27 +2,27 @@
   <queries>
     <query name="open-element">
       <![CDATA[select t.*
- from (select 0 as element_level, null as element_parent_id, null as element_content_id, e.element_id, e.element_code, e.element_title, e.element_ref, e.element_type 
+ from (select 0 as element_level, null as element_parent_id, null as element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 
    , e.element_content_id as child_content_id, e.child_id, e.child_text, e.child_value, e.child_notes, e.child_code, e.child_style, e.child_ref
    , (select top 1 1 from elements_contents where child_content_type = 'element' and e.child_id is null and element_id = e.element_id) as has_childs_elements
    , (select top 1 element_id from elements_contents where child_content_type = 'element' and e.child_id is null and child_id = e.element_id) as back_element_id
    , null as hide_element
   from vw_elements e 
   where e.element_id = {@field='element_id'}
- union select 1 as element_level, ec.element_id as element_parent_id, ec.element_content_id, e.element_id, e.element_code, e.element_title, e.element_ref, e.element_type 
+ union select 1 as element_level, ec.element_id as element_parent_id, ec.element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 
    , e.element_content_id as child_content_id, e.child_id, e.child_text, e.child_value, e.child_notes, e.child_code, e.child_style, e.child_ref
    , (select top 1 1 from elements_contents where child_content_type = 'element' and e.child_id is null and element_id = e.element_id) as has_childs_elements
    , null as back_element_id, null as hide_element
   from vw_elements e 
   join elements_contents ec on ec.element_id = {@field='element_id'} and ec.child_id = e.element_id and ec.child_content_type = 'element'
- union select 2 as element_level, ec2.element_id as element_parent_id, ec2.element_content_id, e.element_id, e.element_code, e.element_title, e.element_ref, e.element_type 
+ union select 2 as element_level, ec2.element_id as element_parent_id, ec2.element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 
    , e.element_content_id as child_content_id, e.child_id, e.child_text, e.child_value, e.child_notes, e.child_code, e.child_style, e.child_ref
    , (select top 1 1 from elements_contents where child_content_type = 'element' and e.child_id is null and element_id = e.element_id) as has_childs_elements
    , null as back_element_id, null as hide_element
   from vw_elements e 
   join elements_contents ec on ec.element_id = {@field='element_id'} and ec.child_content_type = 'element'
   join elements_contents ec2 on ec2.element_id = ec.child_id and ec2.child_id = e.element_id and ec2.child_content_type = 'element'
- union select 3 as element_level, ec3.element_id as element_parent_id, ec3.element_content_id, e.element_id, e.element_code, e.element_title, e.element_ref, e.element_type 
+ union select 3 as element_level, ec3.element_id as element_parent_id, ec3.element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 
    , e.element_content_id as child_content_id, e.child_id, e.child_text, e.child_value, e.child_notes, e.child_code, e.child_style, e.child_ref
    , (select top 1 1 from elements_contents where child_content_type = 'element' and e.child_id is null and element_id = e.element_id) as has_childs_elements
    , null as back_element_id, null as hide_element
@@ -30,7 +30,7 @@
   join elements_contents ec on ec.element_id = {@field='element_id'} and ec.child_content_type = 'element'
   join elements_contents ec2 on ec2.element_id = ec.child_id and ec2.child_content_type = 'element'
   join elements_contents ec3 on ec3.element_id = ec2.child_id and ec3.child_id = e.element_id and ec3.child_content_type = 'element'
- union select 4 as element_level, ec4.element_id as element_parent_id, ec4.element_content_id, e.element_id, e.element_code, e.element_title, e.element_ref, e.element_type 
+ union select 4 as element_level, ec4.element_id as element_parent_id, ec4.element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 
    , e.element_content_id as child_content_id, e.child_id, e.child_text, e.child_value, e.child_notes, e.child_code, e.child_style, e.child_ref
    , null as has_childs_elements, null as back_element_id, 1 as hide_element
   from vw_elements e 

@@ -48,8 +48,11 @@ public partial class _element : tl_page {
             if (jo["action"].ToString() == "save_element") {
 
               // carico l'xml e salvo tutto
-              int element_id = Convert.ToInt32(jo["element_id"]);
-              List<element> els = element.load_xml(this.core, jo["xml"].ToString());
+              int element_id = Convert.ToInt32(jo["element_id"]), parent_id = Convert.ToInt32(jo["parent_id"]);
+              List<element> els_bck = element.load_xml(this.core, jo["xml_bck"].ToString())
+                , els = element.load_xml(this.core, jo["xml"].ToString());
+              check_and_del(els_bck, els);
+              foreach (element el in els) save_element(el, parent_id);
 
             } else if (jo["action"].ToString() == "check_paste_xml") {
               StringBuilder text_xml = new StringBuilder();
@@ -59,7 +62,7 @@ public partial class _element : tl_page {
               if (d != null) {
                 foreach (xml_node n in d.nodes("//*")) {
                   if (n.name == child.xml_elements.hide_element.ToString()) {
-                    if (n.get_attr("id") != "" && n.get_attr("from_id") == "") 
+                    if (n.get_attr("id") != "" && n.get_attr("from_id") == "")
                       n.set_attr("from_id", n.get_attr("id"));
                   } else if (Enum.GetNames(typeof(child.xml_elements)).Contains(n.name))
                     n.set_attr("id", "");
@@ -125,11 +128,12 @@ public partial class _element : tl_page {
         // client vars
         url_view.Value = master.url_cmd("view element id:" + element_id);
         id_element.Value = element_id.ToString();
+        parent_id.Value = el.parent_id.ToString();
 
         // xml document
         contents_xml.Visible = true;
         contents.Visible = false;
-        doc_xml.Value = el.get_xml(max_level).xml;
+        doc_xml.Value = doc_xml_bck.Value = el.get_xml(max_level).xml;
 
         // menu
         StringBuilder sb = new StringBuilder();
@@ -154,6 +158,138 @@ public partial class _element : tl_page {
     base.OnLoadComplete(e);
   }
 
+  protected List<child> get_all(List<element> els, List<child> l = null) {
+    List<child> res = l == null ? new List<child>() : l;
+    foreach (element el in els) {
+      if (el.id == 0 || (el.id > 0 && res.FirstOrDefault(x => x.type == el.type && x.id == el.id) == null))
+        res.Add(el);
+      foreach (child c in el.childs.Select(c => c.child)) {
+        if (c.id == 0 || (c.id > 0 && res.FirstOrDefault(x => x.type == c.type && x.id == c.id) == null))
+          res.Add(c);
+        if (c.type == child.content_type.element)
+          get_all(new List<element>() { (element)c }, res);
+      }
+    }
+    return res;
+  }
+
+  protected void check_and_del(List<element> els_b, List<element> els) {
+    // documento aggiornato
+    List<child> all = get_all(els);
+    
+    // check ids
+    foreach (child c in all) {
+      if (c.id > 0 && all.Count(x => x.type == c.type && x.id == c.id) > 1)
+        throw new Exception(string.Format("l'elemento '{0}' con id {1} è duplicato più volte e non è possibile!"
+          , c.type.ToString(), c.id));
+    }
+
+    // ciclo pulizia
+    foreach (child c in get_all(els_b)) {
+      if (all.FirstOrDefault(x => x.type == c.type && x.id == c.id) == null) {
+
+        if (c.type == child.content_type.element) 
+          db_conn.exec(string.Format(@"delete from [elements] where element_id = {0}", c.id));
+        else if (c.type == child.content_type.account)
+          db_conn.exec(string.Format(@"delete from [accounts] where account_id = {0}", c.id));
+        else if (c.type == child.content_type.title)
+          db_conn.exec(string.Format(@"delete from [titles] where title_id = {0}", c.id));
+        else if (c.type == child.content_type.text)
+          db_conn.exec(string.Format(@"delete from [texts] where text_id = {0}", c.id));
+        else if (c.type == child.content_type.value)
+          db_conn.exec(string.Format(@"delete from [values] where value_id = {0}", c.id));
+        else throw new Exception("tipo elemento '" + c.type.ToString() + "' non gestito durante le cancellazioni");
+
+        db_conn.exec(string.Format(@"delete from elements_contents 
+          where child_content_type = '{0}' and child_id = {1}", c.type.ToString(), c.id));
+      }
+    }
+  }
+
+  protected void save_element(element e, int parent_id = 0) {
+
+    // elements
+    if (e.id == 0) {
+      e.id = int.Parse(db_conn.exec(string.Format(@"insert into [elements] (element_type, element_code, element_title, element_ref)
+        values ({0}, {1}, {2}, {3})", db_provider.str_qry(e.element_type.ToString()), db_provider.str_qry(e.element_code.ToString())
+          , db_provider.str_qry(e.title.text), db_provider.str_qry(e.title.title_ref)), true));
+
+      if(parent_id > 0)
+        db_conn.exec(string.Format(@"insert into elements_contents (element_id, child_content_type, child_id)
+           values ({0}, {1}, {2})", parent_id, db_provider.str_qry(e.type.ToString()), e.id));
+    } else
+      db_conn.exec(string.Format(@"update [elements] set element_type = {0}, element_code = {1}
+          , element_title = {2}, element_ref = {3} where element_id = {4}"
+        , db_provider.str_qry(e.element_type.ToString()), db_provider.str_qry(e.element_code.ToString())
+        , db_provider.str_qry(e.title.text), db_provider.str_qry(e.title.title_ref), e.id));
+
+    // title, text, values, accounts
+    foreach (element_content ec in e.childs) {
+      // element
+      if (ec.child.type == child.content_type.element) {
+        save_element(ec.child as element);
+      }
+        // title
+      else if (ec.child.type == child.content_type.title) {
+        title t = (title)ec.child;
+        if (t.id == 0)
+          t.id = int.Parse(db_conn.exec(string.Format(@"insert into titles (title_text, title_ref)
+            values ({0}, {1})", db_provider.str_qry(t.text.ToString())
+              , db_provider.str_qry(t.title_ref.ToString())), true));
+        else
+          db_conn.exec(string.Format(@"update titles set title_text = {0}, title_ref = {1}
+            where title_id = {2}"
+            , db_provider.str_qry(t.text), db_provider.str_qry(t.title_ref), t.id));
+      }
+        // text
+      else if (ec.child.type == child.content_type.text) {
+        text t = (text)ec.child;
+        if (t.id == 0)
+          t.id = int.Parse(db_conn.exec(string.Format(@"insert into texts (text_style, text_content)
+            values ({0}, {1})", db_provider.str_qry(t.text_style.ToString())
+              , db_provider.str_qry(t.text_content.ToString())), true));
+        else
+          db_conn.exec(string.Format(@"update texts set text_style = {0}, text_content = {1}
+            where text_id = {2}"
+            , db_provider.str_qry(t.text_style), db_provider.str_qry(t.text_content), t.id));
+      }
+        // value
+      else if (ec.child.type == child.content_type.value) {
+        value v = (value)ec.child;
+        if (v.id == 0)
+          v.id = int.Parse(db_conn.exec(string.Format(@"insert into [values] (value_content, value_ref, value_notes)
+            values ({0}, {1}, {2})", db_provider.str_qry(v.value_content), db_provider.str_qry(v.value_ref)
+              , db_provider.str_qry(v.value_notes)), true));
+        else
+          db_conn.exec(string.Format(@"update [values] set value_content = {0}, value_ref = {1}, value_notes = {2}
+            where value_id = {3}"
+            , db_provider.str_qry(v.value_content), db_provider.str_qry(v.value_ref)
+            , db_provider.str_qry(v.value_notes), v.id));
+      }
+        // account
+      else if (ec.child.type == child.content_type.account) {
+        account a = (account)ec.child;
+        if (a.id == 0)
+          a.id = int.Parse(db_conn.exec(string.Format(@"insert into accounts (account_user, account_password, account_notes)
+            values ({0}, {1}, {2})", db_provider.str_qry(a.account_user.ToString())
+              , db_provider.str_qry(a.account_password.ToString())
+              , db_provider.str_qry(a.account_notes)), true));
+        else
+          db_conn.exec(string.Format(@"update accounts set account_user = {0}, account_password = {1}
+          , account_notes = {2} where account_id = {3}"
+            , db_provider.str_qry(a.account_user.ToString())
+            , db_provider.str_qry(a.account_password), db_provider.str_qry(a.account_notes), a.id));
+      } else throw new Exception("elemento '" + ec.child.type.ToString() + "' non gestito per il salvataggio!");
+    }
+
+    // element_contents
+    db_conn.exec(string.Format("delete from elements_contents where element_id = {0}", e.id));
+    foreach (element_content ec in e.childs) {
+      db_conn.exec(string.Format(@"insert into elements_contents (element_id, child_content_type, child_id)
+         values ({0}, {1}, {2})", e.id, db_provider.str_qry(ec.child.type.ToString()), ec.child.id));
+    }
+  }
+
   protected element load_element(int element_id) {
     element res = null;
 
@@ -162,9 +298,10 @@ public partial class _element : tl_page {
     foreach (DataRow re in dt.Rows) {
       // element
       if (db_provider.int_val(re["child_id"]) == 0) {
-        element el = new element(_core, db_provider.int_val(re["element_level"]), db_provider.int_val(re["element_id"]), db_provider.str_val(re["element_type"]), db_provider.str_val(re["element_code"])
-         , db_provider.str_val(re["element_title"]), db_provider.str_val(re["element_ref"]), db_provider.int_val(re["has_childs_elements"]) == 1, db_provider.int_val(re["back_element_id"])
-         , db_provider.int_val(re["hide_element"]) == 1);
+        element el = new element(_core, db_provider.int_val(re["element_level"]), db_provider.int_val(re["element_id"])
+          , db_provider.int_val(re["parent_id"]), db_provider.str_val(re["element_type"]), db_provider.str_val(re["element_code"])
+          , db_provider.str_val(re["element_title"]), db_provider.str_val(re["element_ref"]), db_provider.int_val(re["has_childs_elements"]) == 1, db_provider.int_val(re["back_element_id"])
+          , db_provider.int_val(re["hide_element"]) == 1);
         elements.Add(el);
 
         if (db_provider.int_val(re["element_level"]) == 0) res = el;
@@ -175,15 +312,15 @@ public partial class _element : tl_page {
       }
         // child
       else {
-        element_content.element_content_type et = (element_content.element_content_type)Enum.Parse(typeof(element_content.element_content_type), db_provider.str_val(re["element_type"]));
+        child.content_type et = (child.content_type)Enum.Parse(typeof(child.content_type), db_provider.str_val(re["element_type"]));
         element ep = elements.FirstOrDefault(e => e.id == db_provider.int_val(re["element_id"]));
-        if (et == element_content.element_content_type.account)
+        if (et == child.content_type.account)
           ep.add_account(new account(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_value"]), db_provider.str_val(re["child_notes"])), db_provider.int_val(re["child_content_id"]));
-        else if (et == element_content.element_content_type.title)
+        else if (et == child.content_type.title)
           ep.add_title(new title(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_text"]), db_provider.str_val(re["child_ref"])), db_provider.int_val(re["child_content_id"]));
-        else if (et == element_content.element_content_type.text)
+        else if (et == child.content_type.text)
           ep.add_text(new text(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_text"]), db_provider.str_val(re["child_style"])), db_provider.int_val(re["child_content_id"]));
-        else if (et == element_content.element_content_type.value)
+        else if (et == child.content_type.value)
           ep.add_value(new value(ep, db_provider.int_val(re["child_id"]), db_provider.str_val(re["child_value"]), db_provider.str_val(re["child_ref"]), db_provider.str_val(re["child_notes"])), db_provider.int_val(re["child_content_id"]));
       }
     }
@@ -203,10 +340,10 @@ public partial class _element : tl_page {
       , back_element_id: e.back_element_id, for_xml: for_xml);
     bool first = true;
     foreach (element_content ec in e.childs.OrderBy(x => x.content_id)) {
-      if (ec.content_type == element_content.element_content_type.title) {
+      if (ec.child.type == child.content_type.title) {
         if (first && e.element_level >= 1) { sb.Append("<ul>"); first = false; }
         parse_title_menu(e.element_level + 1, ec.content_id.ToString(), ec.title, sb, for_xml: for_xml);
-      } else if (ec.content_type == element_content.element_content_type.element && !ec.element_child.hide_element) {
+      } else if (ec.child.type == child.content_type.element && !ec.element_child.hide_element) {
         if (first && e.element_level >= 1) { sb.Append("<ul>"); first = false; }
         parse_menu(max_level, ec.element_child, sb, for_xml);
       }
@@ -234,15 +371,15 @@ public partial class _element : tl_page {
     if (e.has_title) parse_title_element(e, sb);
     if (!e.hide_element) {
       foreach (element_content ec in e.childs.OrderBy(x => x.content_id)) {
-        if (ec.content_type == element_content.element_content_type.title)
+        if (ec.child.type == child.content_type.title)
           parse_title(e.element_level + 1, ec.content_id.ToString(), ec.title, sb);
-        else if (ec.content_type == element_content.element_content_type.text)
+        else if (ec.child.type == child.content_type.text)
           parse_text(e.element_level + 1, ec.text, sb);
-        else if (ec.content_type == element_content.element_content_type.value)
+        else if (ec.child.type == child.content_type.value)
           parse_value(e.element_level + 1, ec.value, sb);
-        else if (ec.content_type == element_content.element_content_type.account)
+        else if (ec.child.type == child.content_type.account)
           parse_account(e.element_level + 1, ec.account, sb);
-        else if (ec.content_type == element_content.element_content_type.element)
+        else if (ec.child.type == child.content_type.element)
           parse_doc(max_level, ec.element_child, sb);
       }
     }
@@ -254,7 +391,7 @@ public partial class _element : tl_page {
       , st = (level == 1 ? "style='color:dimgray;border-top:1pt solid lightgrey;margin-top:45px;padding-top:15px;margin-bottom:0px;padding-bottom:0px;'"
       : (level >= 2 ? "style='color:dimgray;margin-bottom:0px;padding-bottom:0px;'" : "style='color:dimgray;'"));
     string title_ref = ce.title_ref; bool title_ref_cmd = ce.title_ref_cmd;
-    if (hide_element != null) { title_ref = get_url_cmd("view element id:" + hide_element.element_content.element.id.ToString()); title_ref_cmd = true; }
+    if (hide_element != null) { title_ref = get_url_cmd("view element id:" + hide_element.id.ToString()); title_ref_cmd = true; }
     if (title_ref != "")
       sb.AppendFormat("{5}<{0} {4}><a href='{2}' {3}>{1}</a></{0}>", level == 0 ? "h1" : (level == 1 ? "h2"
         : (level == 2 ? "h4" : (level == 3 ? "h5" : "h5"))), (view_level ? level.ToString() + ": " : "") + ce.text + (hide_element != null ? "..." : "")
@@ -274,7 +411,7 @@ public partial class _element : tl_page {
       , st = (level == 1 ? "style='border-top:1pt solid lightgrey;margin-top:45px;padding-top:15px;margin-bottom:0px;padding-bottom:0px;'"
       : (level >= 2 ? "style='margin-bottom:0px;padding-bottom:0px;'" : ""));
     string title_ref = e.title.title_ref; bool title_ref_cmd = e.title.title_ref_cmd;
-    if (e.hide_element) { title_ref = get_url_cmd("view element id:" + e.element_content.element.id.ToString()); title_ref_cmd = true; }
+    if (e.hide_element) { title_ref = get_url_cmd("view element id:" + e.id.ToString()); title_ref_cmd = true; }
     if (title_ref != "")
       sb.AppendFormat("{5}<{0} {4}><a href='{2}' {3}>{1}</a></{0}>", level == 0 ? "h1" : (level == 1 ? "h2"
         : (level == 2 ? "h4" : (level == 3 ? "h5" : "h5"))), (view_level ? level.ToString() + ": " : "") + e.title.text + (e.hide_element ? "..." : "")
@@ -287,10 +424,10 @@ public partial class _element : tl_page {
       sb.AppendFormat("<p class='lead' style='font-size:90%;color:darkgray;padding:0px;margin:0px;margin-bottom:15px;'>{0}{2}{1}</p>"
         , !string.IsNullOrEmpty(code) ? string.Format("code: <span style='font-weight:bold;'>{0}</span>", code) : ""
         , !string.IsNullOrEmpty(type) ? string.Format("type: <span style='font-weight:bold;'>{0}</span>", type) : ""
-        , !string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(type) ? ", ": "");
+        , !string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(type) ? ", " : "");
     } else sb.AppendFormat("<br/>");
   }
-  
+
   protected void parse_text(int level, text te, StringBuilder sb) {
     string fs = level > 1 ? "font-size:95%;" : "", style = (te.is_style() ? string.Join(""
       , te.get_styles().Select(s => s == text.text_styles.bold ? "font-weight:bold;"

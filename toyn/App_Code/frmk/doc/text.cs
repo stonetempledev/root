@@ -19,10 +19,10 @@ namespace toyn {
       return ts.Split(new char[] { ',' }).Select(x => (text_styles)Enum.Parse(typeof(text_styles), x)).ToArray();
     }
 
-    public text(element el) : base(el) { }
+    public text(element el) : base(el, content_type.text) { }
 
     public text(element el, int text_id, string text_content, string text_style = "")
-      : base(el, text_id) {
+      : base(el, content_type.text, text_id) {
       this.text_content = text_content; this.text_style = text_style;
     }
 

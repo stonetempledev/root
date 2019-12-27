@@ -16,15 +16,16 @@ namespace toyn {
     public bool title_ref_cmd { get { return _title_ref.StartsWith("{@cmdurl='"); } }
 
     public title(element el, int title_id, string text, string title_ref)
-      : base(el, title_id) {
+      : base(el, content_type.title, title_id) {
       this.text = text; this.title_ref = title_ref;
     }
 
-    public title(element el, string text, string title_ref) : base(el, -1) {
+    public title(element el, string text, string title_ref)
+      : base(el, content_type.title, -1) {
       this.text = text; this.title_ref = title_ref;
     }
 
-    public title(element el) : base(el) { }
+    public title(element el) : base(el, content_type.title) { }
 
     public override void add_xml_node(int max_level, xml_node el) {
       if (!this.has_title_id) throw new Exception("titolo non accessibile dal documento xml!");
