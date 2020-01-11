@@ -1,8 +1,15 @@
-/ elements.aspx
- / gestione aggiornamento documenti via xml
-  / scarico documento aggiornato dopo il salvataggio
-  / gestione root (view elements - senza id)
+/ cominciamo ad usarlo
+ / documentazione toyn
+ / backup zip
+ / backup anche dei sorgenti
+rivedere il senso degli elementi - accounts
+ ? aggiungere attributi elementi
+elements.aspx - ottimizzare un pò il tutto
+ autocomplete
+ migliorare modifica in xml (evidenziare menu in base alla posizione del cursore)
+ come capire se è un elemento o un titolo?
  documentazione completa e cazzuta del TOYN 
-. send mail provider
-. thecommands.exe
+ deve andare anche con il phone
+end mail provider
+thecommands.exe
  rem C:\_lib\thecommands\bin\Release\thecommands.exe --crypt_folder:%dest_folder%\configs dir:*.xml add_ext:tlenc pwd:qswdef34!£

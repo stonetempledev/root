@@ -21,6 +21,14 @@ namespace mlib.xml {
       set { _node.InnerText = value; }
     }
 
+    public string inner_xml {
+      get {
+        XmlNode tc = txt_child;
+        return tc != null ? tc.InnerXml : (_node != null ? _node.InnerXml : "");
+      }
+      set { _node.InnerXml = value; }
+    }
+
     public string data {
       get {
         return this.text;

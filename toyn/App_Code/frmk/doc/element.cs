@@ -24,6 +24,7 @@ namespace toyn {
     public core core { get; set; }
     public int parent_id { get; set; }
     public int element_level { get; set; }
+    public int content_id { get; set; }
     public element_content element_content { get; set; }
     public bool has_element_content { get { return this.element_content != null; } }
     public string element_type { get; set; }
@@ -36,11 +37,12 @@ namespace toyn {
     public int back_element_id { get; set; }
 
     public element(core c, int element_level, int element_id, int parent_id, string element_type, string element_code, string element_title
-      , string element_title_ref = "", bool has_child_elements = false, int back_element_id = 0, bool hide_element = false)
+      , int element_content_id, string element_title_ref = "", bool has_child_elements = false, int back_element_id = 0, bool hide_element = false)
       : base(null, content_type.element, element_id) {
       this.core = c;
       this.element_level = element_level;
       this.parent_id = parent_id;
+      this.content_id = element_content_id;
       this.element_type = element_type;
       this.element_code = element_code;
       this.title = new toyn.title(this, element_title, element_title_ref);
@@ -80,31 +82,41 @@ namespace toyn {
       return l;
     }
 
+    public static int max_level(List<element> els) {
+      int ml = 0;
+      foreach (element el in els) {
+        int tmp = el.max_level();
+        ml = tmp > ml ? tmp : ml;
+      }
+      return ml;
+    }
+
     #endregion
 
     #region xml
 
-    public xml_doc get_xml(int max_level) {
-      xml_doc doc = new xml_doc() { xml = "<element/>" };
-      add_xml_node(max_level, doc.root_node);
+    public static xml_doc get_doc(List<element> els) { 
+      xml_doc doc = new xml_doc() { xml = "<elements/>" };
+      foreach (element el in els.OrderBy(x => x.content_id)) 
+        el.add_xml_node(doc.root_node.add_node("element"));
       return doc;
     }
 
-    public override void add_xml_node(int max_level, xml_node nd) {
+    public override void add_xml_node(xml_node nd) {
       nd.set_attrs(new Dictionary<string, string>() { { "title", this.title.text}, { "ref", this.title.title_ref_value}
         , { "code", this.element_code}, { "type", this.element_type}, { "id", this.id.ToString() } });
 
       if (!this.hide_element) {
         foreach (element_content ec in this.childs.OrderBy(x => x.content_id))
-          ec.child.add_xml_node(max_level, ec.child.type == content_type.element ? nd.add_node(!ec.element_child.hide_element ? "element" : "hide_element") : nd);
+          ec.child.add_xml_node(ec.child.type == content_type.element ? nd.add_node(!ec.element_child.hide_element ? "element" : "hide_element") : nd);
       }
     }
 
-    public static List<element> load_xml(core c, string xml) {
-      xml_doc d = new xml_doc() { xml = "<root>" + xml + "</root>" };
+    public static List<element> load_xml(core c, string xml, int back_element_id = 0) {
+      xml_doc d = new xml_doc() { xml = "<elements>" + xml + "</elements>" };
       List<element> res = new List<element>();
-      foreach (xml_node ne in d.nodes("/root/element")) {
-        element e = new element(c);
+      foreach (xml_node ne in d.nodes("/elements/element")) {
+        element e = new element(c) { element_level = 0, back_element_id = back_element_id };
         e.load_xml_node(null, ne);
         foreach (xml_node nd in ne.childs())
           e.add_child_node(nd);
@@ -131,7 +143,7 @@ namespace toyn {
     }
 
     public static element load_xml(element e, xml_node nd) {
-      element el = new element(e.core); el.load_xml_node(e, nd);
+      element el = new element(e.core) { element_level = e.element_level + 1 }; el.load_xml_node(e, nd);
       foreach (xml_node ndc in nd.childs())
         el.add_child_node(ndc);
       return el;

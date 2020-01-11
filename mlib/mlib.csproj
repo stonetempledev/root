@@ -70,6 +70,7 @@
     <Compile Include="tools\file.cs" />
     <Compile Include="tools\log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="tools\procs.cs" />
     <Compile Include="tools\strings.cs" />
     <Compile Include="xml\def_node.cs" />
     <Compile Include="xml\nano_doc.cs" />

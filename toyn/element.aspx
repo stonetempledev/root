@@ -16,54 +16,80 @@
   <style>
     .CodeMirror
     {
-      height: calc(100vh - 120px);
+      height: calc(100vh - 72px);
       margin: 5px;
     }
   </style>
   <script language="javascript" charset="UTF-8">
     var _editor = null;
     $(document).ready(function () {
-      _editor = CodeMirror.fromTextArea(doc_xml, {
-        mode: 'xml', lineNumbers: true, lineWrapping: true, readOnly: false,
-        autofocus: true, matchTags: { bothTags: true },
-        autoCloseTags: true, extraKeys: { "Ctrl-Space": "autocomplete" }
-      });
-      var totalLines = _editor.lineCount();
-      _editor.autoFormatRange({ line: 0, ch: 0 }, { line: totalLines });
-      _editor.focus();
-      _editor.setCursor(0);
 
-      _editor.on("beforeChange", function (cm, change) {
-        if (change.origin === "paste") {
-          var new_txt = check_paste_xml(change.text), pos_cursor = _editor.getCursor()
+      // xml
+      if ($("#contents_xml").length) {
+        status_txt("caricamento elementi...");
+
+        window.setTimeout(function () {
+
+          _editor = CodeMirror.fromTextArea(doc_xml, {
+            mode: 'xml', lineNumbers: true, lineWrapping: true, readOnly: false,
+            autofocus: true, matchTags: { bothTags: true },
+            autoCloseTags: true, extraKeys: { "Ctrl-Space": "autocomplete" }
+          });
+
+          window.setTimeout(function () {
+            var totalLines = _editor.lineCount();
+            _editor.autoFormatRange({ line: 0, ch: 0 }, { line: totalLines });
+            _editor.focus();
+            _editor.setCursor(0);
+            end_status_to();
+          }, 100);
+
+          _editor.on("beforeChange", function (cm, change) {
+            if (change.origin === "paste") {
+              var new_txt = check_paste_xml(change.text), pos_cursor = _editor.getCursor()
             , spos = _editor.getScrollInfo();
-          if (new_txt == null) { change.cancel(); return; }
-          if (new_txt.trim().startsWith("<")) {
-            change.update(null, null, new_txt.replace(/\r/g, '').split("\n"));
-            window.setTimeout(function () {
-              var tot_lines = _editor.lineCount();
-              _editor.autoFormatRange({ line: 0, ch: 0 }, { line: tot_lines });
-              _editor.scrollIntoView(spos);
-              _editor.setCursor(pos_cursor);
-            }, 200);
-          }
-        }
+              if (new_txt == null) { change.cancel(); return; }
+              if (new_txt.trim().startsWith("<")) {
+                change.update(null, null, new_txt.replace(/\r/g, '').split("\n"));
+                window.setTimeout(function () {
+                  format_editor(spos, pos_cursor);
+                }, 100);
+              }
+            }
 
-      });
+          });
 
-      _editor.on("copy", function (cm, e) {
-        try {
-          var tm = _editor.getAllMarks();
-          if (tm.length) {
-            //var textContent = _editor.getRange(tm[0].find().from, tm[1].find().to)
-            _editor.setSelection(tm[0].find().from, tm[1].find().to);
-          }
-          //e.preventDefault();
+          _editor.on("copy", function (cm, e) {
+            try {
+              var tm = _editor.getAllMarks();
+              if (tm.length) {
+                //var textContent = _editor.getRange(tm[0].find().from, tm[1].find().to)
+                _editor.setSelection(tm[0].find().from, tm[1].find().to);
+              }
+              //e.preventDefault();
 
-        } catch (e) { alert(e.message); }
-      });
+            } catch (e) { alert(e.message); }
+          });
 
+          // sub commands
+          set_sub_cmds([{ fnc: "back_element()", title: "Vai alla vista..." }
+            , { fnc: "save_element()", title: "Salva elementi" }
+            , { fnc: "save_element(true)", title: "Salva e torna alla vista..."}]);
+        }, 100);
+      }
+      // doc
+      else {
+        // sub commands
+        set_sub_cmds([{ fnc: "mod_xml()", title: "Modifica elementi..."}]);
+      }
     });
+
+    function format_editor(spos, pos_cursor) {
+      var tot_lines = _editor.lineCount();
+      _editor.autoFormatRange({ line: 0, ch: 0 }, { line: tot_lines });
+      if (spos) _editor.scrollIntoView(spos);
+      if (pos_cursor) _editor.setCursor(pos_cursor);
+    }
 
     function check_paste_xml(text_xml) {
       try {
@@ -82,17 +108,28 @@
 
     function save_element(to_doc) {
       try {
-        var result = post_data({ "action": "save_element", "element_id": $("#id_element").val()
-          , "parent_id": $("#parent_id").val(), "xml": _editor.getValue(), "xml_bck": $("#doc_xml_bck").val()
-        });
-        if (result) {
-          if (result.des_result == "ok") {
-            status_text("documento salvato con successo");
-            if (to_doc) window.setTimeout(function () { window.location.href = $("#url_view").val(); }, 2000);
-          } else show_alert("Attenzione!", "si è verificato un errore nel salvataggio del documento"
-             + (result.message ? ": " + result.message : "") + "!");
-        }
-      } catch (e) { show_alert("Attenzione!", e.message); }
+        status_txt("salvataggio in corso...")
+        window.setTimeout(function () {
+          var result = post_data({ "action": "save_element", "element_id": $("#id_element").val()
+          , "max_level": $("#max_lvl").val(), "parent_id": $("#parent_id").val(), "xml": _editor.getValue(), "xml_bck": $("#doc_xml_bck").val()
+          });
+          if (result) {
+            if (result.des_result == "ok") {
+              if (to_doc) window.setTimeout(function () { window.location.href = $("#url_view").val(); }, 2000);
+              else {
+                var pos_cursor = _editor.getCursor(), spos = _editor.getScrollInfo();
+                _editor.getDoc().setValue(result.doc_xml.substring(10, result.doc_xml.length - 11));
+                $("#menu").html(result.menu_html);
+                window.setTimeout(function () {
+                  format_editor(spos, pos_cursor);
+                  status_txt("documento salvato con successo");
+                  end_status_to(2000);
+                }, 100);
+              }
+            } else { show_alert("Salvataggio elemento", "Stai più attento, il formato XML non è corretto!"); end_status(); }
+          } else end_status();
+        }, 100);
+      } catch (e) { show_alert("Attenzione!", e.message); end_status(); }
       return false;
     }
 
@@ -103,11 +140,6 @@
       return false;
     }
 
-    function status_text(txt) {
-      $("#lbl_status").show().text(txt);
-      window.setTimeout(function () { $("#lbl_status").hide(); }, 4000);
-    }
-
   </script>
 </asp:Content>
 <asp:Content ContentPlaceHolderID="contents" runat="Server">
@@ -115,6 +147,7 @@
   <input id='url_view' type='hidden' runat='server' />
   <input id='id_element' type='hidden' runat='server' />
   <input id='parent_id' type='hidden' runat='server' />
+  <input id='max_lvl' type='hidden' runat='server' />
   <div class="container-fluid">
     <div class="row">
       <!-- menu -->
@@ -124,34 +157,16 @@
       </nav>
       <!-- view -->
       <div id="contents" class="col-md-9 ml-sm-auto" style='padding: 0px;' runat='server'>
-        <!-- view bar -->
-        <div class='col-md-9 ml-sm-auto' style='height: 45px; display: block; position: fixed;
-          padding: 5px; background-color: lightgray;'>
-          <button class='btn btn-outline-light btn-sm' style='float: right;' onclick='return mod_xml()'>
-            <img src="images/xml-24.png" /></button>
-        </div>
         <!-- doc -->
-        <div id="contents_doc" style='padding: 5px; padding-top: 40px;' runat='server'>
+        <div id="contents_doc" style='padding: 5px;' runat='server'>
         </div>
       </div>
       <!-- xml -->
       <div id="contents_xml" class="col-md-9 ml-sm-auto" style='padding: 0px;' runat='server'>
-        <!-- xml bar -->
-        <div style='height: 45px; display: block; padding: 5px; background-color: lightgray;'>
-          <button class='btn btn-outline-light btn-sm float-right' style='margin-right: 5px;'
-            onclick='return save_element(true)'>
-            <img src="images/upload-24.png" /></button>
-          <button class='btn btn-outline-light btn-sm float-right' style='margin-right: 5px;'
-            onclick='return save_element()'>
-            <img src="images/save-file-24.png" /></button>
-          <button class='btn btn-outline-light btn-sm float-right' style='margin-right: 5px;'
-            onclick='return back_element()'>
-            <img src="images/file-24.png" /></button>
-          <span id='lbl_status' class="h6 text-dark" style='margin: 4px; display: none;'></span>
-        </div>
         <!-- doc -->
         <textarea id='doc_xml_bck' runat='server' style='display: none;'></textarea>
         <textarea id='doc_xml' runat='server'></textarea>
       </div>
     </div>
+  </div>
 </asp:Content>

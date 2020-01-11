@@ -12,6 +12,8 @@ public class json_result {
   public string des_result { get { return this.result.ToString(); } }
   public string message { get; set; }
   public string contents { get; set; }
+  public string doc_xml { get; set; }
+  public string menu_html { get; set; }
   public json_result(type_result tr, string message = "", string contents = "") {
     this.result = tr; this.message = message; this.contents = contents;
   }

@@ -25,7 +25,7 @@ namespace toyn {
 
     public child(element el, content_type tp) { this.element = el; this.type = tp; this.id = 0; }
 
-    public virtual void add_xml_node(int max_level, xml_node el) { throw new Exception("add_xml_node non implementata!"); }
+    public virtual void add_xml_node(xml_node el) { throw new Exception("add_xml_node non implementata!"); }
     public virtual void load_xml_node(element el, xml_node nd) { throw new Exception("load_xml_node non implementata!"); }
   }
 }

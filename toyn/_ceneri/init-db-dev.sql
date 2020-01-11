@@ -176,7 +176,7 @@ if exists (SELECT top 1 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'el
   drop table [elements]
 go
 
-create table [elements] (element_id int not null identity(1,1) primary key, element_type varchar(25) not null, element_code varchar(25), element_title varchar(100), element_ref varchar(100));
+create table [elements] (element_id int not null identity(1,1) primary key, element_type varchar(25) not null, element_code varchar(25), element_title varchar(250), element_ref varchar(100));
 go
 
 -- elements_contents
@@ -185,9 +185,11 @@ if exists (SELECT top 1 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'el
 go
 
 -- child_content_type: title, text, value, account, element
-create table elements_contents (element_content_id int not null identity(1,1) primary key, element_id int not null, child_content_type varchar(10) not null, child_id int not null);
-create index idx_elements_contents on elements_contents (element_content_id, child_content_type, child_id);
-create index idx_elements_contents_2 on elements_contents (child_content_type, child_id);
+create table elements_contents (element_content_id int not null identity(1,1) primary key, element_id int null, child_content_type varchar(10) not null, child_id int not null);
+create unique index idx_elements_contents on elements_contents (element_id, child_content_type, child_id);
+create index idx_elements_contents_2 on elements_contents (element_content_id, child_content_type, child_id);
+create index idx_elements_contents_3 on elements_contents (child_content_type, child_id);
+create index idx_elements_contents_4 on elements_contents (element_id);
 go
 
 -- titles
@@ -196,7 +198,7 @@ if exists (SELECT top 1 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'ti
 go
 
 -- title_ref: url, {@cmd=''}
-create table titles (title_id int not null identity(1,1) primary key, title_text varchar(100) not null, title_ref varchar(100));
+create table titles (title_id int not null identity(1,1) primary key, title_text varchar(250) not null, title_ref varchar(100));
 go
 
 -- texts
@@ -240,25 +242,26 @@ create view vw_elements
 as
  select t.*
   from (
-   select e.element_id, e.element_type, e.element_code, e.element_title, e.element_ref
-     , null as element_content_id, null as child_id, null as child_text, null as child_value, null as child_notes, null as child_code, null as child_style, null as child_ref
+   select e.element_id, e.element_type, e.element_code, e.element_title, e.element_ref, ec.element_id as parent_id
+     , ec.element_content_id, null as child_id, null as child_text, null as child_value, null as child_notes, null as child_code, null as child_style, null as child_ref
     from [elements] e
-   union select e.element_id, ec.child_content_type as element_type, null as element_code, null as element_title, null as element_ref
+    join elements_contents ec on ec.child_id = e.element_id and ec.child_content_type = 'element'
+   union select e.element_id, ec.child_content_type as element_type, null as element_code, null as element_title, null as element_ref, ec.element_id as parent_id
      , ec.element_content_id, t.text_id as child_id, t.text_content as child_text, null as child_value, null as child_notes, null as child_code, t.text_style as child_style, null as child_ref
     from [elements] e
     join elements_contents ec on ec.element_id = e.element_id and ec.child_content_type = 'text'
     join texts t on t.text_id = ec.child_id
-   union select e.element_id, ec.child_content_type as element_type, null as element_code, null as element_title, null as element_ref
+   union select e.element_id, ec.child_content_type as element_type, null as element_code, null as element_title, null as element_ref, ec.element_id as parent_id
      , ec.element_content_id, t.title_id as child_id, t.title_text as child_text, null as child_value, null as child_notes, null as child_code, null as child_style, t.title_ref as child_ref
     from [elements] e
     join elements_contents ec on ec.element_id = e.element_id and ec.child_content_type = 'title'
     join titles t on t.title_id = ec.child_id
-   union select e.element_id, ec.child_content_type as element_type, null as element_code, null as element_title, null as element_ref
+   union select e.element_id, ec.child_content_type as element_type, null as element_code, null as element_title, null as element_ref, ec.element_id as parent_id
      , ec.element_content_id, v.value_id as child_id, null as child_text, v.value_content as child_value, v.value_notes as child_notes, null as child_code, null as child_style, v.value_ref as child_ref
     from [elements] e
     join elements_contents ec on ec.element_id = e.element_id and ec.child_content_type = 'value'
     join [values] v on v.value_id = ec.child_id
-   union select e.element_id, ec.child_content_type as element_type, null as element_code, null as element_title, null as element_ref
+   union select e.element_id, ec.child_content_type as element_type, null as element_code, null as element_title, null as element_ref, ec.element_id as parent_id
      , ec.element_content_id, a.account_id as child_id, null as child_text, a.account_user + '/' + isnull(a.account_password, '') as child_value, a.account_notes as child_notes, null as child_code, null as child_style, null as child_ref
     from [elements] e
     join elements_contents ec on ec.element_id = e.element_id and ec.child_content_type = 'account'

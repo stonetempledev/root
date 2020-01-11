@@ -22,7 +22,7 @@ namespace toyn {
       this.value_content = value_content; this.value_ref = value_ref; this.value_notes = value_notes;
     }
 
-    public override void add_xml_node(int max_level, xml_node el) {
+    public override void add_xml_node(xml_node el) {
       xml_node nd = el.add_node("value", this.value_content);
       nd.set_attrs(new string[,] { { "ref", this.value_ref_value }, { "notes", this.value_notes }, { "id", this.id.ToString() } });
     }

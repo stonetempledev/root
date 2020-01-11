@@ -160,40 +160,44 @@ namespace mlib.tools {
       string var_key = !string.IsNullOrEmpty(vars_key) ? vars_key + "." : "";
 
       // aggiungo
-      foreach (xml_node var in doc.nodes("/config/vars/var")) {
-        string machine = var.get_attr("machine");
-        if (machine != "" && core.machine_name().ToLower() != machine.ToLower()) continue;
-        string name = var_key + var.get_attr("name");
-        _vars.Add(name, new var(doc_key, name, _cr.parse(var.get_val()), for_pg));
+      foreach (xml_node vars in doc.nodes("/config/vars")) {
+        string machine = vars.get_attr("machine");
+        string bname = vars.get_attr("name");
+        foreach (xml_node var in vars.nodes("var")) {
+          string machine2 = var.get_attr("machine") != "" ? var.get_attr("machine") : machine;
+          if (machine2 != "" && core.machine_name().ToLower() != machine2.ToLower()) continue;
+          string name = var_key + bname + var.get_attr("name");
+          _vars.Add(name, new var(doc_key, name, _cr.parse(var.get_val()), for_pg));
+        }
       }
 
-      foreach (xml_node var in doc.nodes("/config/folders/folder")) {
+      foreach (xml_node var in doc.nodes("/config//folders/folder")) {
         string name = var_key + var.get_attr("name");
         _folders.Add(name, new folder(doc_key, name, _cr.parse(var.get_val()), for_pg));
       }
 
-      foreach (xml_node var in doc.nodes("/config/conns/conn")) {
+      foreach (xml_node var in doc.nodes("/config//conns/conn")) {
         string name = var_key + var.get_attr("name");
         _conns.Add(name, new conn(doc_key, name, var.get_attr("conn-string"), var.get_attr("provider"), var.get_attr("des")
           , var.get_attr("date-format"), var.get_int("timeout", 0), var.get_attr("key"), var.sub_node("sql_key").text, for_pg));
       }
 
-      foreach (xml_node tbl in doc.nodes("/config/tables/table")) {
+      foreach (xml_node tbl in doc.nodes("/config//tables/table")) {
         string name = var_key + tbl.get_attr("name");
         _tables.Add(name, new table(doc_key, name, tbl, for_pg));
       }
 
-      foreach (xml_node tbl in doc.nodes("/config/blocks/*")) {
+      foreach (xml_node tbl in doc.nodes("/config//blocks/*")) {
         string name = var_key + tbl.name;
         _blocks.Add(name, new html_block(doc_key, name, tbl.text, for_pg));
       }
 
-      foreach (xml_node lev in doc.nodes("/config/style-levels/level")) {
+      foreach (xml_node lev in doc.nodes("/config//style-levels/level")) {
         _levels.Add(lev.get_attr("name"), new level(doc_key, lev.get_attr("name"), lev.get_attr("color"), lev.get_attr("title-size"), for_pg));
       }
       _max_level = max_level();
 
-      foreach (xml_node qry in doc.nodes("/config/queries/*")) {
+      foreach (xml_node qry in doc.nodes("/config//queries/*")) {
         if (qry.name == "query") {
           string name = var_key + qry.get_attr("name");
           _queries.Add(name, new query(doc_key, name, qry.text, qry.get_attr("des"), for_pg));

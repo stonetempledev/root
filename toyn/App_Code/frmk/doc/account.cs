@@ -25,7 +25,7 @@ namespace toyn {
       this.account_notes = account_notes;
     }
 
-    public override void add_xml_node(int max_level, xml_node el) {
+    public override void add_xml_node(xml_node el) {
       xml_node nd = el.add_node("account");
       nd.set_attrs(new string[,] { { "user", this.account_user }
         , { "password", this.account_password }, { "notes", this.account_notes }, { "id", this.id.ToString() } });

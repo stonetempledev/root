@@ -49,7 +49,7 @@ public partial class _default : tl_master {
 
   protected void Cmd_Click (object sender, EventArgs e) { elab_cmd(config.get_var("vars.router-page").value); }
 
-  public void elab_cmd (string page) { Response.Redirect(url_cmd(txt_cmd.Value, page)); }
+  public void elab_cmd(string page) { Response.Redirect(url_cmd(txt_cmd.Value, page)); }
 
   public override void redirect_to (string page) { Response.Redirect(page + "?cmd=" + HttpUtility.UrlEncode(txt_cmd.Value)); }
 

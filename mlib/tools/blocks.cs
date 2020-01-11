@@ -59,5 +59,12 @@ namespace mlib.tools {
 
       sb.Append(html);
     }
+
+    public static string html_block(core cr, Dictionary<string, string> blocks) {
+      blocks blk = new blocks();
+      foreach(KeyValuePair<string, string> kp in blocks)
+        blk.add(kp.Key, kp.Value);
+      return blk.parse_blocks(cr);
+    }
   }
 }

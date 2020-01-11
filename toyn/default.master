@@ -51,6 +51,21 @@
       } catch (e) { show_alert("Attenzione!", e.message); return null; }
     }
 
+    function set_sub_cmds(voices) {
+      var html = "";
+      voices.forEach(function (o) { html += "<a class='dropdown-item' href='javascript:" + o.fnc + "'>" + o.title + "</a>"; });
+
+      $("#grp_vai").append("<div class='input-group-append'>"
+        + "<button id='btn_sub' class='btn btn-outline-secondary' type='button' data-toggle='dropdown'>...</button>"
+        + "  <div class='dropdown-menu dropdown-menu-right'>" + html + "  </div></div>");
+    }
+
+    // messaggi temporanei...
+    var _cmd = "", _save_cmd = false;
+    function status_txt(txt) { if (!_save_cmd) { _cmd = $("#txt_cmd").val(); } $("#txt_cmd").prop("readonly", true).val(txt); _save_cmd = true; }
+    function end_status() { $("#txt_cmd").prop("readonly", false).val(_cmd); _cmd = ""; _save_cmd = false; }
+    function end_status_to(ms) { window.setTimeout(function () { end_status(); }, ms ? ms : 200); }
+
   </script>
 </head>
 <body>
@@ -89,21 +104,15 @@
     </div>
   </div>
   <!-- navbar -->
-  <nav id='navbar' class="navbar navbar-expand-md navbar-dark bg-primary fixed-top">   
+  <nav id='navbar' class="navbar navbar-expand navbar-dark bg-primary fixed-top">   
     <a class="navbar-brand" href="./">
       <img src="images/tL-35.png" class="d-inline-block align-middle" alt="">
     </a>
-    
-    <button class="navbar-toggler" style='float:right;' type="button" data-toggle="collapse" data-target="#coll_nav" aria-controls="coll_nav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
 
-    <div class="collapse navbar-collapse" id="coll_nav" runat="server">
-      <div class="input-group">
-        <input id="txt_cmd" runat="server" type="text" class="form-control" onfocus='sel_onfocus(this)' placeholder="ESEGUI AZIONE" aria-label="ESEGUI AZIONE"/>
-        <div class="input-group-append">
-          <asp:Button id="btn_cmd" runat="server" class="btn btn-outline-dark" OnClick="Cmd_Click" Text="VAI"/>
-        </div>
+    <div id='grp_vai' class="input-group">
+      <input id="txt_cmd" runat="server" type="text" class="form-control" onfocus='sel_onfocus(this)' placeholder="ESEGUI AZIONE" aria-label="ESEGUI AZIONE"/>
+      <div class="input-group-append">
+        <asp:Button id="btn_cmd" runat="server" class="btn btn-outline-dark" OnClick="Cmd_Click" Text="VAI"/>
       </div>
     </div>
 

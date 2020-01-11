@@ -61,14 +61,33 @@
     <list><![CDATA[<div class="list-group">{@childs@}</div>]]></list>
     <l-row>
       <![CDATA[<a class="list-group-item list-group-item-action flex-column align-items-start" href='{@href@}'>
-      <div class="d-flex w-100 justify-content-between">
+      <div class="d-flex w-90 justify-content-between">
         <h5 class="mb-1">{@title@}</h5>
         <small>{@tit-small@}</small></div>
       <p class="mb-1">{@text@}</p>
-      <small>{@foot@}</small></a>]]>
+      <small>{@foot@}</small>
+          </a>]]>
     </l-row>
+    <l-row-del>
+      <![CDATA[<a class="list-group-item list-group-item-action flex-column align-items-start" href='{@href@}' row-data='{@row-data@}'>
+      <div class="d-flex w-90 justify-content-between">
+        <h5 class="mb-1">{@title@}</h5>
+        <small>{@tit-small@}</small></div>
+      <p class="mb-1">{@text@}</p>
+      <small>{@foot@}</small>
+      <span class="float-right" style='display:{@display-del@}'>
+        <button type="button" class="btn btn-danger" onclick="{@on-del@} return false;">Cancella</button>
+      </span>
+          </a>]]>
+    </l-row-del>
     <d-row><![CDATA[<div style='border-bottom:1pt solid lightgrey;'>{@text@}</div>]]></d-row>
 
   </blocks>
 
 </config>
+<!--
+       <span class="float-right">
+            <button type="button" class="btn btn-lg btn-warning" onclick="alert('Action2 -> Play');">
+OSTIA            </button>
+          </span>
+-->

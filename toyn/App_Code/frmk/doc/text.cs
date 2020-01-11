@@ -26,7 +26,7 @@ namespace toyn {
       this.text_content = text_content; this.text_style = text_style;
     }
 
-    public override void add_xml_node(int max_level, xml_node el) {
+    public override void add_xml_node(xml_node el) {
       xml_node nd = el.add_node("text");
       nd.text = this.text_content;
       nd.set_attrs(new string[,] { { "style", this.text_style }, { "id", this.id.ToString() } });
