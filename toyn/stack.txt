@@ -1,7 +1,9 @@
 / cominciamo ad usarlo
+ / backup: unzip 
+  / solo db???
+  / anche sorgenti?
+  / percorso di unzip
  / documentazione toyn
- / backup zip
- / backup anche dei sorgenti
 rivedere il senso degli elementi - accounts
  ? aggiungere attributi elementi
 elements.aspx - ottimizzare un pò il tutto

@@ -13,6 +13,7 @@ using System.Web.UI.WebControls.WebParts;
 using System.Xml;
 using System.Text;
 using System.IO;
+using System.IO.Compression;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using mlib.db;
@@ -54,8 +55,9 @@ public partial class _backups : tl_page {
                 using (unc_access unc = new unc_access()) {
                   if (unc.NetUseWithCredentials(net_folder, net_user, "", net_pwd)) {
                     string bf = Path.Combine(net_folder, fn);
-                    if (File.Exists(bf)) File.Delete(bf);
-                    else throw new Exception("il backup '" + fn + "' non è stato trovato!");
+                    if (File.Exists(bf)) {
+                      File.Delete(bf); unc.NetUseDelete();
+                    } else { unc.NetUseDelete(); throw new Exception("il backup '" + fn + "' non è stato trovato!"); }
                   } else throw new Exception(unc.DesLastError);
                 }
               } else {
@@ -63,7 +65,7 @@ public partial class _backups : tl_page {
                 if (File.Exists(bf)) File.Delete(bf);
                 else throw new Exception("il backup '" + fn + "' non è stato trovato!");
               }
-            } else throw new Exception("il backup di tipo '" + tp + "' non è gestito!");          
+            } else throw new Exception("il backup di tipo '" + tp + "' non è gestito!");
           }
         } else throw new Exception("nessun dato da elaborare!");
       } catch (Exception ex) { log.log_err(ex); res = new json_result(json_result.type_result.error, ex.Message); }
@@ -160,12 +162,13 @@ public partial class _backups : tl_page {
           if (net_user != "") {
             using (unc_access unc = new unc_access()) {
               if (unc.NetUseWithCredentials(net_folder, net_user, "", net_pwd)) {
-                foreach (file f in file.dir(net_folder, "*.bak", true))
+                foreach (file f in file.dir(net_folder, "*.tzip", true))
                   files.Add(f);
+                unc.NetUseDelete();
               } else throw new Exception(unc.DesLastError);
             }
           } else {
-            foreach (file f in file.dir(net_folder, "*.bak", true))
+            foreach (file f in file.dir(net_folder, "*.tzip", true))
               files.Add(f);
           }
 
@@ -196,33 +199,47 @@ public partial class _backups : tl_page {
   }
 
   protected void gen_backup(object sender, EventArgs e) {
-    bool del_tmp = false; string tmp_file = "";
+    bool del_bck_tmp = false, del_zip = false; string tmp_bck_file = "", tmp_zip_file = "";
     try {
       if (val_type.Value == "") throw new Exception("il backup automatico non è stato configurato correttamente!");
 
       // fs
       if (val_type.Value == "fs") {
+
+        string tmp_folder = _core.config.get_var("vars.tmp-folder").value;
+
         // genero il backup del database
-        string f_name = prefix_filename.Value + DateTime.Now.ToString(val_file_format.Value) + ".bak";
-        tmp_file = Path.Combine(_core.config.get_var("vars.tmp-folder").value, f_name);
-        db_conn.exec(sql_command.InnerText.Replace("##TMP-FILE##", tmp_file));
-        del_tmp = true;
+        string f_bck_name = prefix_filename.Value + DateTime.Now.ToString(val_file_format.Value) + ".bak";
+        tmp_bck_file = Path.Combine(tmp_folder, f_bck_name);
+        db_conn.exec(sql_command.InnerText.Replace("##TMP-FILE##", tmp_bck_file));
+        del_bck_tmp = true;
+
+        // genero lo zip
+        string f_zip_name = prefix_filename.Value + DateTime.Now.ToString(val_file_format.Value) + ".tzip";
+        tmp_zip_file = Path.Combine(tmp_folder, f_zip_name);
+        GZipStream gz = zip.open_zip(tmp_zip_file);
+        try {
+          zip.add_zip_file(gz, tmp_folder, f_bck_name, "__backup\\" + f_bck_name);
+          zip.add_zip_folder(gz, _base_path, "__site", new List<string>() { tmp_folder }); // _log
+        } finally { gz.Close(); }
+        del_zip = true;
 
         // sposto il file nella cartella di destinazione remota
         if (val_net_user.Value != "") {
           string net_user = val_net_user.Value, net_pwd = val_net_pwd.Value
             , net_folder = val_net_folder.Value;
-            using (unc_access unc = new unc_access()) {
-              if (unc.NetUseWithCredentials(net_folder, net_user, "", net_pwd)) {
-                string dest_file = Path.Combine(net_folder, f_name);
-                File.Copy(tmp_file, dest_file);
-              } else throw new Exception(unc.DesLastError);
-            }
+          using (unc_access unc = new unc_access()) {
+            if (unc.NetUseWithCredentials(net_folder, net_user, "", net_pwd)) {
+              string dest_file = Path.Combine(net_folder, f_zip_name);
+              File.Copy(tmp_zip_file, dest_file);
+              unc.NetUseDelete();
+            } else throw new Exception(unc.DesLastError);
+          }
         }
           // sposto il file nella cartella di destinazione locale
         else {
-          string dest_file = Path.Combine(val_net_folder.Value, f_name);
-          File.Copy(tmp_file, dest_file);
+          string dest_file = Path.Combine(val_net_folder.Value, f_zip_name);
+          File.Copy(tmp_zip_file, dest_file);
         }
       } else throw new Exception("il backup di tipo '" + val_type.Value + "' non è gestito!");
 
@@ -231,7 +248,10 @@ public partial class _backups : tl_page {
     } catch (Exception ex) {
       result_bck.Visible = true;
       result_bck.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "err-label", ex.Message } });
-    } finally { if (del_tmp) File.Delete(tmp_file); }
+    } finally {
+      if (del_bck_tmp) File.Delete(tmp_bck_file);
+      if (del_zip) File.Delete(tmp_zip_file);
+    }
   }
 
   protected void res_backup(object sender, EventArgs e) {
@@ -254,6 +274,7 @@ public partial class _backups : tl_page {
               if (File.Exists(tmp_file)) File.Delete(tmp_file);
               File.Copy(src_file, tmp_file);
               del_tmp = true;
+              unc.NetUseDelete();
             } else throw new Exception(unc.DesLastError);
           }
         }
@@ -297,8 +318,9 @@ public partial class _backups : tl_page {
           using (unc_access unc = new unc_access()) {
             if (unc.NetUseWithCredentials(del_val_net_folder.Value, del_val_net_user.Value, "", del_val_net_pwd.Value)) {
               string src_file = Path.Combine(del_val_net_folder.Value, fn);
-              if (File.Exists(src_file)) File.Delete(src_file);
-              else throw new Exception("il backup '" + fn + "' non è stato trovato!");
+              if (File.Exists(src_file)) {
+                File.Delete(src_file); unc.NetUseDelete();
+              } else { unc.NetUseDelete(); throw new Exception("il backup '" + fn + "' non è stato trovato!"); }
             } else throw new Exception(unc.DesLastError);
           }
         }
