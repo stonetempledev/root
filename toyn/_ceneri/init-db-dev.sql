@@ -179,6 +179,9 @@ go
 create table [elements] (element_id int not null identity(1,1) primary key, element_type varchar(25) not null, element_code varchar(25), element_title varchar(250), element_ref varchar(100));
 go
 
+create index idx_elements on elements_contents (id_utente, element_id);
+go
+
 -- elements_contents
 if exists (SELECT top 1 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'elements_contents')
   drop table elements_contents
@@ -269,3 +272,14 @@ as
   ) t
 go
 
+if exists (SELECT top 1 1 FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = N'vw_elements_h')
+  drop view vw_elements_h
+go
+
+create view vw_elements_h
+as
+ select pe.element_id as parent_id, e.element_id, e.element_type, e.element_code, e.element_title, e.element_ref 
+  from [elements] e
+  left join (
+   select element_id,child_id from elements_contents where child_content_type = 'element') pe on pe.child_id = e.element_id
+go

@@ -35,9 +35,6 @@
     <!-- blocks -->
     <label><![CDATA[<span class='h3'><span class='badge badge-primary d-block' style='white-space:normal;font-weight:normal;'>{@text@}</span></span>]]></label>
     <label-sm><![CDATA[<span class='h5'><span class='badge badge-primary ml-1 mr-1' style='white-space:normal;font-weight:normal;'>{@text@}</span></span>]]></label-sm>
-    <ok-label><![CDATA[<span class='h3'><span class='badge badge-success d-block' style='white-space:normal;font-weight:normal;'>{@text@}</span></span>]]></ok-label>
-    <war-label><![CDATA[<span class='h3'><span class='badge badge-warning d-block' style='white-space:normal;font-weight:normal;'>{@text@}</span></span>]]></war-label>
-    <err-label><![CDATA[<span class='h3'><span class='badge badge-danger d-block' style='white-space:normal;font-weight:normal;margin-top:20px !important;'>{@text@}</span></span>]]></err-label>
     <btn-lg>
       <![CDATA[<button class='btn {@tp::btn-#value#@} btn-lg btn-block' {@onclick::onclick="#value#"@}
       style='text-transform: uppercase;white-space:normal;'>{@text@}</button>]]>
@@ -68,7 +65,7 @@
       <small>{@foot@}</small>
           </a>]]>
     </l-row>
-    <l-row-del>
+    <l-row-btn>
       <![CDATA[<a class="list-group-item list-group-item-action flex-column align-items-start" href='{@href@}' row-data='{@row-data@}'>
       <div class="d-flex w-90 justify-content-between">
         <h5 class="mb-1">{@title@}</h5>
@@ -76,10 +73,22 @@
       <p class="mb-1">{@text@}</p>
       <small>{@foot@}</small>
       <span class="float-right" style='display:{@display-del@}'>
-        <button type="button" class="btn btn-danger" onclick="{@on-del@} return false;">Cancella</button>
-      </span>
-          </a>]]>
-    </l-row-del>
+        <button type="button" class="btn btn-{@style-btn@}" onclick="{@on-click-btn@} return false;">{@title-btn@}</button>
+      </span></a>]]>
+    </l-row-btn>
+    <l-row-btn-2>
+      <![CDATA[<a class="list-group-item list-group-item-action flex-column align-items-start" href='{@href@}' row-data='{@row-data@}'>
+      <div class="d-flex w-90 justify-content-between">
+        <h5 class="mb-1">{@title@}</h5>
+        <small>{@tit-small@}</small></div>
+      <p class="mb-1">{@text@}</p>
+      <small>{@foot@}</small>
+      <span class="float-right" style='display:{@display-btn@};margin-left:5px;'>
+        <button type="button" class="btn btn-{@style-btn@}" onclick="{@on-click-btn@} return false;">{@title-btn@}</button>
+      </span><span class="float-right" style='display:{@display-btn-2@}'>
+        <button type="button" class="btn btn-{@style-btn-2@}" onclick="{@on-click-btn-2@} return false;">{@title-btn-2@}</button>
+      </span></a>]]>
+    </l-row-btn-2>
     <d-row><![CDATA[<div style='border-bottom:1pt solid lightgrey;'>{@text@}</div>]]></d-row>
 
   </blocks>

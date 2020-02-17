@@ -1,5 +1,30 @@
 ﻿<config namespace="page">
   <queries>
+    <query name="parents-elements">
+      <![CDATA[with h_elements (parent_id, element_id, element_type, element_code, element_title, element_ref, livello)
+ as
+ (select parent_id, element_id, element_type, element_code, element_title, element_ref, 0 as livello
+    from vw_elements_h 
+     where element_id = {@field='element_id'}
+   union all select e.parent_id, e.element_id, e.element_type, e.element_code, e.element_title, e.element_ref, livello - 1
+    from vw_elements_h e
+    inner join h_elements he on he.parent_id = e.element_id and he.element_id <> he.parent_id)
+ select he.parent_id, he.element_id, he.element_type, he.element_code, he.element_title, he.element_ref, he.livello
+  from h_elements he 
+  order by he.livello]]>
+    </query>
+    <query name="childs-elements">
+      <![CDATA[with h_elements (parent_id, element_id, element_type, element_code, element_title, element_ref, livello)
+ as
+ (select parent_id, element_id, element_type, element_code, element_title, element_ref, 0 as livello
+    from vw_elements_h 
+     where element_id = {@field='element_id'}
+   union all select e.parent_id, e.element_id, e.element_type, e.element_code, e.element_title, e.element_ref, livello + 1
+    from vw_elements_h e
+    inner join h_elements he on he.element_id = e.parent_id)
+ select he.parent_id, he.element_id, he.element_type, he.element_code, he.element_title, he.element_ref, he.livello
+  from h_elements he order by he.livello]]>
+    </query>
     <query name="open-element">
       <![CDATA[select t.*
  from (select 0 as element_level, null as element_parent_id, ec.element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 

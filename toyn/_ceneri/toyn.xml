@@ -1,0 +1,36 @@
+﻿<element title="Temple Of Your Notes" code="toyn" type="app" id="2">
+  <text id="2">Con il TOYN, puoi prendere appunti, creare la tua struttura dati, poter gestire tutta una serie di informazioni in modo facile ed immediato.</text>
+  <text id="3">Quest'applicazione è nata e impostata per chi sviluppa software, ma è aperta a chiunque ne volesse sfruttare le potenzialità.</text>
+  <element title="Azione" ref="{@cmdurl='view cmds'}" type="element-app" id="3">
+    <text id="4">Il TOYN è in grado di interpretare una serie di parole chiave che messe insieme in un certo modo rappresentano una determinata azione.</text>
+    <text id="29">Ogni azione, eseguita in un determinato contesto, può permetterti di fare varie cose con i tuoi dati.</text>
+    <text id="7">Per eseguire un'azione, devi scriverla nella casella di testo che c'è in alto e premere sul pulsante VAI o sul tasto INVIO.</text>
+    <element title="Sintassi di un'azione" id="4">
+      <element title="'parola chiave'" id="5">
+        <text id="8">parola chiave che può essere un'istruzione, il nome di una classe, il nome di un attributo, un tipo di valore numerico o alfanumerico, o qualsiasi altra cosa che serve all'esecuzione di un'azione.</text>
+      </element>
+      <element title="+" id="8">
+        <text id="11">
+          Somma di più parole chiave.
+          Più 'parole chiave' possono stare insieme se separate da uno spazio e se complesse possono stare fra un apice o doppie virgolette.
+        </text>
+      </element>
+      <element title="(gruppo di parole chiave)" id="9">
+        <text id="12">raggruppamento di più parole chiave</text>
+      </element>
+      <element title="[gruppo di parole chiave facoltative]" id="10">
+        <text id="13">raggruppamento di più parole chiave facoltative</text>
+      </element>
+      <element title="'parola chiave': valore" id="3353">
+        <text id="30">assegnazione di un valore ad una parola chiave</text>
+      </element>
+    </element>
+  </element>
+  <element title="Riferimenti" type="refs-app" id="14">
+    <element title="bootstrap 4.0" ref="https://getbootstrap.com" type="app-lib" id="15" />
+    <element title="popper.js" ref="https://popper.js.org/" type="app-lib" id="16" />
+    <element title="metismenu" ref="https://mm.onokumus.com/" type="app-lib" id="17" />
+    <element title="jQuery asBreadcrumbs" ref="https://github.com/thecreation/jquery-asBreadcrumbs" type="app-lib" id="18" />
+    <element title="CodeMirror" ref="https://codemirror.net/" type="app-lib" id="3352" />
+  </element>
+</element>

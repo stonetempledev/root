@@ -20,6 +20,7 @@ using mlib.db;
 using mlib.tools;
 using mlib.xml;
 using mlib.tiles;
+using Ionic.Zip;
 using toyn;
 
 public partial class _backups : tl_page {
@@ -67,6 +68,39 @@ public partial class _backups : tl_page {
               }
             } else throw new Exception("il backup di tipo '" + tp + "' non è gestito!");
           }
+            // down_backup
+          else if (jo["action"].ToString() == "down_backup") {
+            string fn = jo["fn"].ToString(), tp = _core.config.get_var("vars.bck.type").value;
+            if (tp == "") throw new Exception("il backup non è configurato correttamente!");
+            // fs
+            if (tp == "fs") {
+              string net_user = _core.config.get_var("vars.bck.net-user").value
+                , net_pwd = _core.config.get_var("vars.bck.net-pwd").value
+                , net_folder = _core.config.get_var("vars.bck.net-folder").value
+                , tmp_folder = _core.config.get_var("vars.tmp-folder").value
+                , tmp_fn = Path.Combine(tmp_folder, fn);
+              if (net_user != "") {
+                using (unc_access unc = new unc_access()) {
+                  if (unc.NetUseWithCredentials(net_folder, net_user, "", net_pwd)) {
+                    string bf = Path.Combine(net_folder, fn);
+                    if (File.Exists(tmp_fn)) File.Delete(tmp_fn);
+                    if (File.Exists(bf)) {
+                      File.Copy(bf, tmp_fn); unc.NetUseDelete();
+                    } else { unc.NetUseDelete(); throw new Exception("il backup '" + fn + "' non è stato trovato!"); }
+                  } else throw new Exception(unc.DesLastError);
+                }
+              } else {
+                string bf = Path.Combine(net_folder, fn);
+                if (File.Exists(tmp_fn)) File.Delete(tmp_fn);
+                if (File.Exists(bf)) {
+                  File.Copy(bf, tmp_fn);
+                } else throw new Exception("il backup '" + fn + "' non è stato trovato!");
+              }
+
+              res.url_file = _core.config.get_var("vars.tmp-url").value + "/" + fn;
+              res.url_name = fn;
+            } else throw new Exception("il backup di tipo '" + tp + "' non è gestito!");
+          }
         } else throw new Exception("nessun dato da elaborare!");
       } catch (Exception ex) { log.log_err(ex); res = new json_result(json_result.type_result.error, ex.Message); }
 
@@ -84,13 +118,12 @@ public partial class _backups : tl_page {
     // check cmd
     if (string.IsNullOrEmpty(qry_val("cmd"))) return;
 
-    gen_backups.Visible = del_backups.Visible = res_backups.Visible = view_backups.Visible = false;
+    gen_backups.Visible = res_backups.Visible = view_backups.Visible = false;
 
     // gen backup
     if (c.action == "gen" && c.obj == "backup") {
       try {
         gen_backups.Visible = true;
-        result_bck.Visible = false;
 
         if (!this.IsPostBack) {
           val_type.Value = _core.config.get_var("vars.bck.type").value;
@@ -102,15 +135,13 @@ public partial class _backups : tl_page {
           sql_command.InnerText = _core.config.get_var("vars.bck.sql-command").value;
         }
       } catch (Exception ex) {
-        result_bck.Visible = true;
-        result_bck.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "err-label", ex.Message } });
+        master.err_txt(ex.Message);
       }
     }
       // restore backup
     else if (c.action == "restore" && c.obj == "backup") {
       try {
         res_backups.Visible = true;
-        result_res.Visible = false;
 
         if (!this.IsPostBack) {
           res_val_type.Value = _core.config.get_var("vars.bck.type").value;
@@ -120,32 +151,13 @@ public partial class _backups : tl_page {
           res_sql_command.InnerText = _core.config.get_var("vars.bck.sql-command-restore").value;
         }
       } catch (Exception ex) {
-        result_res.Visible = true;
-        result_res.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "err-label", ex.Message } });
-      }
-    }
-      // delete backup
-    else if (c.action == "del" && c.obj == "backup") {
-      try {
-        del_backups.Visible = true;
-        result_del.Visible = false;
-
-        if (!this.IsPostBack) {
-          del_val_type.Value = _core.config.get_var("vars.bck.type").value;
-          del_val_net_user.Value = _core.config.get_var("vars.bck.net-user").value;
-          del_val_net_pwd.Value = _core.config.get_var("vars.bck.net-pwd").value;
-          del_val_net_folder.Value = _core.config.get_var("vars.bck.net-folder").value;
-        }
-      } catch (Exception ex) {
-        result_del.Visible = true;
-        result_del.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "err-label", ex.Message } });
+        master.err_txt(ex.Message);
       }
     }
       // view backups
     else if (c.action == "view" && c.obj == "backups") {
       try {
         view_backups.Visible = true;
-        result_view.Visible = false;
 
         // lista files
         string tp = _core.config.get_var("vars.bck.type").value;
@@ -154,6 +166,10 @@ public partial class _backups : tl_page {
 
         // fs
         if (tp == "fs") {
+
+          // lista notes
+          DataTable dt = db_conn.dt_table(config.get_query("get-backup-notes").text);
+
           string net_user = _core.config.get_var("vars.bck.net-user").value
             , net_pwd = _core.config.get_var("vars.bck.net-pwd").value
             , net_folder = _core.config.get_var("vars.bck.net-folder").value;
@@ -162,30 +178,34 @@ public partial class _backups : tl_page {
           if (net_user != "") {
             using (unc_access unc = new unc_access()) {
               if (unc.NetUseWithCredentials(net_folder, net_user, "", net_pwd)) {
-                foreach (file f in file.dir(net_folder, "*.tzip", true))
+                foreach (file f in file.dir(net_folder, "*.zip", true))
                   files.Add(f);
                 unc.NetUseDelete();
               } else throw new Exception(unc.DesLastError);
             }
           } else {
-            foreach (file f in file.dir(net_folder, "*.tzip", true))
+            foreach (file f in file.dir(net_folder, "*.zip", true))
               files.Add(f);
           }
 
           // lista
           blocks blk = new blocks();
           nano_node list = blk.add("list");
-          foreach (file f in files)
-            list.add_xml(string.Format("<l-row-del title=\"{0}\" href=\"{2}\" on-del=\"del_backup('" + f.file_name + "');\" row-data='" + f.file_name + "'>{1}</l-row-del>"
+          foreach (file f in files) {
+            DataRow[] rn = dt.Select("name_file = '" + f.file_name + "'");
+            string notes = rn.Count() > 0 ? db_provider.str_val(rn[0]["notes"]) : "";
+            list.add_xml(string.Format(@"<l-row-btn-2 title=""{0}"" href=""{2}"" row-data='" + f.file_name + @"'
+              style-btn='danger' title-btn='Cancella' on-click-btn=""del_backup('" + f.file_name + @"');""
+              style-btn-2='primary' title-btn-2='Scarica' on-click-btn-2=""down_backup('" + f.file_name + @"');"">{1}</l-row-btn-2>"
               , f.file_name, "data: " + f.lw.ToString("yyyy/MM/dd") + ", size: " + ((int)(f.size / 1024)).ToString("N0", new System.Globalization.CultureInfo("it-IT")) + " Kb"
-              , master.url_cmd("restore backup '" + f.file_name + "'")));
+              + (notes != "" ? ", notes: " + notes : ""), master.url_cmd("restore backup '" + f.file_name + "'")));
+          }
 
           res_view.InnerHtml = blk.parse_blocks(_core);
         } else throw new Exception("il backup di tipo '" + tp + "' non è gestito!");
 
       } catch (Exception ex) {
-        result_view.Visible = true;
-        result_view.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "err-label", ex.Message } });
+        master.err_txt(ex.Message);
       }
     }
   }
@@ -207,21 +227,28 @@ public partial class _backups : tl_page {
       if (val_type.Value == "fs") {
 
         string tmp_folder = _core.config.get_var("vars.tmp-folder").value;
+        string f_bck_name = prefix_filename.Value + DateTime.Now.ToString(val_file_format.Value) + ".bak"
+          , f_zip_name = prefix_filename.Value + DateTime.Now.ToString(val_file_format.Value) + ".zip";
+
+        // memorizzo la nota
+        db_conn.exec(core.parse(config.get_query("save-backup-note").text
+          , new Dictionary<string, object>() { { "name_file", f_zip_name }, { "notes", notes_txt.InnerText } }));
 
         // genero il backup del database
-        string f_bck_name = prefix_filename.Value + DateTime.Now.ToString(val_file_format.Value) + ".bak";
         tmp_bck_file = Path.Combine(tmp_folder, f_bck_name);
         db_conn.exec(sql_command.InnerText.Replace("##TMP-FILE##", tmp_bck_file));
         del_bck_tmp = true;
 
         // genero lo zip
-        string f_zip_name = prefix_filename.Value + DateTime.Now.ToString(val_file_format.Value) + ".tzip";
         tmp_zip_file = Path.Combine(tmp_folder, f_zip_name);
-        GZipStream gz = zip.open_zip(tmp_zip_file);
-        try {
-          zip.add_zip_file(gz, tmp_folder, f_bck_name, "__backup\\" + f_bck_name);
-          zip.add_zip_folder(gz, _base_path, "__site", new List<string>() { tmp_folder }); // _log
-        } finally { gz.Close(); }
+
+        using (ZipFile zf = new ZipFile(tmp_zip_file)) {
+          zf.AddFile(tmp_bck_file, "__backup");
+          zf.AddDirectory(_base_path, "__site");
+          zf.RemoveSelectedEntries("__site/tmp/*");
+          zf.RemoveSelectedEntries("__site/_log/*");
+          zf.Save();
+        }
         del_zip = true;
 
         // sposto il file nella cartella di destinazione remota
@@ -243,11 +270,9 @@ public partial class _backups : tl_page {
         }
       } else throw new Exception("il backup di tipo '" + val_type.Value + "' non è gestito!");
 
-      result_bck.Visible = true;
-      result_bck.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "ok-label", "BACKUP EFFETTUATO CON SUCCESSO!" } });
+      master.status_txt("Backup effettuato con successo!");
     } catch (Exception ex) {
-      result_bck.Visible = true;
-      result_bck.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "err-label", ex.Message } });
+      master.err_txt(ex.Message);
     } finally {
       if (del_bck_tmp) File.Delete(tmp_bck_file);
       if (del_zip) File.Delete(tmp_zip_file);
@@ -255,7 +280,7 @@ public partial class _backups : tl_page {
   }
 
   protected void res_backup(object sender, EventArgs e) {
-    bool del_tmp = false; string tmp_file = "";
+    bool del_tmp = false, del_folder = false; string tmp_file = "", tmp_folder = "";
     try {
       cmd c = new cmd(qry_val("cmd"));
       string fn = c.sub_obj();
@@ -286,58 +311,29 @@ public partial class _backups : tl_page {
           del_tmp = true;
         }
 
-        // genero il backup del database
-        close_conn();
+        // restore del database
+        tmp_folder = Path.Combine(_core.config.get_var("vars.tmp-folder").value, Path.GetRandomFileName());
+        using (ZipFile zf = new ZipFile(tmp_file)) {
+          zf.ExtractSelectedEntries("*.*", "__backup", tmp_folder);
+          del_folder = true;
+        }
 
+        string bak = Directory.EnumerateFiles(Path.Combine(tmp_folder, "__backup")).ElementAt(0);
+        close_conn();
         db_provider db = conn_to(_core.config.get_var("vars.bck.conn-restore").value);
-        db.exec(res_sql_command.InnerText.Replace("##RESTORE-FILE##", tmp_file));
+        db.exec(res_sql_command.InnerText.Replace("##RESTORE-FILE##", bak));
         db.close_conn();
 
       } else throw new Exception("il backup di tipo '" + res_val_type.Value + "' non è gestito!");
 
-      result_res.Visible = true;
-      result_res.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "ok-label", "RIPRISTINO EFFETTUATO CON SUCCESSO!" } });
+      master.status_txt("Ripristino effettuato con successo!");
     } catch (Exception ex) {
-      result_res.Visible = true;
-      result_res.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "err-label", ex.Message } });
-    } finally { if (del_tmp) File.Delete(tmp_file); }
-  }
-
-  protected void del_backup(object sender, EventArgs e) {
-    try {
-      cmd c = new cmd(qry_val("cmd"));
-      string fn = c.sub_obj();
-
-      if (del_val_type.Value == "") throw new Exception("il backup automatico non è stato configurato correttamente!");
-
-      // fs
-      if (del_val_type.Value == "fs") {
-
-        // sposto il file nella cartella di destinazione remota
-        if (del_val_net_user.Value != "") {
-          using (unc_access unc = new unc_access()) {
-            if (unc.NetUseWithCredentials(del_val_net_folder.Value, del_val_net_user.Value, "", del_val_net_pwd.Value)) {
-              string src_file = Path.Combine(del_val_net_folder.Value, fn);
-              if (File.Exists(src_file)) {
-                File.Delete(src_file); unc.NetUseDelete();
-              } else { unc.NetUseDelete(); throw new Exception("il backup '" + fn + "' non è stato trovato!"); }
-            } else throw new Exception(unc.DesLastError);
-          }
-        }
-          // sposto il file nella cartella di destinazione locale
-        else {
-          string src_file = Path.Combine(val_net_folder.Value, fn);
-          if (File.Exists(src_file)) File.Delete(src_file);
-          else throw new Exception("il backup '" + fn + "' non è stato trovato!");
-        }
-
-      } else throw new Exception("il backup di tipo '" + del_val_type.Value + "' non è gestito!");
-
-      result_del.Visible = true;
-      result_del.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "ok-label", "BACKUP CANCELLATO CON SUCCESSO!" } });
-    } catch (Exception ex) {
-      result_del.Visible = true;
-      result_del.InnerHtml = blocks.html_block(_core, new Dictionary<string, string>() { { "err-label", ex.Message } });
-    } finally { }
+      master.err_txt(ex.Message);
+    } finally {
+      try {
+        if (del_tmp) File.Delete(tmp_file);
+        if (del_folder) (new DirectoryInfo(tmp_folder)).Delete(true);
+      } catch { }
+    }
   }
 }

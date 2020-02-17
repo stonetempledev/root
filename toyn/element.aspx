@@ -73,14 +73,14 @@
 
           // sub commands
           set_sub_cmds([{ fnc: "back_element()", title: "Vai alla vista..." }
-            , { fnc: "save_element()", title: "Salva elementi" }
+            , { fnc: "save_element()", title: "Salva..." }
             , { fnc: "save_element(true)", title: "Salva e torna alla vista..."}]);
         }, 100);
       }
       // doc
       else {
         // sub commands
-        set_sub_cmds([{ fnc: "mod_xml()", title: "Modifica elementi..."}]);
+        set_sub_cmds([{ fnc: "mod_xml()", title: "Modifica XML..."}]);
       }
     });
 
@@ -126,7 +126,7 @@
                   end_status_to(2000);
                 }, 100);
               }
-            } else { show_alert("Salvataggio elemento", "Stai più attento, il formato XML non è corretto!"); end_status(); }
+            } else { show_alert("Salvataggio elemento", "Stai più attento, il formato XML non è corretto!<br/><br/>" + result.message); end_status(); }
           } else end_status();
         }, 100);
       } catch (e) { show_alert("Attenzione!", e.message); end_status(); }

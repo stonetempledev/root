@@ -19,4 +19,13 @@ public class tl_master : System.Web.UI.MasterPage {
 
   public string url_cmd (string cmd, string page = "") { return (page == "" ? config.get_var("vars.router-page").value : page) + "?cmd=" + HttpUtility.UrlEncode(cmd); }
 
+  public void status_txt(string txt) {
+    tlp.ClientScript.RegisterStartupScript(tlp.GetType(), "__status_txt"
+      , "status_txt_ms(\"" + txt.Replace("\"", "'") + "\");", true);
+  }
+
+  public void err_txt(string txt) {
+    tlp.ClientScript.RegisterStartupScript(tlp.GetType(), "__err_txt"
+      , "err_txt(\"" + txt.Replace("\"", "'").Replace("\r", " ").Replace("\n", " ").Replace("\\", "/") + "\");", true);
+  }
 }

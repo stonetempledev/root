@@ -5,6 +5,7 @@
     <var name="router-page">router.aspx</var>
     <var name="router-cmd">{@baseurl}router.aspx?cmd=[@par]</var>
     <var name="tmp-folder">{@basepath}\tmp</var>
+    <var name="tmp-url">{@baseurl}tmp</var>
     <var name="base-blocks">{@setting='settings-folder'}\blocks\blocks.xml</var>
   </vars>
 

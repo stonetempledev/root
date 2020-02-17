@@ -32,9 +32,28 @@
           if (result) {
             if (result.des_result == "ok") {
               $("a[row-data='" + fn + "']").remove();
-              status_txt("backup eliminato con successo");
-              end_status_to(2000);
+              status_txt_ms("backup eliminato con successo!");
             } else { show_alert("Eliminazione backup", "Ci sono stati dei problemi!<br/><br/>" + result.message); end_status(); }
+          } else end_status();
+        }, 100);
+      } catch (e) { show_alert("Attenzione!", e.message); end_status(); }
+    }
+
+    function down_backup(fn) {
+      try {
+        status_txt("scarico backup in corso...")
+        window.setTimeout(function () {
+          var result = post_data({ "action": "down_backup", "fn": fn });
+          if (result) {
+            if (result.des_result == "ok") {
+              
+              var link = document.createElement("a");
+              link.download = result.url_name;
+              link.href = result.url_file;
+              link.click();
+
+              status_txt_ms("backup scaricato con successo!");
+            } else { show_alert("Scarico backup", "Ci sono stati dei problemi!<br/><br/>" + result.message); end_status(); }
           } else end_status();
         }, 100);
       } catch (e) { show_alert("Attenzione!", e.message); end_status(); }
@@ -74,12 +93,14 @@
       <div class='col-9 var-value'>
         <input id="val_net_folder" type='text' runat="server" /></div>
       <div class='col-3 var-name'>
+        notes</div>
+      <div class='col-9 var-value'>
+        <textarea id="notes_txt" style='width:100%;' rows='5' maxlength="500" runat="server"></textarea></div>
+      <div class='col-3 var-name'>
         sql-command</div>
       <div class='col-9 var-value'>
         <textarea id="sql_command" style='width:100%;' rows='5' runat="server"></textarea></div>
-      <div id='result_bck' runat='server' class='col-12' style='margin-top:30px;'>
-      </div>
-      <div class='col-12' style='margin-top:50px;margin-bottom:50px;'>
+      <div class='col-12' style='margin-top:20px;margin-bottom:50px;'>
         <asp:Button class='btn btn-primary float-right' runat='server' OnClick='gen_backup' Text='GENERA BACKUP'></asp:Button>
       </div>
     </div>
@@ -108,37 +129,8 @@
         sql-command</div>
       <div class='col-9 var-value'>
         <textarea id="res_sql_command" style='width:100%;' rows='5' runat="server"></textarea></div>
-      <div id='result_res' runat='server' class='col-12' style='margin-top:30px;'>
-      </div>
-      <div class='col-12' style='margin-top:50px;margin-bottom:50px;'>
+      <div class='col-12' style='margin-top:20px;'>
         <asp:Button class='btn btn-primary float-right' runat='server' OnClick='res_backup' Text='RIPRISTINA BACKUP'></asp:Button>
-      </div>
-    </div>
-    <div id='del_backups' runat='server' class="row">
-      <div class='col-12'>
-        <h2 style='margin-bottom: 45px;'>
-          Eliminazione Backup</h2>
-      </div>
-      <div class='col-3 var-name'>
-        type backup</div>
-      <div class='col-9 var-value'>
-        <input id="del_val_type" type='text' runat="server" /></div>
-      <div class='col-3 var-name'>
-        net-user</div>
-      <div class='col-9 var-value'>
-        <input id="del_val_net_user" type='text' runat="server" /></div>
-      <div class='col-3 var-name'>
-        net-pwd</div>
-      <div class='col-9 var-value'>
-        <input id="del_val_net_pwd" type='text' runat="server" /></div>
-      <div class='col-3 var-name'>
-        net-folder</div>
-      <div class='col-9 var-value'>
-        <input id="del_val_net_folder" type='text' runat="server" /></div>
-      <div id='result_del' runat='server' class='col-12' style='margin-top:30px;'>
-      </div>
-      <div class='col-12' style='margin-top:50px;margin-bottom:50px;'>
-        <asp:Button class='btn btn-primary float-right' runat='server' OnClick='del_backup' Text='ELIMINA BACKUP'></asp:Button>
       </div>
     </div>
     <div id='view_backups' runat='server' class="row">
@@ -147,8 +139,6 @@
           Elenco Backups</h2>
       </div>
       <div id='res_view' runat='server' class='col-12'>
-      </div>
-      <div id='result_view' runat='server' class='col-12' style='margin-top:30px;'>
       </div>
     </div>
   </div>

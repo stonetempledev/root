@@ -14,6 +14,8 @@ public class json_result {
   public string contents { get; set; }
   public string doc_xml { get; set; }
   public string menu_html { get; set; }
+  public string url_file { get; set; }
+  public string url_name { get; set; }
   public json_result(type_result tr, string message = "", string contents = "") {
     this.result = tr; this.message = message; this.contents = contents;
   }

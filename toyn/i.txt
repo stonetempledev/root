@@ -1,12 +1,14 @@
 ﻿linea guida
+ la cura del dettaglio
+ artistico
  multiutente
- libero
  essenziale
  facile
  veloce
  pratico
+ slegato
  intuitivo
- gerarchia di classi
+ struttura di classi
  tutto il possibile nel database
  banditi i postback
 

@@ -27,7 +27,6 @@
         <row group="backups" action="gen" object="backup" page="backups.aspx" des="genera backup del database"/>
         <row group="backups" action="view" object="backups" page="backups.aspx" des="visualizza la lista dei backups generati"/>
         <row group="backups" action="restore" object="backup" page="backups.aspx" des="ripristino backup del database"/>
-        <row group="backups" action="del" object="backup" page="backups.aspx" des="eliminazione backup del database"/>
         <!-- elements -->
         <row group="elements" action="view" object="element" subobjs="[id:'id element']" page="element.aspx" des="visualizza l'elemento"/>
         <row group="elements" action="xml" object="element" subobjs="[id:'id element']" page="element.aspx" des="edit e salvataggio dell'elemento"/>

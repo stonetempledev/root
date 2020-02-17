@@ -26,7 +26,7 @@
 
     function show_alert(title, body) {
       $("#alert_ok_title").text(title);
-      $("#alert_ok_body").text(body);
+      $("#alert_ok_body").html(body);
       $('#alert_ok').modal('show');
     }
 
@@ -56,15 +56,41 @@
       voices.forEach(function (o) { html += "<a class='dropdown-item' href='javascript:" + o.fnc + "'>" + o.title + "</a>"; });
 
       $("#grp_vai").append("<div class='input-group-append'>"
-        + "<button id='btn_sub' class='btn btn-outline-secondary' type='button' data-toggle='dropdown'>...</button>"
+        + "<button id='btn_sub' class='btn btn-outline-dark' style='border-top-right-radius: 5px;border-bottom-right-radius: 5px; ' type='button' data-toggle='dropdown'><span class='navbar-toggler-icon'></span></button>"
         + "  <div class='dropdown-menu dropdown-menu-right'>" + html + "  </div></div>");
     }
 
     // messaggi temporanei...
-    var _cmd = "", _save_cmd = false;
-    function status_txt(txt) { if (!_save_cmd) { _cmd = $("#txt_cmd").val(); } $("#txt_cmd").prop("readonly", true).val(txt); _save_cmd = true; }
-    function end_status() { $("#txt_cmd").prop("readonly", false).val(_cmd); _cmd = ""; _save_cmd = false; }
-    function end_status_to(ms) { window.setTimeout(function () { end_status(); }, ms ? ms : 200); }
+    var _err = false;
+    function status_txt_ms(txt) { status_txt(txt, 4000); }
+    function status_txt(txt, ms) {
+      $("#navbar").removeClass("bg-primary bg-danger").addClass("bg-success");
+      $("#grp_vai").hide();
+      $("#lbl_status").show().text(txt);
+      $("#grp_err").hide();
+      if (ms) end_status_to(ms);
+    }
+    function end_status_to(ms) { window.setTimeout(function () { end_status(); }, ms ? ms : 500); }
+    function end_status() {
+      if (!err) {
+        $("#navbar").removeClass("bg-success bg-danger").addClass("bg-primary");
+        $("#grp_vai").show(); $("#lbl_status").hide(); $("#grp_err").hide();
+      }
+    }
+
+    function err_txt(txt) {
+      _err = true;
+      window.setTimeout(function () {
+        $("#navbar").removeClass("bg-primary bg-success").addClass("bg-danger");
+        $("#grp_vai").hide(); $("#lbl_status").hide(); $("#grp_err").show(); $("#txt_err").val(txt);
+      }, 100);
+    }
+    function err_click() {
+      _err = false;
+      $("#navbar").removeClass("bg-success bg-danger").addClass("bg-primary");
+      $("#grp_vai").show(); $("#lbl_status").hide(); $("#grp_err").hide();
+      return false;
+    }
 
   </script>
 </head>
@@ -113,6 +139,15 @@
       <input id="txt_cmd" runat="server" type="text" class="form-control" onfocus='sel_onfocus(this)' placeholder="ESEGUI AZIONE" aria-label="ESEGUI AZIONE"/>
       <div class="input-group-append">
         <asp:Button id="btn_cmd" runat="server" class="btn btn-outline-dark" OnClick="Cmd_Click" Text="VAI"/>
+      </div>
+    </div>
+
+    <span id='lbl_status' class='lead' style='color:white;display:none;'>...</span>
+
+    <div id='grp_err' style='display:none;' class="input-group">
+      <input id="txt_err" readonly type="text" style='color:tomato;' class="form-control"/>
+      <div class="input-group-append">
+        <button class="btn btn-outline-dark" onclick="return err_click()">OK</button>
       </div>
     </div>
 

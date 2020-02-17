@@ -48,7 +48,7 @@ public partial class _element : tl_page {
             if (jo["action"].ToString() == "save_element") {
 
               // carico l'xml e salvo tutto
-              int parent_id = Convert.ToInt32(jo["parent_id"]), max_level = Convert.ToInt32(jo["max_level"]);
+              int parent_id = jo["parent_id"].ToString() != "" ? Convert.ToInt32(jo["parent_id"]) : 0, max_level = Convert.ToInt32(jo["max_level"]);
               List<element> els_bck = element.load_xml(this.core, jo["xml_bck"].ToString(), parent_id)
                 , els = element.load_xml(this.core, jo["xml"].ToString(), parent_id);
               check_and_del(els_bck, els);
@@ -146,13 +146,7 @@ public partial class _element : tl_page {
 
     } catch (Exception ex) {
       log.log_err(ex);
-      if (!elab_request) {
-        blocks blk = new blocks();
-        blk.add("err-label", "ERRORE: " + ex.Message);
-        contents_xml.Visible = false;
-        contents.Visible = true;
-        contents.InnerHtml = blk.parse_blocks(_core);
-      }
+      if (!elab_request) master.err_txt(ex.Message);
     }
   }
 
@@ -229,12 +223,12 @@ public partial class _element : tl_page {
     if (e.id == 0) {
       e.id = int.Parse(db_conn.exec(string.Format(@"insert into [elements] (element_type, element_code, element_title, element_ref)
         values ({0}, {1}, {2}, {3})", db_provider.str_qry(e.element_type.ToString()), db_provider.str_qry(e.element_code.ToString())
-          , db_provider.str_qry(e.title.text), db_provider.str_qry(e.title.title_ref)), true));
+          , db_provider.str_qry(e.title.text), db_provider.str_qry(e.title.title_ref_value)), true));
     } else
       db_conn.exec(string.Format(@"update [elements] set element_type = {0}, element_code = {1}
           , element_title = {2}, element_ref = {3} where element_id = {4}"
         , db_provider.str_qry(e.element_type.ToString()), db_provider.str_qry(e.element_code.ToString())
-        , db_provider.str_qry(e.title.text), db_provider.str_qry(e.title.title_ref), e.id));
+        , db_provider.str_qry(e.title.text), db_provider.str_qry(e.title.title_ref_value), e.id));
 
     // childs: elements, title, text, values, accounts
     db_conn.exec(string.Format("delete from elements_contents where element_id = {0}", e.id));
@@ -250,11 +244,11 @@ public partial class _element : tl_page {
         if (t.id == 0)
           t.id = int.Parse(db_conn.exec(string.Format(@"insert into titles (title_text, title_ref)
             values ({0}, {1})", db_provider.str_qry(t.text.ToString())
-              , db_provider.str_qry(t.title_ref.ToString())), true));
+              , db_provider.str_qry(t.title_ref_value.ToString())), true));
         else
           db_conn.exec(string.Format(@"update titles set title_text = {0}, title_ref = {1}
             where title_id = {2}"
-            , db_provider.str_qry(t.text), db_provider.str_qry(t.title_ref), t.id));
+            , db_provider.str_qry(t.text), db_provider.str_qry(t.title_ref_value), t.id));
       }
         // text
       else if (ec.child.type == child.content_type.text) {
@@ -305,9 +299,9 @@ public partial class _element : tl_page {
   protected List<element> load_element(int? element_id = null) {
     List<element> res = new List<element>();
 
-    DataTable dt = db_conn.dt_table(config.get_query("open-element").text, core
+    DataTable dt = db_conn.dt_table(core.parse(config.get_query("open-element").text
       , new Dictionary<string, object>() { { "filter_element", element_id.HasValue 
-            ? " = " + element_id.ToString() : " in (select element_id from vw_elements where child_id is null and parent_id is null)" } });
+        ? " = " + element_id.ToString() : " in (select element_id from vw_elements where child_id is null and parent_id is null)" } }));
     List<element> elements = new List<element>();
     foreach (DataRow re in dt.Rows) {
       // element
@@ -356,7 +350,7 @@ public partial class _element : tl_page {
     if (e.has_title) {
       parse_title_menu(e.element_level, element_ref_id(e), e.title, sb
         , first_child: !root ? first_child_title : false
-        , open_element_id: (e.element_level == max_level && e.has_child_elements ? e.id : 0)
+        , open_element_id: (e.element_level == max_level + 1 && e.has_child_elements ? e.id : 0)
         , back_element_id: e.back_element_id, for_xml: for_xml);
       if (!root) first_child_title = false;
     }
@@ -378,16 +372,16 @@ public partial class _element : tl_page {
 
   protected void parse_title_menu(int level, string ref_id, title ce, StringBuilder sb, bool first_child = false, bool close = true, int open_element_id = 0
     , int back_element_id = 0, bool for_xml = false) {
-      sb.AppendFormat(@"<li style='{7}'><div style='display:block;{8}'>{6}<a {3} style='{4}' href='#{1}'>{0}{5}</a></div>{2}"
-      , ce.text, ref_id, close ? "</li>" : "", level == 0 ? "class='h5'" : ""
-      , level == 0 ? "color:steelblue;"
-        : (level == 1 ? "color:skyblue;margin-top:10px;padding-top:5px;padding-left:3px;" : "font-size:90%;color:lightcyan;")
-      , open_element_id > 0 ? "<a style='float:right;margin-right:3px;' href=\"" + get_url_cmd((!for_xml ? "view" : "xml") + " element id:" + open_element_id.ToString()) + "\">"
-        + "<img src='images/right-arrow-16.png' style='margin-bottom:4px;'></a>" : ""
-      , back_element_id > 0 ? "<a href=\"" + get_url_cmd((!for_xml ? "view" : "xml") + " element id:" + back_element_id.ToString())
-        + "\" style='margin-right:10px;'><img src='images/left-chevron-24.png' style='margin-left:3px;margin-bottom:4px;' width='20' height='20'></a>" : ""
-      , level == 0 ? "background-color:#444a50;padding-left:3px;padding-top:4px;padding-bottom:4px;" : ""
-      , level == 1 && !first_child ? "border-top:1pt solid dimgray;" : "");
+    sb.AppendFormat(@"<li style='{7}'><div style='display:block;{8}'>{6}<a {3} style='{4}' href='#{1}'>{0}{5}</a></div>{2}"
+    , ce.text, ref_id, close ? "</li>" : "", level == 0 ? "class='h5'" : ""
+    , level == 0 ? "color:steelblue;"
+      : (level == 1 ? "color:skyblue;margin-top:10px;padding-top:5px;padding-left:3px;" : "font-size:90%;color:lightcyan;")
+    , open_element_id > 0 ? "<a style='float:right;margin-right:3px;' href=\"" + get_url_cmd((!for_xml ? "view" : "xml") + " element id:" + open_element_id.ToString()) + "\">"
+      + "<img src='images/right-arrow-16.png' style='margin-bottom:4px;'></a>" : ""
+    , back_element_id > 0 ? "<a href=\"" + get_url_cmd((!for_xml ? "view" : "xml") + " element id:" + back_element_id.ToString())
+      + "\" style='margin-right:10px;'><img src='images/left-chevron-24.png' style='margin-left:3px;margin-bottom:4px;' width='20' height='20'></a>" : ""
+    , level == 0 ? "background-color:#444a50;padding-left:3px;padding-top:4px;padding-bottom:4px;" : ""
+    , level == 1 && !first_child ? "border-top:1pt solid dimgray;" : "");
   }
 
   #endregion

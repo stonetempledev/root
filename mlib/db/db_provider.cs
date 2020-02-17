@@ -211,9 +211,9 @@ namespace mlib.db {
 
     public virtual DataSet dt_set (string sql, bool throwerr = true, bool open_key = false) { return data_set(sql, throwerr, "", open_key); }
     public virtual DataSet dt_set (string sql, string table_name, bool throwerr = true, bool open_key = false) { return data_set(sql, throwerr, table_name, open_key); }
-    public virtual DataTable dt_table (string sql, core cr, Dictionary<string, object> flds = null) {
-      return data_table(cr.parse(sql, flds));
-    }
+    //public virtual DataTable dt_table (string sql, core cr, Dictionary<string, object> flds = null) {
+    //  return data_table(cr.parse(sql, flds));
+    //}
     public virtual DataTable dt_table (string sql, bool throwerr = true, bool open_key = false) {
       return data_table(sql, "", throwerr, open_key);
     }

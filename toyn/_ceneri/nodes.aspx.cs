@@ -71,7 +71,6 @@ public partial class _nodes : tl_page {
         } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
       } catch (Exception ex) {
-        blk.add("err-label", "ERRORE: " + ex.Message);
       }
       contents.InnerHtml = blk.parse_blocks(_core);
     }
@@ -97,7 +96,8 @@ public partial class _nodes : tl_page {
     string path_ids = ""; Dictionary<int, string> path = new Dictionary<int, string>() { { -1, "ROOT" } };
     doc.add_xml("/root/path", "<node title='ROOT' id='-1'/>");
     if (node_id >= 0) {
-      DataRow dr = db_conn.dt_table(config.get_query("path-node").text, core, new Dictionary<string, object>() { { "node_id", node_id } }).Rows[0];
+      DataRow dr = db_conn.dt_table(core.parse(config.get_query("path-node").text
+        , new Dictionary<string, object>() { { "node_id", node_id } })).Rows[0];
       path_ids = dr["path_ids"].ToString();
       string[] ids = path_ids.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
           , titles = dr["path_titles"].ToString().Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
@@ -109,7 +109,8 @@ public partial class _nodes : tl_page {
     if (node_id == -1) doc.root_node.set_attrs(new Dictionary<string, string>() { { "title", "ROOT" }, { "id_node", "-1" } });
     xml_node nodes = doc.node("/root/nodes");
     foreach (DataRow r in node_id < 0 ? db_conn.dt_table(config.get_query("view-nodes").text).Rows
-        : db_conn.dt_table(config.get_query("view-nodes-childs").text, core, new Dictionary<string, object>() { { "path_node", path_ids } }).Rows) {
+        : db_conn.dt_table(core.parse(config.get_query("view-nodes-childs").text
+        , new Dictionary<string, object>() { { "path_node", path_ids } })).Rows) {
       int id_node = (int)r["id_node"], parent_id = r["id_parent_node"] != DBNull.Value ? (int)r["parent_id"] : -1;
       bool set_root = doc.root_value("id_node") != "";
       xml_node p_nd = doc.node("//*[@id_node=" + parent_id.ToString() + "]");

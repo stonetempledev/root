@@ -1,16 +1,18 @@
+/ caricamento dati flessibile
 / cominciamo ad usarlo
- / backup: unzip 
-  / solo db???
-  / anche sorgenti?
-  / percorso di unzip
- / documentazione toyn
+ ACCOUNTS ELEMENT
+ / PATH ELEMENT BAR IN ALTO NAVIGABILE
+ UN COMANDO DI PULIZIA TMP, LOG
+ COMANDO DI INIT DATABASE PER LO SVILUPPO
+ BACKUP
+  dopo il gen backup aprire la lista dei backups
+ / documentazione toyn come si deve
 rivedere il senso degli elementi - accounts
- ? aggiungere attributi elementi
-elements.aspx - ottimizzare un pò il tutto
+ ? aggiungere attributi agli elementi
+elements.aspx 
  autocomplete
  migliorare modifica in xml (evidenziare menu in base alla posizione del cursore)
  come capire se è un elemento o un titolo?
- documentazione completa e cazzuta del TOYN 
  deve andare anche con il phone
 end mail provider
 thecommands.exe

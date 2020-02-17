@@ -134,7 +134,7 @@ public partial class _router : tl_page {
         } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
       } catch (Exception ex) {
-        blk.add("err-label", "ERRORE: " + ex.Message);
+        master.err_txt(ex.Message);
       }
       div_contents.InnerHtml = blk.parse_blocks(_core);
     }
