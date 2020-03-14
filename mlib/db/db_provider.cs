@@ -96,7 +96,9 @@ namespace mlib.db {
 
     static public int int_val (object fld, int def = 0) { return fld == null || fld == DBNull.Value ? def : Convert.ToInt32(fld); }
 
-    static public int? int_n_val (object fld) { return fld == null || fld == DBNull.Value ? (int?)null : Convert.ToInt32(fld); }
+    static public long long_val(object fld, long def = 0) { return fld == null || fld == DBNull.Value ? def : Convert.ToInt64(fld); }
+
+    static public int? int_n_val(object fld) { return fld == null || fld == DBNull.Value ? (int?)null : Convert.ToInt32(fld); }
 
     public static string row_to_csv (DataRow dr) {
       string res = "";
@@ -120,6 +122,10 @@ namespace mlib.db {
       return "'" + value.Replace("'", "''") + "'";
     }
 
+    public static string dt_qry(DateTime value) {
+      if (value == null || value == DateTime.MinValue) return "NULL";
+      return string.Format("convert(datetime, '{0}', 120)", value.ToString("yyyy-MM-dd HH:mm:ss"));
+    }
 
     #endregion
 

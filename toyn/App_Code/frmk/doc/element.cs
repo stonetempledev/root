@@ -18,145 +18,175 @@ using mlib.xml;
 using mlib.tiles;
 
 namespace toyn {
-  public class element : child {
-    protected List<element_content> _childs;
+  public class element {
 
-    public core core { get; set; }
-    public int parent_id { get; set; }
-    public int element_level { get; set; }
-    public int content_id { get; set; }
-    public element_content element_content { get; set; }
-    public bool has_element_content { get { return this.element_content != null; } }
-    public string element_type { get; set; }
-    public string element_code { get; set; }
-    public title title { get; set; }
-    public bool has_title { get { return this.title != null; } }
+    public enum type_element { element, text, title }
+
+    protected List<element> _childs;
+    protected List<attribute> _attributes;
+    
+    public bool has_childs { get; set; }
     public bool has_child_elements { get; set; }
-    public bool hide_element { get; set; }
-    public List<element_content> childs { get { return _childs; } }
-    public int back_element_id { get; set; }
+    public core core { get; set; }
+    public List<element> childs { get { return _childs; } }
 
-    public element(core c, int element_level, int element_id, int parent_id, string element_type, string element_code, string element_title
-      , int element_content_id, string element_title_ref = "", bool has_child_elements = false, int back_element_id = 0, bool hide_element = false)
-      : base(null, content_type.element, element_id) {
-      this.core = c;
-      this.element_level = element_level;
-      this.parent_id = parent_id;
-      this.content_id = element_content_id;
-      this.element_type = element_type;
-      this.element_code = element_code;
-      this.title = new toyn.title(this, element_title, element_title_ref);
-      this.has_child_elements = has_child_elements;
-      this.back_element_id = back_element_id;
-      this.hide_element = hide_element;
-      _childs = new List<element_content>();
+    // base attributes
+    public long id { get; set; }
+    public long parent_id { get; set; }
+    public long back_id { get; set; }
+    public long content_id { get; set; }
+    public bool sham { get; set; }
+    public int level { get; set; }
+    public type_element type { get; set; }
+    public string title { get; set; }
+    public bool has_title { get { return !string.IsNullOrEmpty(this.title); } }
+    public string content { get { return get_attribute_string("content"); } }
+    public bool has_content { get { return !string.IsNullOrEmpty(this.content); } }
+
+    // attributes
+    public List<attribute> attributes { get { return _attributes; } }
+    public bool has_attribute(string code) { return _attributes.FirstOrDefault(a => a.code == code) != null; }
+    public object attribute_value(string code, bool required = false) {
+      return !required ? (has_attribute(code) ? get_attribute(code).value : null) : get_attribute(code).value;
+    }
+    public attribute get_attribute(string code) { return _attributes.FirstOrDefault(a => a.code == code); }
+    public string get_attribute_string(string code) { attribute a = _attributes.FirstOrDefault(x => x.code == code); return a != null ? a.get_str : ""; }
+    public void set_attribute_real(string code, double value) { set_attribute(code, attribute.attribute_type.real, value); }
+    public void set_attribute_int(string code, int value) { set_attribute(code, attribute.attribute_type.integer, value); }
+    public void set_attribute_datetime(string code, DateTime value) { set_attribute(code, attribute.attribute_type.datetime, value); }
+    public void set_attribute_string(string code, string value) { set_attribute(code, attribute.attribute_type.varchar, value); }
+    public void set_attribute_text(string code, string value) { set_attribute(code, attribute.attribute_type.text, value); }
+    public void set_attribute_link(string code, string value) { set_attribute(code, attribute.attribute_type.link, value); }
+    public void set_attribute(string code, attribute.attribute_type type, object value, bool context_txt_xml = false) {
+      attribute a = _attributes.FirstOrDefault(x => x.code == code);
+      if (a == null) {
+        a = new attribute(code, type, value, context_txt_xml);
+        _attributes.Add(a);
+      } else {
+        if (a.type != type) throw new Exception("l'attributo non è di tipo '" + type.ToString() + "'");
+        a.value = value;
+      }
+    }
+    protected void set_attribute(string code, string value, List<attribute> attrs) {
+      if (string.IsNullOrEmpty(value)) return;
+      attribute a = _attributes.FirstOrDefault(x => x.code == code);
+      if (a == null) {
+        attribute at = attrs.FirstOrDefault(x => x.e_type == this.type && x.code == code);
+        if (at == null) 
+          throw new Exception("non è stato trovato l'attributo '" + code + "' per l'elemento '" + this.type.ToString() + "' fra quelli configurati!");
+        a = new attribute(code, at.type, value, at.content_txt_xml);
+        _attributes.Add(a);
+      } else a.value = value;
     }
 
-    public element(core c) : base(null, content_type.element) { this.core = c; this.title = new toyn.title(this); _childs = new List<element_content>(); }
+    public element(core c, type_element type, string title
+      , int level = 0, long id = 0, long parent_id = 0, long content_id = 0
+      , bool has_childs = false, bool has_child_elements = false, long back_element_id = 0, bool sham = false) {
+      _childs = new List<element>();
+      _attributes = new List<attribute>();
+      this.id = id;
+      this.core = c;
+      this.level = level;
+      this.parent_id = parent_id;
+      this.content_id = content_id;
+      this.type = type;
+      this.title = title;
+      this.has_childs = has_childs;
+      this.has_child_elements = has_child_elements;
+      this.back_id = back_element_id;
+      this.sham = sham;
+    }
+
+    public element(core c) {
+      this.core = c;
+      _childs = new List<element>();
+      _attributes = new List<attribute>();
+    }
 
     #region childs
 
-    public element add_element(element e, int content_id = 0) { _childs.Add(new element_content(e, content_id)); return e; }
-    public title add_title(title t, int content_id = 0) { _childs.Add(new element_content(t, content_id)); return t; }
-    public text add_text(text t, int content_id = 0) { _childs.Add(new element_content(t, content_id)); return t; }
-    public value add_value(value v, int content_id = 0) { _childs.Add(new element_content(v, content_id)); return v; }
-    public account add_account(account a, int content_id = 0) { _childs.Add(new element_content(a, content_id)); return a; }
+    public element add_child(element e, int content_id = 0) { e.content_id = content_id; _childs.Add(e); return e; }
 
-    public element get_element(int i) { check_type(i, content_type.element); return (element)_childs[i].child; }
-    public title get_title(int i) { check_type(i, content_type.title); return (title)_childs[i].child; }
-    public text get_text(int i) { check_type(i, content_type.text); return (text)_childs[i].child; }
-    public value get_value(int i) { check_type(i, content_type.value); return (value)_childs[i].child; }
-    public account get_account(int i) { check_type(i, content_type.account); return (account)_childs[i].child; }
-    protected void check_type(int i, content_type tp) {
-      content_type tpi = child_type(i);
-      if (tpi != tp) throw new Exception("elemento all'indice " + i.ToString() + " di tipo '" + tpi.ToString() + "' non corrispondente con '" + tp.ToString() + "'!");
-    }
+    public element get_element(int i) { return _childs[i]; }
 
     public int c_childs { get { return _childs.Count; } }
-    public content_type child_type(int i) { return _childs[i].child.type; }
-
-    public int max_level() {
-      int l = this.element_level;
-      foreach (element ec in childs.Where(c => c.child is element && !((element)c.child).hide_element).Select(c => c.element_child))
-        l = ec.max_level();
-      return l;
-    }
-
-    public static int max_level(List<element> els) {
-      int ml = 0;
-      foreach (element el in els) {
-        int tmp = el.max_level();
-        ml = tmp > ml ? tmp : ml;
-      }
-      return ml;
-    }
 
     #endregion
 
     #region xml
 
-    public static xml_doc get_doc(List<element> els) { 
+    public static xml_doc get_doc(List<element> els) {
       xml_doc doc = new xml_doc() { xml = "<elements/>" };
-      foreach (element el in els.OrderBy(x => x.content_id)) 
-        el.add_xml_node(doc.root_node.add_node("element"));
+      int level = 0;
+      foreach (element el in els.OrderBy(x => x.content_id))
+        el.set_xml_node(doc.root_node.add_node(el.type.ToString()));
       return doc;
     }
 
-    public override void add_xml_node(xml_node nd) {
-      nd.set_attrs(new Dictionary<string, string>() { { "title", this.title.text}, { "ref", this.title.title_ref_value}
-        , { "code", this.element_code}, { "type", this.element_type}, { "id", this.id.ToString() } });
+    public void set_xml_node(xml_node nd) {
+      // attributes
+      nd.set_attrs(new Dictionary<string, string>() { { "title", this.title}, { "id", this.id.ToString() } });
 
-      if (!this.hide_element) {
-        foreach (element_content ec in this.childs.OrderBy(x => x.content_id))
-          ec.child.add_xml_node(ec.child.type == content_type.element ? nd.add_node(!ec.element_child.hide_element ? "element" : "hide_element") : nd);
+      if (this.sham) nd.set_attr("sham", "true");
+
+      foreach (attribute a in this.attributes.Where(x => x.value != null)) {
+        if (!a.content_txt_xml) nd.set_attr(a.code, a.value.ToString());
+        else nd.text = a.value.ToString();
+      }
+
+      if (!this.sham) {
+        foreach (element ec in this.childs.OrderBy(x => x.content_id))
+          ec.set_xml_node(nd.add_node(ec.type.ToString()));
       }
     }
 
-    public static List<element> load_xml(core c, string xml, int back_element_id = 0) {
+    public static List<element> load_xml(core c, List<attribute> attrs, string xml, int back_element_id = 0) {
+
       xml_doc d = new xml_doc() { xml = "<elements>" + xml + "</elements>" };
       List<element> res = new List<element>();
-      foreach (xml_node ne in d.nodes("/elements/element")) {
-        element e = new element(c) { element_level = 0, back_element_id = back_element_id };
-        e.load_xml_node(null, ne);
-        foreach (xml_node nd in ne.childs())
-          e.add_child_node(nd);
+      foreach (xml_node ne in d.nodes("/elements/*")) {
+        element e = new element(c) { level = 0, back_id = back_element_id };
+        e.load_node(ne, attrs);
+        foreach (xml_node nd in ne.childs()) {
+          if (!nd.is_element) continue;
+          e.add_child_elements(nd, attrs);
+        }
         res.Add(e);
       }
       return res;
     }
 
-    protected void add_child_node(xml_node nd) {
-      string name = nd.name;
-      if (xml_elements.account.ToString() == name)
-        this.add_account(account.load_xml(this, nd));
-      else if (xml_elements.element.ToString() == name)
-        this.add_element(element.load_xml(this, nd));
-      else if (xml_elements.hide_element.ToString() == name)
-        this.add_element(element.load_xml(this, nd));
-      else if (xml_elements.text.ToString() == name)
-        this.add_text(text.load_xml(this, nd));
-      else if (xml_elements.title.ToString() == name)
-        this.add_title(title.load_xml(this, nd));
-      else if (xml_elements.value.ToString() == name)
-        this.add_value(value.load_xml(this, nd));
-      else throw new Exception("l'elemento '" + name + "' non viene ancora gestito!");
-    }
+    protected element add_child_elements(xml_node nd, List<attribute> attrs) {
 
-    public static element load_xml(element e, xml_node nd) {
-      element el = new element(e.core) { element_level = e.element_level + 1 }; el.load_xml_node(e, nd);
-      foreach (xml_node ndc in nd.childs())
-        el.add_child_node(ndc);
+      element el = new element(this.core) { level = this.level + 1 }; 
+      el.load_node(nd, attrs);
+      this.add_child(el);
+
+      foreach (xml_node ndc in nd.childs()) {
+        if (!ndc.is_element) continue;
+        el.add_child_elements(ndc, attrs);
+      }
+      
       return el;
     }
 
-    public override void load_xml_node(element el, xml_node nd) {
-      this.id = nd.get_int("id", 0);
-      this.element = el;
-      this.title.text = nd.get_attr("title");
-      this.title.title_ref = nd.get_attr("ref");
-      this.element_code = nd.get_attr("code");
-      this.element_type = nd.get_attr("type");
-      this.hide_element = nd.name == xml_elements.hide_element.ToString();
+    public void load_node(xml_node nd, List<attribute> attrs) {
+      this.type = (type_element)Enum.Parse(typeof(type_element), nd.name);
+
+      attribute ca = attrs.FirstOrDefault(x => x.content_txt_xml);
+      if(ca != null) set_attribute(ca.code, nd.text, attrs);
+
+      // attributes
+      foreach (string attr in nd.attrs()) {
+        if (attr == "id") {
+          this.id = nd.get_int(attr, 0); continue;
+        } else if (attr == "title") {
+          this.title = nd.get_attr(attr); continue;
+        } else if (attr == "sham") {
+          this.sham = nd.get_bool(attr); continue;
+        }
+        set_attribute(attr, nd.get_attr(attr), attrs);
+      }
     }
 
     #endregion

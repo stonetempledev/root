@@ -70,9 +70,9 @@
       $("#grp_err").hide();
       if (ms) end_status_to(ms);
     }
-    function end_status_to(ms) { window.setTimeout(function () { end_status(); }, ms ? ms : 500); }
+    function end_status_to(ms) {window.setTimeout(function () { end_status(); }, ms ? ms : 500); }
     function end_status() {
-      if (!err) {
+      if (!_err) {
         $("#navbar").removeClass("bg-success bg-danger").addClass("bg-primary");
         $("#grp_vai").show(); $("#lbl_status").hide(); $("#grp_err").hide();
       }

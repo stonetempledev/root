@@ -13,10 +13,13 @@ namespace mlib.xml {
 
     public xml_node(XmlNode node) { _node = node; }
 
+    public bool is_element { get { return _node != null && _node.NodeType == XmlNodeType.Element; } }
+
     public string text {
       get {
         XmlNode tc = txt_child;
-        return tc != null ? tc.Value : (_node != null ? _node.InnerText : "");
+        //return tc != null ? tc.Value : (_node != null ? _node.InnerText : "");
+        return tc != null ? tc.Value : "";
       }
       set { _node.InnerText = value; }
     }
@@ -27,6 +30,12 @@ namespace mlib.xml {
         return tc != null ? tc.InnerXml : (_node != null ? _node.InnerXml : "");
       }
       set { _node.InnerXml = value; }
+    }
+
+    public string outer_xml {
+      get {
+        return _node != null ? _node.OuterXml : "";
+      }
     }
 
     public string data {
@@ -55,7 +64,8 @@ namespace mlib.xml {
     }
 
     // attrs
-    public string[] attrs() { return _node == null ? new string[0] : _node.Attributes.Cast<XmlAttribute>().Select(a => a.Name).ToArray(); }
+    public string[] attrs() { return _node == null || _node.Attributes == null ? 
+      new string[0] : _node.Attributes.Cast<XmlAttribute>().Select(a => a.Name).ToArray(); }
     public string set_attr(string name, string value, bool optional = true) { set_attr(_node, name, value, optional); return value; }
     public string get_attr(string name, string def = "") { return get_attr(_node, name, def); }
     public xml_node set_attrs(Dictionary<string, string> attrs) { if (attrs != null) { foreach (KeyValuePair<string, string> attr in attrs) set_attr(_node, attr.Key, attr.Value); } return this; }
@@ -112,7 +122,7 @@ namespace mlib.xml {
           _node.AppendChild(_node.OwnerDocument.ImportNode(nd, true));
       }
     }
-    public bool exists_attr(string name) { return node == null || node.Attributes[name] == null ? false : true; }
+    public bool exists_attr(string name) { return node == null || node.Attributes == null || node.Attributes[name] == null ? false : true; }
     public bool exists_node(string xpath) { return _node.SelectSingleNode(xpath) != null; }
     public xml_node sub_node(string xpath) { return new xml_node(_node.SelectSingleNode(xpath)); }
     public bool has_child() { return _node.ChildNodes.Count > 0; }
@@ -128,19 +138,21 @@ namespace mlib.xml {
     #region globals
 
     // attrs
-    public static string get_attr(XmlNode node, string name, string def = "") { return node == null || node.Attributes[name] == null ? def : node.Attributes[name].Value; }
+    public static string get_attr(XmlNode node, string name, string def = "") { return node == null || node.Attributes == null || node.Attributes[name] == null ? def : node.Attributes[name].Value; }
     public static XmlNode set_attrs(XmlNode node, Dictionary<string, string> attrs) { foreach (KeyValuePair<string, string> attr in attrs) set_attr(node, attr.Key, attr.Value); return node; }
     public static XmlNode set_attr(XmlDocument doc, string xpath, string attr, string value, bool optional = true) { if (doc == null) return null; return set_attr(doc.SelectSingleNode(xpath), attr, value, optional); }
     public static XmlNode set_attr(XmlNode node, string attr, string value, bool optional = true) {
-      if (node == null || (node != null && string.IsNullOrEmpty(value) && optional && node.Attributes[attr] == null)) return node;
-      else if (string.IsNullOrEmpty(value) && optional && node.Attributes[attr] != null) {
+      if (node == null || (node != null && string.IsNullOrEmpty(value) && optional && (node.Attributes == null || node.Attributes[attr] == null))) return node;
+      else if (string.IsNullOrEmpty(value) && optional && node.Attributes != null && node.Attributes[attr] != null) {
         node.Attributes.RemoveNamedItem(attr);
         return node;
       }
 
-      if (node.Attributes[attr] == null) node.Attributes.Append(node.OwnerDocument.CreateAttribute(attr));
-
-      node.Attributes[attr].Value = value;
+      if (node.Attributes != null) {
+        if (node.Attributes[attr] == null) 
+          node.Attributes.Append(node.OwnerDocument.CreateAttribute(attr));
+        node.Attributes[attr].Value = value;
+      }
 
       return node;
     }
@@ -169,7 +181,7 @@ namespace mlib.xml {
 
     // values
     static public string node_val(XmlNode node, string attr = "", string def = "") {
-      return attr != "" ? ((node != null && node.Attributes[attr] != null) ? node.Attributes[attr].Value : def)
+      return attr != "" ? ((node != null && node.Attributes != null && node.Attributes[attr] != null) ? node.Attributes[attr].Value : def)
           : (node != null ? node.InnerText : def);
     }
 

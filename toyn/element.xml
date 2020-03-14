@@ -1,72 +1,38 @@
 ﻿<config namespace="page">
   <queries>
-    <query name="parents-elements">
-      <![CDATA[with h_elements (parent_id, element_id, element_type, element_code, element_title, element_ref, livello)
- as
- (select parent_id, element_id, element_type, element_code, element_title, element_ref, 0 as livello
-    from vw_elements_h 
-     where element_id = {@field='element_id'}
-   union all select e.parent_id, e.element_id, e.element_type, e.element_code, e.element_title, e.element_ref, livello - 1
-    from vw_elements_h e
-    inner join h_elements he on he.parent_id = e.element_id and he.element_id <> he.parent_id)
- select he.parent_id, he.element_id, he.element_type, he.element_code, he.element_title, he.element_ref, he.livello
-  from h_elements he 
-  order by he.livello]]>
+    <query name="elements-attributes">
+      <![CDATA[select a.element_type, a.attribute_id
+  , a.attribute_code, a.attribute_type, a.content_txt_xml
+ from vw_attributes a
+ order by a.element_type, a.attribute_code]]>
     </query>
-    <query name="childs-elements">
-      <![CDATA[with h_elements (parent_id, element_id, element_type, element_code, element_title, element_ref, livello)
- as
- (select parent_id, element_id, element_type, element_code, element_title, element_ref, 0 as livello
-    from vw_elements_h 
-     where element_id = {@field='element_id'}
-   union all select e.parent_id, e.element_id, e.element_type, e.element_code, e.element_title, e.element_ref, livello + 1
-    from vw_elements_h e
-    inner join h_elements he on he.element_id = e.parent_id)
- select he.parent_id, he.element_id, he.element_type, he.element_code, he.element_title, he.element_ref, he.livello
-  from h_elements he order by he.livello]]>
+    <query name="open-roots-element">
+      <![CDATA[select h.parent_id, h.elements_contents_id, h.livello, h.element_id, h.element_type, h.element_title
+  , (select top 1 1 from elements_contents where element_id = h.element_id) as has_childs
+  , (select top 1 1 from elements_contents ec join elements e on e.element_id = ec.child_element_id and e.element_type = 'element' where ec.element_id = h.element_id) as has_child_elements
+  , a.attribute_code, a.attribute_type, a.content_txt_xml, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar
+ from vw_elements_h h
+ left join vw_elements_attrs a on a.element_id = h.element_id 
+ where h.ref_element_id is null and {@field='filter_level'}
+ order by h.element_id]]>
     </query>
     <query name="open-element">
       <![CDATA[select t.*
- from (select 0 as element_level, null as element_parent_id, ec.element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 
-   , (case when e.child_id is not null then e.element_content_id else null end) as child_content_id, e.child_id, e.child_text, e.child_value, e.child_notes, e.child_code, e.child_style, e.child_ref
-   , (select top 1 1 from elements_contents where child_content_type = 'element' and e.child_id is null and element_id = e.element_id) as has_childs_elements
-   , (select top 1 element_id from elements_contents where child_content_type = 'element' and e.child_id is null and child_id = e.element_id) as back_element_id
-   , null as hide_element
-  from vw_elements e 
-  join elements_contents ec on ec.child_id = e.element_id and ec.child_content_type = 'element'
-  where e.element_id {@field='filter_element'}
- union select 1 as element_level, ec.element_id as element_parent_id, ec.element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 
-   , (case when e.child_id is not null then e.element_content_id else null end) as child_content_id, e.child_id, e.child_text, e.child_value, e.child_notes, e.child_code, e.child_style, e.child_ref
-   , (select top 1 1 from elements_contents where child_content_type = 'element' and e.child_id is null and element_id = e.element_id) as has_childs_elements
-   , null as back_element_id, null as hide_element
-  from vw_elements e 
-  join elements_contents ec on ec.element_id {@field='filter_element'} and ec.child_id = e.element_id and ec.child_content_type = 'element'
- union select 2 as element_level, ec2.element_id as element_parent_id, ec2.element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 
-   , (case when e.child_id is not null then e.element_content_id else null end) as child_content_id, e.child_id, e.child_text, e.child_value, e.child_notes, e.child_code, e.child_style, e.child_ref
-   , (select top 1 1 from elements_contents where child_content_type = 'element' and e.child_id is null and element_id = e.element_id) as has_childs_elements
-   , null as back_element_id, null as hide_element
-  from vw_elements e 
-  join elements_contents ec on ec.element_id {@field='filter_element'} and ec.child_content_type = 'element'
-  join elements_contents ec2 on ec2.element_id = ec.child_id and ec2.child_id = e.element_id and ec2.child_content_type = 'element'
- union select 3 as element_level, ec3.element_id as element_parent_id, ec3.element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 
-   , (case when e.child_id is not null then e.element_content_id else null end) as child_content_id, e.child_id, e.child_text, e.child_value, e.child_notes, e.child_code, e.child_style, e.child_ref
-   , (select top 1 1 from elements_contents where child_content_type = 'element' and e.child_id is null and element_id = e.element_id) as has_childs_elements
-   , null as back_element_id, null as hide_element
-  from vw_elements e 
-  join elements_contents ec on ec.element_id {@field='filter_element'} and ec.child_content_type = 'element'
-  join elements_contents ec2 on ec2.element_id = ec.child_id and ec2.child_content_type = 'element'
-  join elements_contents ec3 on ec3.element_id = ec2.child_id and ec3.child_id = e.element_id and ec3.child_content_type = 'element'
- union select 4 as element_level, ec4.element_id as element_parent_id, ec4.element_content_id, e.element_id, e.parent_id, e.element_code, e.element_title, e.element_ref, e.element_type 
-   , (case when e.child_id is not null then e.element_content_id else null end) as child_content_id, e.child_id, e.child_text, e.child_value, e.child_notes, e.child_code, e.child_style, e.child_ref
-   , null as has_childs_elements, null as back_element_id, 1 as hide_element
-  from vw_elements e 
-  join elements_contents ec on ec.element_id {@field='filter_element'} and ec.child_content_type = 'element'
-  join elements_contents ec2 on ec2.element_id = ec.child_id and ec2.child_content_type = 'element'
-  join elements_contents ec3 on ec3.element_id = ec2.child_id and ec3.child_content_type = 'element'
-  join elements_contents ec4 on ec4.element_id = ec3.child_id and ec4.child_id = e.element_id and ec4.child_content_type = 'element'
-  where e.child_id is null
-  ) t
- order by t.element_level, t.child_id, t.element_id ]]>
+from (
+select null as parent_id, null as elements_contents_id, 0 as livello, h.element_id, h.element_type, h.element_title
+  , null as has_childs, null as has_child_elements
+  , a.attribute_code, a.attribute_type, a.content_txt_xml, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar
+ from vw_elements h
+ left join vw_elements_attrs a on a.element_id = h.element_id 
+ where h.element_id = {@field='id_element'}
+union select h.parent_id, h.elements_contents_id, h.livello + 1 as livello, h.element_id, h.element_type, h.element_title
+  , (select top 1 1 from elements_contents where element_id = h.element_id) as has_childs
+  , (select top 1 1 from elements_contents ec join elements e on e.element_id = ec.child_element_id and e.element_type = 'element' where ec.element_id = h.element_id) as has_child_elements
+  , a.attribute_code, a.attribute_type, a.content_txt_xml, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar
+ from vw_elements_h h
+ left join vw_elements_attrs a on a.element_id = h.element_id 
+ where h.ref_element_id = {@field='id_element'} and {@field='filter_level'} ) t
+ order by t.livello, t.element_id]]>
     </query>
   </queries>
 </config>
