@@ -48,38 +48,81 @@ public partial class _element : tl_page {
             JObject jo = JObject.Parse(json);
             // save_element
             if (jo["action"].ToString() == "save_element") {
-              // carico l'xml e salvo tutto
-              int parent_id = jo["parent_id"].ToString() != "" ? Convert.ToInt32(jo["parent_id"]) : 0, max_level = Convert.ToInt32(jo["max_level"]);
-              List<element> els_bck = element.load_xml(this.core, load_attributes(), jo["xml_bck"].ToString(), parent_id)
-                , els = element.load_xml(this.core, load_attributes(), jo["xml"].ToString(), parent_id);
-              check_and_del(els_bck, els);
-              save_elements(els, parent_id);
 
+              // carico l'xml e salvo tutto
+              string element_id = jo["element_id"].ToString(), key_page = jo["key_page"].ToString();
+              int parent_id = jo["parent_id"].ToString() != "" ? Convert.ToInt32(jo["parent_id"].ToString()) : 0
+                , max_level = Convert.ToInt32(jo["max_level"]);
+              int? first_order = jo["first_order"].ToString() != "" ? int.Parse(jo["first_order"].ToString()) : (int?)null;
+              int? last_order = jo["last_order"].ToString() != "" ? int.Parse(jo["last_order"].ToString()) : (int?)null;
+              List<element> els_bck = element.load_xml(this.core, load_attributes(), jo["xml_bck"].ToString(), element_id != "" ? parent_id : (int?)null)
+                , els = element.load_xml(this.core, load_attributes(), jo["xml"].ToString(), element_id != "" ? parent_id : (int?)null);
+
+              // salvataggio
+              check_and_del(els_bck, els);
+              save_elements(els, key_page, parent_id, first_order, last_order);
+
+              // vedo se ci sono elementi figli
+              int ml = element.max_level(els);
+              foreach (element ec in element.find_elements(els, ml).Where(x => x.id > 0)) {
+                DataRow dr = db_conn.first_row(core.parse(config.get_query("has-childs").text
+                  , new Dictionary<string, object>() { { "id_element", ec.id } }));
+                ec.has_childs = db_provider.int_val(dr["has_childs"]) == 1;
+                ec.has_child_elements = db_provider.int_val(dr["has_child_elements"]) == 1;
+              }
+
+              // xml
               res.doc_xml = element.get_doc(els).xml;
+              res.vars.Add("first_order", els.Count > 0 ? els[0].order.ToString() : "");
+              res.vars.Add("last_order", els.Count > 0 ? els[els.Count - 1].order.ToString() : "");
 
               // menu
               StringBuilder sb = new StringBuilder();
-              parse_menu(els, sb, true, max_level);
+              parse_menu(element_id, els, sb, true, max_level);
               res.menu_html = sb.ToString();
 
             } else if (jo["action"].ToString() == "check_paste_xml") {
               StringBuilder text_xml = new StringBuilder();
               foreach (JValue j in jo["text_xml"] as JArray)
                 text_xml.AppendLine(j.Value.ToString());
-              xml_doc d = new xml_doc(); try { d.load_xml("<root>" + text_xml.ToString() + "</root>"); } catch { d = null; }
-              if (d != null) {
-                foreach (xml_node n in d.nodes("//*")) {
-                  if (n.get_bool("sham")) {
-                    if (n.get_attr("id") != "" && n.get_attr("from_id") == "")
-                      n.set_attr("from_id", n.get_attr("id"));
-                  } else if (Enum.GetNames(typeof(element.type_element)).Contains(n.name))
-                    n.set_attr("id", "");
+              string key_page = jo["key_page"].ToString(), doc_xml = jo["doc_xml"].ToString(), paste_xml = text_xml.ToString();
+
+              // elaboro l'xml
+              if (!string.IsNullOrEmpty(paste_xml)) {
+
+                // elenco ids da controllare
+                List<string> ids = new List<string>();
+                int ni = 0;
+                while (true) {
+                  int fi = paste_xml.IndexOf(" id=\"", ni);
+                  if (fi < 0) break;
+                  int start = fi + 5, end = paste_xml.IndexOf("\"", start);
+                  ni = start;
+                  if (end < 0) break;
+                  ids.Add(paste_xml.Substring(start, end - start));
                 }
-                text_xml.Clear();
-                foreach (xml_node cn in d.root_node.childs())
-                  text_xml.AppendLine(cn.node.OuterXml);
-                res.contents = text_xml.ToString();
-              } else res.contents = text_xml.ToString();
+
+                // ids da cancellare
+                List<string> ids_to_del = new List<string>();
+                foreach (string val in ids) {
+                  string kp = val.Split(new char[] { ':' })[1];
+                  int id = int.Parse(val.Split(new char[] { ':' })[0]);
+
+                  // se c'è già l'id
+                  if (doc_xml.IndexOf("id=\"" + id.ToString() + ":") >= 0)
+                    ids_to_del.Add(val);
+                  else {
+                    DataRow dr = db_conn.first_row(core.parse(config.get_query("exists-element").text
+                    , new Dictionary<string, object>() { { "id_element", id } }));
+                    if (kp != key_page && dr != null) ids_to_del.Add(val);
+                    else if (dr == null) ids_to_del.Add(val);
+                  }
+                }
+
+                foreach (string id_del in ids_to_del)
+                  paste_xml = paste_xml.Replace("id=\"" + id_del + "\"", "from_id=\"" + id_del + "\"");
+              }
+              res.contents = paste_xml;
             }
           } else throw new Exception("nessun dato da elaborare!");
 
@@ -106,17 +149,17 @@ public partial class _element : tl_page {
         string element_id = c.sub_cmd("id"); int max_level = 0;
 
         // test - load xml -> save into table
-        if (element_id == "") {
-          db_conn.exec(string.Format(@"truncate table [elements];
-            truncate table [elements_contents];
-            truncate table [elements_attrs_datetime];
-            truncate table [elements_attrs_integer];
-            truncate table [elements_attrs_link];
-            truncate table [elements_attrs_text];
-            truncate table [elements_attrs_real];
-            truncate table [elements_attrs_varchar];"));
-          save_elements(element.load_xml(this.core, load_attributes(), File.ReadAllText("C:\\tmp\\toyn\\test.xml")));
-        }
+        //        if (element_id == "") {
+        //          db_conn.exec(string.Format(@"truncate table [elements];
+        //            truncate table [elements_contents];
+        //            truncate table [elements_attrs_datetime];
+        //            truncate table [elements_attrs_integer];
+        //            truncate table [elements_attrs_link];
+        //            truncate table [elements_attrs_text];
+        //            truncate table [elements_attrs_real];
+        //            truncate table [elements_attrs_varchar];"));
+        //          save_elements(element.load_xml(this.core, load_attributes(), File.ReadAllText("C:\\tmp\\toyn\\test.xml")));
+        //        }
 
         List<element> els = load_elements(out max_level, element_id != "" ? int.Parse(element_id) : (int?)null, _max_level);
 
@@ -126,27 +169,30 @@ public partial class _element : tl_page {
 
         // document
         StringBuilder sb = new StringBuilder();
-        parse_elements(els, sb);
+        parse_elements(element_id, els, sb);
         contents_doc.InnerHtml = sb.ToString();
         contents_xml.Visible = false;
         sb.Clear();
 
         // menu
-        parse_menu(els, sb, false, max_level);
+        parse_menu(element_id, els, sb, false, max_level);
         menu.InnerHtml = sb.ToString();
 
       }
         // xml
       else if (c.action == "xml" && c.obj == "element") {
 
-        string element_id = c.sub_cmd("id"); int max_level = 0;
-        List<element> els = load_elements(out max_level, element_id != "" ? int.Parse(element_id) : (int?)null, _max_level);
+        string element_id = c.sub_cmd("id"), kp = strings.random_hex(4); int max_level = 0;
+        List<element> els = load_elements(out max_level, element_id != "" ? int.Parse(element_id) : (int?)null, _max_level, key_page: kp);
 
         // client vars
         url_view.Value = master.url_cmd("view element" + (element_id != "" ? " id:" + element_id : ""));
         id_element.Value = element_id.ToString();
         parent_id.Value = els.Count > 0 ? els[0].parent_id.ToString() : "";
+        first_order.Value = els.Count > 0 ? els[0].order.ToString() : "";
+        last_order.Value = els.Count > 0 ? els[els.Count - 1].order.ToString() : "";
         max_lvl.Value = max_level.ToString();
+        key_page.Value = kp;
 
         // xml document
         contents_xml.Visible = true;
@@ -155,7 +201,7 @@ public partial class _element : tl_page {
 
         // menu
         StringBuilder sb = new StringBuilder();
-        parse_menu(els, sb, true, max_level);
+        parse_menu(element_id, els, sb, true, max_level);
         menu.InnerHtml = sb.ToString();
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
@@ -183,48 +229,69 @@ public partial class _element : tl_page {
     return res;
   }
 
-  protected void check_and_del(List<element> els_b, List<element> els) {
-    // documento aggiornato
-    List<element> all = get_all(els);
+  protected void check_and_del(List<element> els_bck, List<element> els) {
 
     // check ids univoci
+    List<element> all = get_all(els);
     foreach (element c in all) {
       if (c.id > 0 && all.Count(x => x.id == c.id) > 1)
-        throw new Exception(string.Format("l'elemento '{0}' con id {1} è duplicato più volte e non è possibile!"
+        throw new Exception(string.Format("l'elemento con id {1} è duplicato più volte e non è possibile!"
           , c.type.ToString(), c.id));
     }
 
     // ciclo pulizia
-    foreach (element c in get_all(els_b)) {
-      if (all.FirstOrDefault(x => x.type == c.type && x.id == c.id) == null) {
+    foreach (element c in get_all(els_bck)) {
+      if (all.FirstOrDefault(x => x.id == c.id) == null) {
 
-        string dels = "";
-        foreach (var v in Enum.GetValues(typeof(attribute.attribute_type)))
-          dels += string.Format("{1}delete from [elements_attrs_{2}] where element_id = {0};"
-            , c.id, dels != "" ? "\n" : "", v.ToString());
-
-        db_conn.exec(string.Format(@"{1}
-          delete from [elements] where element_id = {0};
-          delete from [elements_contents] where element_id = {0} or child_element_id = {0};", c.id, dels));
+        // pulizia elementi
+        db_conn.exec(string.Format(@"update e set e.deleted = 1, e.dt_del = getdate() 
+          from [elements] e where e.element_id = {0}
+           or e.element_id in (select distinct element_id from vw_elements_h where isnull(deleted, 0) = 0 and ref_element_id = {0});", c.id));
       }
+    }
+
+  }
+
+  protected void save_elements(List<element> els, string key_page, int parent_id = 0, int? first_order = null, int? last_order = null) {
+
+    // correggo l'order
+    if (first_order.HasValue && last_order.HasValue) {
+      int diff = els.Count - ((last_order.Value - first_order.Value) + 1);
+      if (diff != 0) {
+        db_conn.exec(string.Format(@"update elements_contents set [order] = [order] + {1}
+          where element_id {0} and [order] > {2}", parent_id > 0 ? " = " + parent_id.ToString() : "IS NULL", diff, last_order.Value));
+      }
+    }
+
+    // salvataggio elementi
+    foreach (element el in els) {
+      save_element(el, key_page);
+      el.order = el.order_xml + (first_order.HasValue ? first_order.Value : 0);
+      db_conn.exec(string.Format("delete from elements_contents where child_element_id = {0}", el.id));
+      db_conn.exec(string.Format(@"insert into elements_contents (element_id, child_element_id, [order])
+        values ({0}, {1}, {2})", parent_id > 0 ? parent_id.ToString() : "-1", el.id, el.order_xml + (first_order.HasValue ? first_order.Value : 0)));
     }
   }
 
-  protected void save_elements(List<element> els, int parent_id = 0) {
-    foreach (element el in els)
-      save_element(el);
-  }
+  protected long save_element(element e, string key_page = "") {
 
-  protected long save_element(element e) {
+    // from_id
+    e.undeleted = false;
+    if (e.from_id > 0) {
+      DataRow dr = db_conn.first_row(core.parse(config.get_query("deleted-element").text
+        , new Dictionary<string, object>() { { "id_element", e.from_id }, { "type_element", e.type.ToString() } }));
+      if (dr != null) { e.id = e.from_id; e.key_page = key_page; e.undeleted = true; }
+    }
 
-    // elements
-    bool added = false;
+    // element
+    e.added = false;
     if (e.id == 0) {
-      added = true;
+      e.added = true;
       e.id = int.Parse(db_conn.exec(string.Format(@"insert into [elements] (element_type, element_title)
         values ({0}, {1})", db_provider.str_qry(e.type.ToString()), db_provider.str_qry(e.title)), true));
+      e.key_page = key_page;
     } else
-      db_conn.exec(string.Format(@"update [elements] set element_type = {0}, element_title = {1} 
+      db_conn.exec(string.Format(@"update [elements] set element_type = {0}, element_title = {1}, deleted = NULL
         where element_id = {2}", db_provider.str_qry(e.type.ToString()), db_provider.str_qry(e.title), e.id));
 
     // set attributes
@@ -253,7 +320,7 @@ public partial class _element : tl_page {
              where a.element_type = '{4}' and a.attribute_code = '{3}'"
           , a.type.ToString(), qry_val, e.id, a.code, e.type.ToString()));
       } else {
-        if (!added)
+        if (!e.added)
           db_conn.exec(string.Format(@"delete ea from [elements_attrs_{0}] ea 
             join attributes a on a.attribute_id = ea.attribute_id
             where ea.element_id = {1} and a.element_type = '{2}'"
@@ -263,12 +330,21 @@ public partial class _element : tl_page {
 
     // childs
     if (!e.sham) {
-      if (!added) db_conn.exec(string.Format("delete from elements_contents where element_id = {0}", e.id));
+      if (!e.added) db_conn.exec(string.Format(@"delete ec from elements_contents ec where ec.element_id = {0}
+        and not exists (select top 1 1 from elements where element_id = {0} and deleted = 1)
+        and not exists (select top 1 1 from elements where element_id = ec.child_element_id and deleted = 1)", e.id));
       foreach (element ec in e.childs) {
-        save_element(ec);
-        db_conn.exec(string.Format(@"insert into elements_contents (element_id, child_element_id)
-         values ({0}, {1})", e.id, ec.id));
+        save_element(ec, key_page);
+        db_conn.exec(string.Format(@"delete from elements_contents where child_element_id = {1};
+        insert into elements_contents (element_id, child_element_id, [order])
+         values ({0}, {1}, {2});", e.id, ec.id, ec.order_xml));
       }
+    } // elementi figli sham 
+    else {
+      if (e.undeleted) 
+        db_conn.exec(string.Format(@"update e set e.deleted = null
+         from [elements] e
+         join vw_elements_h h on h.ref_element_id = {0} and h.element_id = e.element_id", e.id));
     }
 
     return e.id;
@@ -288,30 +364,40 @@ public partial class _element : tl_page {
     return attrs;
   }
 
-  protected List<element> load_elements(out int out_max_level, int? element_id = null, int? max_level = null) {
+  protected List<element> load_childs(long element_id, bool also_deleted = false) {
+    int out_max_level = 0; return load_elements(out out_max_level, element_id, also_deleted: also_deleted, only_childs: true);
+  }
+
+  protected List<element> load_elements(out int out_max_level, long? element_id = null, int? max_level = null, bool only_childs = false, bool also_deleted = false, string key_page = null) {
+
     List<element> els = new List<element>(); out_max_level = -1;
     string sql = !element_id.HasValue ? core.parse(config.get_query("open-roots-element").text
-      , new Dictionary<string, object>() { { "filter_level", max_level.HasValue ? "h.livello <= " + max_level.Value.ToString() : "1 = 1" } })
+        , new Dictionary<string, object>() { { "filter_level", max_level.HasValue ? "h.livello <= " + (max_level.Value + 1).ToString() : "1 = 1" }
+         , { "filter_deleted", !also_deleted ? "isnull(h.deleted, 0) = 0" : "1 = 1" } })
       : core.parse(config.get_query("open-element").text
-        , new Dictionary<string, object>() { { "id_element", element_id }
-        , { "filter_level", max_level.HasValue ? "h.livello <= " + max_level.Value.ToString() : "1 = 1" }});
+        , new Dictionary<string, object>() { { "id_element", element_id }, { "filter_only_childs", only_childs ? "and 1 = 0" : "" }
+          , { "filter_level", max_level.HasValue ? "h.livello <= " + max_level.Value.ToString() : "1 = 1" }
+          , { "filter_deleted", !also_deleted ? "isnull(h.deleted, 0) = 0" : "1 = 1" } });
     DataTable dt = db_conn.dt_table(sql);
-    List<element> elements = new List<element>(); element e = null;
     foreach (DataRow re in dt.Rows) {
 
       // element
       long parent_id = db_provider.long_val(re["parent_id"]), contents_id = db_provider.long_val(re["elements_contents_id"])
         , id = db_provider.long_val(re["element_id"]);
-      int livello = db_provider.int_val(re["livello"]);
+      int livello = db_provider.int_val(re["livello"]), order = db_provider.int_val(re["order"]);
       string element_type = db_provider.str_val(re["element_type"]), title = db_provider.str_val(re["element_title"]);
       bool has_childs = db_provider.int_val(re["has_childs"]) == 1
         , has_child_elements = db_provider.int_val(re["has_child_elements"]) == 1;
 
       if (out_max_level < livello) out_max_level = livello;
 
-      if (e == null || e.id != id) {
+      element e = els.FirstOrDefault(x => x.id == id);
+      if (e == null) {
         e = new element(_core, (element.type_element)Enum.Parse(typeof(element.type_element), element_type), title, livello
-          , id, parent_id, contents_id, has_childs, has_child_elements, sham: max_level.HasValue ? livello >= max_level : false);
+          , id, parent_id, contents_id, has_childs, has_child_elements, order: order
+          , sham: max_level.HasValue ? livello == max_level + 1 && has_childs : false);
+        e.key_page = key_page;
+        if (livello == 0 && element_id.HasValue) e.back_element_id = parent_id != 0 ? parent_id : (long?)null;
         els.Add(e);
       }
 
@@ -325,6 +411,7 @@ public partial class _element : tl_page {
       }
     }
 
+    // hierarchy
     List<element> res = new List<element>(els.Where(x => x.level == 0));
     for (int l = 1; l <= out_max_level; l++) {
       foreach (element el in els.Where(x => x.level == l)) {
@@ -338,27 +425,27 @@ public partial class _element : tl_page {
 
   #region menu
 
-  protected void parse_menu(List<element> els, StringBuilder sb, bool for_xml = false, int? max_level = null) {
-    foreach (element el in els.Where(x => x.type == element.type_element.element || x.type == element.type_element.title)
-      .OrderBy(x => x.content_id)) parse_menu(el, sb, true, for_xml, max_level);
+  protected void parse_menu(string active_element_id, List<element> els, StringBuilder sb, bool for_xml = false, int? max_level = null) {
+    foreach (element el in els.Where(x => x.type == element.type_element.element || x.type == element.type_element.title))
+      parse_menu(active_element_id, el, sb, true, for_xml, max_level);
   }
 
-  protected void parse_menu(element e, StringBuilder sb, bool root = false, bool for_xml = false, int? max_level = null) {
+  protected void parse_menu(string active_element_id, element e, StringBuilder sb, bool root = false, bool for_xml = false, int? max_level = null) {
     if (root) sb.AppendFormat("<ul class='nav flex-column' style='padding:0px;margin-top:10px;' >\n");
     if (e.has_title) {
       parse_title_menu(e, e.title, sb
         , open_element_id: (e.level == max_level && e.has_childs ? e.id : 0)
-        , back_element_id: e.back_id, for_xml: for_xml);
+        , back_element_id: e.back_element_id.HasValue && active_element_id != "" ? e.back_element_id.Value : 0, for_xml: for_xml);
     }
 
     bool first = true;
-    foreach (element ec in e.childs.OrderBy(x => x.content_id)) {
+    foreach (element ec in e.childs) {
       if (ec.type == element.type_element.title) {
         if (first && e.level >= 1) { sb.Append("<ul>"); first = false; }
         parse_title_menu(ec, ec.has_content ? ec.content : "<titolo>", sb, for_xml: for_xml);
       } else if (ec.type == element.type_element.element) {
         if (first && e.level >= 1) { sb.Append("<ul>"); first = false; }
-        parse_menu(ec, sb, false, for_xml, max_level);
+        parse_menu(active_element_id, ec, sb, false, for_xml, max_level);
       }
     }
 
@@ -377,7 +464,8 @@ public partial class _element : tl_page {
       : (level == 1 ? "color:skyblue;margin-top:10px;padding-top:5px;padding-left:3px;" : "font-size:90%;color:lightcyan;")
     , open_element_id > 0 ? "<a style='margin-left:15px;' href=\"" + get_url_cmd((!for_xml ? "view" : "xml") + " element id:" + open_element_id.ToString()) + "\">"
       + "<img src='images/right-arrow-16.png' style='margin-bottom:4px;'></a>" : ""
-    , back_element_id > 0 ? "<a href=\"" + get_url_cmd((!for_xml ? "view" : "xml") + " element id:" + back_element_id.ToString())
+    , back_element_id != 0 ? (back_element_id > 0 ? "<a href=\"" + get_url_cmd((!for_xml ? "view" : "xml") + " element id:" + back_element_id.ToString())
+       : "<a href=\"" + get_url_cmd((!for_xml ? "view" : "xml") + " element"))
       + "\" style='margin-right:10px;'><img src='images/left-chevron-24.png' style='margin-left:3px;margin-bottom:4px;' width='20' height='20'></a>" : ""
     , "");
   }
@@ -386,8 +474,8 @@ public partial class _element : tl_page {
 
   #region document
 
-  protected void parse_elements(List<element> els, StringBuilder sb) {
-    foreach (element e in els.OrderBy(x => x.content_id))
+  protected void parse_elements(string active_element_id, List<element> els, StringBuilder sb) {
+    foreach (element e in els)
       parse_element(e, sb);
   }
 
@@ -395,7 +483,7 @@ public partial class _element : tl_page {
     if (e.has_title && e.type == element.type_element.element)
       parse_type_element(e, sb);
     if (!e.sham) {
-      foreach (element ec in e.childs.OrderBy(x => x.content_id)) {
+      foreach (element ec in e.childs) {
         if (ec.type == element.type_element.title)
           parse_type_title(ec, sb);
         else if (ec.type == element.type_element.text)
@@ -414,7 +502,7 @@ public partial class _element : tl_page {
       , reference = get_ref(e.get_attribute_string("ref"));
     bool title_ref_cmd = reference_cmd(e.get_attribute_string("ref"));
     string a = string.Format("<a id='{0}' class='anchor'></a>", ref_id)
-      , st = (level == 1 ? "style='color:dimgray;border-top:1pt solid lightgrey;margin-top:45px;padding-top:15px;margin-bottom:0px;padding-bottom:0px;'"
+      , st = (level == 1 ? "style='color:dimgray;border-top:1pt solid lightgrey;margin-top:20px;padding-top:15px;margin-bottom:0px;padding-bottom:0px;'"
       : (level >= 2 ? "style='color:dimgray;margin-bottom:0px;padding-bottom:0px;'" : "style='color:dimgray;'"));
     if (hide_element != null) { reference = get_url_cmd("view element id:" + hide_element.id.ToString()); title_ref_cmd = true; }
     if (reference != "")
@@ -438,12 +526,12 @@ public partial class _element : tl_page {
   protected void parse_type_element(element e, StringBuilder sb) {
     if (e.type != element.type_element.element) throw new Exception("elemento di tipo errato!");
 
-    int level = e.level; 
+    int level = e.level;
     string code = e.get_attribute_string("code"), type = e.get_attribute_string("type")
       , reference = get_ref(e.get_attribute_string("ref")), title = e.title;
     bool title_ref_cmd = reference_cmd(e.get_attribute_string("ref"));
     string a = string.Format("<a id='{0}' class='anchor'></a>", "ele_" + e.id.ToString())
-      , st = (level == 1 ? "style='background-color:azure;border-top:1pt solid lightgrey;margin-top:45px;padding-top:5px;margin-bottom:0px;padding-bottom:5px;'"
+      , st = (level == 1 ? "style='background-color:azure;border-top:1pt solid lightgrey;margin-top:30px;padding-top:5px;margin-bottom:0px;padding-bottom:5px;'"
       : (level >= 2 ? "style='margin-bottom:0px;padding-bottom:0px;background-color:whitesmoke;'" : "style='background-color:aliceblue;'"));
     string open = e.sham ? "<a style='margin-left:20px;' href=\"" + get_url_cmd("view element id:" + e.id.ToString()) + "\"><img src='images/right-arrow-24-black.png' style='margin-bottom:4px;'></a>" : "";
 

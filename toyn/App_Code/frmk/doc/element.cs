@@ -24,7 +24,7 @@ namespace toyn {
 
     protected List<element> _childs;
     protected List<attribute> _attributes;
-    
+
     public bool has_childs { get; set; }
     public bool has_child_elements { get; set; }
     public core core { get; set; }
@@ -32,16 +32,23 @@ namespace toyn {
 
     // base attributes
     public long id { get; set; }
+    public long from_id { get; set; }
     public long parent_id { get; set; }
-    public long back_id { get; set; }
     public long content_id { get; set; }
     public bool sham { get; set; }
     public int level { get; set; }
+    public int order_xml { get; set; }
+    public int order { get; set; }
+    public bool is_root { get; set; }
     public type_element type { get; set; }
     public string title { get; set; }
     public bool has_title { get { return !string.IsNullOrEmpty(this.title); } }
     public string content { get { return get_attribute_string("content"); } }
     public bool has_content { get { return !string.IsNullOrEmpty(this.content); } }
+    public bool added { get; set; }
+    public bool undeleted { get; set; }
+    public long? back_element_id { get; set; }
+    public string key_page { get; set; }
 
     // attributes
     public List<attribute> attributes { get { return _attributes; } }
@@ -72,7 +79,7 @@ namespace toyn {
       attribute a = _attributes.FirstOrDefault(x => x.code == code);
       if (a == null) {
         attribute at = attrs.FirstOrDefault(x => x.e_type == this.type && x.code == code);
-        if (at == null) 
+        if (at == null)
           throw new Exception("non è stato trovato l'attributo '" + code + "' per l'elemento '" + this.type.ToString() + "' fra quelli configurati!");
         a = new attribute(code, at.type, value, at.content_txt_xml);
         _attributes.Add(a);
@@ -81,11 +88,13 @@ namespace toyn {
 
     public element(core c, type_element type, string title
       , int level = 0, long id = 0, long parent_id = 0, long content_id = 0
-      , bool has_childs = false, bool has_child_elements = false, long back_element_id = 0, bool sham = false) {
+      , bool has_childs = false, bool has_child_elements = false
+      , int order_xml = 0, int order = 0, bool sham = false) {
       _childs = new List<element>();
       _attributes = new List<attribute>();
       this.id = id;
       this.core = c;
+      this.back_element_id = null;
       this.level = level;
       this.parent_id = parent_id;
       this.content_id = content_id;
@@ -93,15 +102,66 @@ namespace toyn {
       this.title = title;
       this.has_childs = has_childs;
       this.has_child_elements = has_child_elements;
-      this.back_id = back_element_id;
+      this.order_xml = order_xml;
+      this.order = order;
       this.sham = sham;
     }
 
     public element(core c) {
       this.core = c;
+      this.back_element_id = null;
       _childs = new List<element>();
       _attributes = new List<attribute>();
     }
+
+    #region tools
+
+    public static element find_element(int id, List<element> els) {
+      foreach (element e in els) {
+        element res = e.find_element(id);
+        if (res != null) return res;
+      }
+      return null;
+    }
+
+    protected element find_element(int id) {
+      if (this.id == id) return this;
+      foreach (element ec in this.childs) {
+        element res = ec.find_element(id);
+        if (res != null) return res;
+      }
+      return null;
+    }
+
+    public static int max_level(List<element> els) {
+      int lvl = 0;
+      foreach (element e in els)
+        lvl = e.max_level(lvl);
+      return lvl;
+    }
+
+    protected int max_level(int from_lvl) {
+      int lvl = from_lvl;
+      if (this.level >= lvl) lvl = this.level;
+      foreach (element e in this.childs) 
+        lvl = e.max_level(lvl);
+      return lvl;
+    }
+
+    public static List<element> find_elements(List<element> els, int level) {
+      List<element> res = new List<element>();
+      foreach (element e in els)
+        e.find_element(res, level);    
+      return res;
+    }
+
+    protected void find_element(List<element> res, int level){
+      if (this.level == level && this.type == type_element.element) res.Add(this);
+      foreach (element ec in this.childs) 
+        ec.find_element(res, level);
+    }
+
+    #endregion
 
     #region childs
 
@@ -117,56 +177,62 @@ namespace toyn {
 
     public static xml_doc get_doc(List<element> els) {
       xml_doc doc = new xml_doc() { xml = "<elements/>" };
-      int level = 0;
-      foreach (element el in els.OrderBy(x => x.content_id))
+      foreach (element el in els)
         el.set_xml_node(doc.root_node.add_node(el.type.ToString()));
       return doc;
     }
 
     public void set_xml_node(xml_node nd) {
       // attributes
-      nd.set_attrs(new Dictionary<string, string>() { { "title", this.title}, { "id", this.id.ToString() } });
+      nd.set_attrs(new Dictionary<string, string>() { { "title", this.title }, { "id", this.id.ToString() + (this.key_page != null ? ":" + this.key_page : ":") } });
 
       if (this.sham) nd.set_attr("sham", "true");
 
+      bool set_text = false;
       foreach (attribute a in this.attributes.Where(x => x.value != null)) {
         if (!a.content_txt_xml) nd.set_attr(a.code, a.value.ToString());
-        else nd.text = a.value.ToString();
+        else { nd.text = a.value.ToString(); set_text = true; }
       }
+      if (!set_text) nd.text = " ";
 
       if (!this.sham) {
-        foreach (element ec in this.childs.OrderBy(x => x.content_id))
+        foreach (element ec in this.childs)
           ec.set_xml_node(nd.add_node(ec.type.ToString()));
       }
     }
 
-    public static List<element> load_xml(core c, List<attribute> attrs, string xml, int back_element_id = 0) {
+    public static List<element> load_xml(core c, List<attribute> attrs, string xml, int? back_element_id = null) {
 
       xml_doc d = new xml_doc() { xml = "<elements>" + xml + "</elements>" };
-      List<element> res = new List<element>();
+      List<element> res = new List<element>(); int order = 0;
       foreach (xml_node ne in d.nodes("/elements/*")) {
-        element e = new element(c) { level = 0, back_id = back_element_id };
+        element e = new element(c) { level = 0, order_xml = order };
+        e.back_element_id = back_element_id;
         e.load_node(ne, attrs);
+        int order_child = 0;
         foreach (xml_node nd in ne.childs()) {
           if (!nd.is_element) continue;
-          e.add_child_elements(nd, attrs);
+          e.add_child_elements(nd, attrs, order_child);
+          order_child++;
         }
-        res.Add(e);
+        res.Add(e); order++;
       }
       return res;
     }
 
-    protected element add_child_elements(xml_node nd, List<attribute> attrs) {
+    protected element add_child_elements(xml_node nd, List<attribute> attrs, int order) {
 
-      element el = new element(this.core) { level = this.level + 1 }; 
+      element el = new element(this.core) { level = this.level + 1, order_xml = order };
       el.load_node(nd, attrs);
       this.add_child(el);
 
+      int order_child = 0;
       foreach (xml_node ndc in nd.childs()) {
         if (!ndc.is_element) continue;
-        el.add_child_elements(ndc, attrs);
+        el.add_child_elements(ndc, attrs, order_child);
+        order_child++;
       }
-      
+
       return el;
     }
 
@@ -174,12 +240,19 @@ namespace toyn {
       this.type = (type_element)Enum.Parse(typeof(type_element), nd.name);
 
       attribute ca = attrs.FirstOrDefault(x => x.content_txt_xml);
-      if(ca != null) set_attribute(ca.code, nd.text, attrs);
+      if (ca != null) set_attribute(ca.code, nd.text, attrs);
 
       // attributes
       foreach (string attr in nd.attrs()) {
         if (attr == "id") {
-          this.id = nd.get_int(attr, 0); continue;
+          string val = nd.get_val(attr);
+          this.id = val != "" ? int.Parse(val.Split(new char[] { ':' })[0]) : 0;
+          this.key_page = val != "" ? val.Split(new char[] { ':' })[1] : "";
+          continue;
+        } else if (attr == "from_id") {
+          string val = nd.get_val(attr);
+          this.from_id = val != "" ? (val.Contains(":") ? int.Parse(val.Split(new char[] { ':' })[0]) : int.Parse(val)) : 0;
+          continue;
         } else if (attr == "title") {
           this.title = nd.get_attr(attr); continue;
         } else if (attr == "sham") {

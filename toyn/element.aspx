@@ -47,8 +47,10 @@
           _editor.on("beforeChange", function (cm, change) {
             if (change.origin === "paste") {
               var new_txt = check_paste_xml(change.text), pos_cursor = _editor.getCursor()
-            , spos = _editor.getScrollInfo();
-              if (new_txt == null) { change.cancel(); return; }
+                , spos = _editor.getScrollInfo();
+              if (new_txt == null) {
+                change.cancel(); return;
+              }
               if (new_txt.trim().startsWith("<")) {
                 change.update(null, null, new_txt.replace(/\r/g, '').split("\n"));
                 window.setTimeout(function () {
@@ -93,11 +95,11 @@
 
     function check_paste_xml(text_xml) {
       try {
-        var result = post_data({ "action": "check_paste_xml", "text_xml": text_xml });
+        var result = post_data({ "action": "check_paste_xml", "text_xml": text_xml, "doc_xml": _editor.getValue(), "key_page": $("#key_page").val() });
         if (result) {
           if (result.des_result == "ok") {
             return result.contents;
-          } else show_alert("Attenzione!", "il formato xml non è corretto"
+          } else show_alert("Attenzione!", "i dati contenuti nell'xml non sono corrretti"
              + (result.message ? ": " + result.message : "") + "!");
         }
       } catch (e) { show_alert("Attenzione!", e.message); }
@@ -111,15 +113,22 @@
         status_txt("salvataggio in corso...")
         window.setTimeout(function () {
           var result = post_data({ "action": "save_element", "element_id": $("#id_element").val()
-          , "max_level": $("#max_lvl").val(), "parent_id": $("#parent_id").val(), "xml": _editor.getValue(), "xml_bck": $("#doc_xml_bck").val()
+          , "max_level": $("#max_lvl").val(), "parent_id": $("#parent_id").val()
+          , "first_order": $("#first_order").val(), "last_order": $("#last_order").val()
+          , "xml": _editor.getValue(), "xml_bck": $("#doc_xml_bck").val(), "key_page": $("#key_page").val()
           });
           if (result) {
             if (result.des_result == "ok") {
               if (to_doc) window.setTimeout(function () { window.location.href = $("#url_view").val(); }, 2000);
               else {
                 var pos_cursor = _editor.getCursor(), spos = _editor.getScrollInfo();
-                _editor.getDoc().setValue(result.doc_xml.substring(10, result.doc_xml.length - 11));
+                if (result.doc_xml != "<elements />" && result.doc_xml != "<elements/>")
+                  _editor.getDoc().setValue(result.doc_xml.substring(10, result.doc_xml.length - 11));
                 $("#menu").html(result.menu_html);
+
+                $("#first_order").val(result.vars["first_order"]);
+                $("#last_order").val(result.vars["last_order"]);
+
                 window.setTimeout(function () {
                   format_editor(spos, pos_cursor);
                   status_txt("documento salvato con successo");
@@ -147,7 +156,10 @@
   <input id='url_view' type='hidden' runat='server' />
   <input id='id_element' type='hidden' runat='server' />
   <input id='parent_id' type='hidden' runat='server' />
+  <input id='first_order' type='hidden' runat='server' />
+  <input id='last_order' type='hidden' runat='server' />
   <input id='max_lvl' type='hidden' runat='server' />
+  <input id='key_page' type='hidden' runat='server' />
   <div class="container-fluid">
     <div class="row">
       <!-- menu -->

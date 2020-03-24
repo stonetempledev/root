@@ -16,7 +16,10 @@ public class json_result {
   public string menu_html { get; set; }
   public string url_file { get; set; }
   public string url_name { get; set; }
+  public Dictionary<string, string> vars { get; set; }
+
   public json_result(type_result tr, string message = "", string contents = "") {
     this.result = tr; this.message = message; this.contents = contents;
+    this.vars = new Dictionary<string, string>();
   }
 }

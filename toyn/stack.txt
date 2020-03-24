@@ -1,5 +1,6 @@
 / caricamento dati flessibile
  / SALVATAGGIO E LETTURA CHE FUNZIONANO E SI PARTE
+  . pulizia elementi cancellati da piu di un mese
 / cominciamo ad usarlo
  ACCOUNTS ELEMENT
  / PATH ELEMENT BAR IN ALTO NAVIGABILE

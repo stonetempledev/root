@@ -41,3 +41,5 @@ elements
   value: id, content, ref, notes
   account: id, user, password, notes
 
+simboli
+ tudu

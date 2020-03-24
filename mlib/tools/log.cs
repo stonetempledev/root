@@ -17,7 +17,7 @@ namespace mlib.tools {
     public static void log_err (string text) { _log.Error(text); }
     public static void log_err (Exception ex) { _log.Error("error", ex); }
     public static void log_err_sql (Exception ex, string sql) { _log.Error("sql: " + sql, ex); }
-    public static void log_sql (string text) { _log.Debug(text); }
+    public static void log_sql (string text) { _log.Debug("SQL: " + text); }
     public static void log_warning (string text) { _log.Warn(text); }
     public static string dir_path () { string fn = file_name(); return string.IsNullOrEmpty(fn) ? "" : Path.GetDirectoryName(fn); }
     public static string file_name () {
