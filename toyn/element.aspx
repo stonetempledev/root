@@ -12,7 +12,7 @@
   <script src="js/codemirror-5.49.2/addon/hint/show-hint.js"></script>
   <script src="js/codemirror-5.49.2/addon/edit/matchtags.js"></script>
   <script src="js/codemirror-5.49.2/addon/edit/closetag.js"></script>
-  <script src="js/codemirror-5.49.2/xml.js" type="text/javascript"></script>
+  <script src="js/codemirror-5.49.2/xml_elements.js" type="text/javascript"></script>
   <style>
     .CodeMirror
     {
@@ -22,6 +22,24 @@
   </style>
   <script language="javascript" charset="UTF-8">
     var _editor = null;
+
+    var tags = {
+      "!top": ["element"],
+      "!attrs": {},
+      element: {
+        attrs: { title: null, code: null, ref: null },
+        children: ["element", "title", "text"]
+      },
+      title: {
+        attrs: { ref: null },
+        children: null
+      },
+      text: {
+        attrs: { style: null },
+        children: null
+      }
+    };
+
     $(document).ready(function () {
 
       // xml
@@ -31,10 +49,19 @@
         window.setTimeout(function () {
 
           _editor = CodeMirror.fromTextArea(doc_xml, {
-            mode: 'xml', lineNumbers: true, lineWrapping: true, readOnly: false,
+            mode: 'xml', lineNumbers: false, lineWrapping: true, readOnly: false,
             autofocus: true, matchTags: { bothTags: true },
-            autoCloseTags: true, extraKeys: { "Ctrl-Space": "autocomplete" }
+            autoCloseTags: true, hintOptions: { schemaInfo: tags },
+            extraKeys: { "'<'": completeAfter,
+              "'/'": completeIfAfterLt,
+              "' '": completeIfInTag,
+              "'='": completeIfInTag,
+              "Ctrl-Space": "autocomplete",
+              "Shift-Tab": format_doc
+            }
           });
+
+          //editor.setOption("theme", theme);
 
           window.setTimeout(function () {
             var totalLines = _editor.lineCount();
@@ -86,6 +113,37 @@
       }
     });
 
+    function completeAfter(cm, pred) {
+      var cur = cm.getCursor();
+      if (!pred || pred()) setTimeout(function () {
+        if (!cm.state.completionActive)
+          cm.showHint({ completeSingle: false });
+      }, 100);
+      return CodeMirror.Pass;
+    }
+
+    function completeIfAfterLt(cm) {
+      return completeAfter(cm, function () {
+        var cur = cm.getCursor();
+        return cm.getRange(CodeMirror.Pos(cur.line, cur.ch - 1), cur) == "<";
+      });
+    }
+
+    function completeIfInTag(cm) {
+      return completeAfter(cm, function () {
+        var tok = cm.getTokenAt(cm.getCursor());
+        if (tok.type == "string" && (!/['"]/.test(tok.string.charAt(tok.string.length - 1)) || tok.string.length == 1)) return false;
+        var inner = CodeMirror.innerMode(cm.getMode(), tok.state).state;
+        return inner.tagName;
+      });
+    }
+
+    function format_doc() {
+      var pos_cursor = _editor.getCursor()
+        , spos = _editor.getScrollInfo();
+      format_editor(spos, pos_cursor);
+    }
+
     function format_editor(spos, pos_cursor) {
       var tot_lines = _editor.lineCount();
       _editor.autoFormatRange({ line: 0, ch: 0 }, { line: tot_lines });
@@ -106,6 +164,20 @@
       return null;
     }
 
+    function got_to_id(id) {
+      try {
+        var tot = _editor.lineCount();
+        for (var i = 0; i < tot; i++) {
+          var f = _editor.getLine(i).search(" id=\"" + id + ":");
+          if (f >= 0) {
+            _editor.focus();
+            _editor.setCursor(i);
+          }
+        }
+      }
+      catch (e) { }
+    }
+
     function mod_xml() { window.location.href = $("#url_xml").val(); return false; }
 
     function save_element(to_doc) {
@@ -122,8 +194,12 @@
               if (to_doc) window.setTimeout(function () { window.location.href = $("#url_view").val(); }, 2000);
               else {
                 var pos_cursor = _editor.getCursor(), spos = _editor.getScrollInfo();
-                if (result.doc_xml != "<elements />" && result.doc_xml != "<elements/>")
-                  _editor.getDoc().setValue(result.doc_xml.substring(10, result.doc_xml.length - 11));
+                if (result.doc_xml != "<elements />" && result.doc_xml != "<elements/>") {
+                  var doc = result.doc_xml.substring(10, result.doc_xml.length - 11);
+                  _editor.getDoc().setValue(doc);
+                  $("#doc_xml_bck").val(doc);
+                } else $("#doc_xml_bck").val("");
+
                 $("#menu").html(result.menu_html);
 
                 $("#first_order").val(result.vars["first_order"]);

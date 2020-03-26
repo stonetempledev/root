@@ -11,8 +11,8 @@ using mlib.tools;
 public partial class confirm : tl_page {
   protected void Page_Load (object sender, EventArgs e) {
     try {
-      DataRow dr = db_conn.first_row(@"select CONVERT(varchar(100), DecryptByKey(enc_nome)) as nome, CONVERT(varchar(100), DecryptByKey(enc_email)) as email
-          from utenti where isnull(activated, 0) = 3 and activate_key = '" + qry_val("akey") + "';", open_key: true);
+      DataRow dr = db_conn.first_row(@"select nome, email
+          from utenti where isnull(activated, 0) = 3 and activate_key = '" + qry_val("akey") + "';");
       if (dr == null) { FormsAuthentication.SignOut(); Response.Redirect("login.aspx"); return; }
 
       db_conn.exec(string.Format(@"update utenti set activated = 1, dt_activate = getdate(), tmp_key = null, activate_key = null

@@ -54,9 +54,16 @@ public partial class _router : tl_page {
           blk.add("title-blu", "Dettagli utente loggato");
           blk.add("list").add_xml("<l-row-var title='nome'>" + user.name + "</l-row-var>"
             + "<l-row-var title='email'>" + user.email + "</l-row-var>"
-            + "<l-row-var title='tipo utente'>" + user.type.ToString() + "</l-row-var>");
-        } else if (c.action == "crypt" && !string.IsNullOrEmpty(c.obj)) {
-          blk.add("label", cry.encode_tobase64(c.obj));
+            + "<l-row-var title='tipo utente'>" + user.type.ToString() + "</l-row-var>"
+            + "<l-row-var title='id utente'>" + user.id + "</l-row-var>");
+        } else if (c.action == "crypt") {
+          if (!string.IsNullOrEmpty(c.obj) && !string.IsNullOrEmpty(c.sub_obj())) {
+            blk.add("label", "parola criptata");
+            blk.add("text-box", cry.encrypt(c.obj, c.sub_obj()));
+          } else if (!string.IsNullOrEmpty(c.obj)) {
+            blk.add("label", "parola criptata");
+            blk.add("text-box", cry.encode_tobase64(c.obj));
+          }
         } else if (c.action == "check" && c.obj == "conn") {
           string err = ""; bool ok = false; try { ok = db_reconn(true); } catch (Exception ex) { err = ex.Message; }
           blk.add("title-blu", "Check DB connection");

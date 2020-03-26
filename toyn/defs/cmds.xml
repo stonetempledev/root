@@ -20,7 +20,7 @@
         <row group="sys" action="view" object="logs" des="visualizza la lista completa dei logs disponibili"/>
         <row group="sys" action="view" object="log-today" des="visualizza il log di oggi"/>
         <row group="sys" action="view" object="log" subobjs="{file}" des="visualizza il log specifico"/>
-        <row group="sys" action="crypt" object="{phrase}" des="cripta la frase specificata"/>
+        <row group="sys" action="crypt" object="{phrase}" subobjs="{password}" des="cripta la frase specificata in SHA1 oppure nel sistema interno più sofisticato con password"/>
         <row group="sys" action="open" object="test" page="test.aspx" des="apre la pagina di test"/>
         <row group="sys" action="check" object="conn" des="verifica connessione al database"/>
         <!-- backups -->

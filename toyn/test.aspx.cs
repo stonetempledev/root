@@ -16,20 +16,22 @@ using mlib.tools;
 
 public partial class test : tl_page {
 
-  protected void Page_Load (object sender, EventArgs e) {
+  protected void Page_Load(object sender, EventArgs e) {
+    try {
+    } catch (Exception ex) { }
   }
 
-  protected void btn_email_click (object sender, EventArgs e) {
+  protected void btn_email_click(object sender, EventArgs e) {
     try {
       add_class(email, "show");
 
       send_mail(mail_ad.Value, "mail test il Lantern!", "the body of the mail");
-
+      
       show_result(result_email, "MAIL INVIATA CON SUCCESSO!");
     } catch (Exception ex) { show_result(result_email, "<b>" + ex.Message + "</b>", true); }
   }
 
-  protected void show_result (HtmlControl alert, string html, bool err = false) {
+  protected void show_result(HtmlControl alert, string html, bool err = false) {
     string cls_ok = "alert-success", cls_err = "alert-danger";
     result_email.Visible = true;
     remove_class(result_email, !err ? cls_err : cls_ok); add_class(result_email, !err ? cls_ok : cls_err);

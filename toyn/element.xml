@@ -14,7 +14,7 @@
   , a.attribute_code, a.attribute_type, a.content_txt_xml, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar
  from vw_elements_h h
  left join vw_elements_attrs a on a.element_id = h.element_id 
- where {@field='filter_deleted'} and h.ref_element_id = -1 and {@field='filter_level'}
+ where {@field='filter_deleted'} and h.id_utente = {@field='id_utente'} and h.ref_element_id = -1 and {@field='filter_level'}
  order by h.livello, h.[order], h.element_id]]>
     </query>
     <query name="open-element">
@@ -25,7 +25,7 @@ select h.parent_id, h.elements_contents_id, 0 as livello, h.element_id, h.elemen
   , a.attribute_code, a.attribute_type, a.content_txt_xml, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar
  from vw_elements_p h
  left join vw_elements_attrs a on a.element_id = h.element_id 
- where isnull(h.deleted, 0) = 0 and h.element_id = {@field='id_element'} {@field='filter_only_childs'}
+ where h.id_utente = {@field='id_utente'} and isnull(h.deleted, 0) = 0 and h.element_id = {@field='id_element'} {@field='filter_only_childs'}
 union select h.parent_id, h.elements_contents_id, h.livello + 1 as livello, h.element_id, h.element_type, h.element_title
   , (select top 1 1 from elements_contents where element_id = h.element_id) as has_childs
   , (select top 1 1 from elements_contents ec join elements e on e.element_id = ec.child_element_id and e.element_type = 'element'
@@ -33,14 +33,14 @@ union select h.parent_id, h.elements_contents_id, h.livello + 1 as livello, h.el
   , a.attribute_code, a.attribute_type, a.content_txt_xml, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar
  from vw_elements_h h
  left join vw_elements_attrs a on a.element_id = h.element_id 
- where {@field='filter_deleted'} and h.ref_element_id = {@field='id_element'} and {@field='filter_level'} ) t
+ where {@field='filter_deleted'} and h.id_utente = {@field='id_utente'} and h.ref_element_id = {@field='id_element'} and {@field='filter_level'} ) t
  order by t.livello, t.[order], t.element_id]]>
     </query>
     <query name="exists-element">
       <![CDATA[select top 1 1 from elements e where isnull(e.deleted, 0) = 0 and e.element_id = {@field='id_element'}]]>
     </query>
     <query name="deleted-element">
-      <![CDATA[select top 1 1 from elements e where isnull(e.deleted, 0) = 1 and e.element_type = '{@field='type_element'}' and e.element_id = {@field='id_element'}]]>
+      <![CDATA[select top 1 1 from elements e where isnull(e.deleted, 0) > 0 and e.element_type = '{@field='type_element'}' and e.element_id = {@field='id_element'}]]>
     </query>
     <query name="has-childs">
       <![CDATA[select e.element_id
@@ -49,6 +49,68 @@ union select h.parent_id, h.elements_contents_id, h.livello + 1 as livello, h.el
             where ec.element_id = e.element_id) as has_child_elements
       from [elements] e where e.element_id = {@field='id_element'}
       ]]>
+    </query>
+    <query name="id-deleted">
+      <![CDATA[select isnull(max(deleted), 0) + 1 as id_deleted from [elements] where id_utente = {@field='id_utente'}]]>
+    </query>
+    <query name="delete-element">
+      <![CDATA[update e set e.deleted = {@field='id_deleted'}, e.dt_del = getdate() 
+          from [elements] e where e.element_id = {@field='id_element'}
+           or e.element_id in (select distinct element_id from vw_elements_h 
+            where isnull(deleted, 0) = 0 and ref_element_id = {@field='id_element'});]]>
+    </query>
+    <query name="refresh-orders">
+      <![CDATA[update ec set ec.[order] = ec.[order] + {@field='diff_order'}
+          from elements_contents ec
+          join [elements] e on e.element_id = ec.child_element_id and e.id_utente = {@field='id_utente'}
+          where ec.element_id {@field='filter_id_element'} and ec.[order] > {@field='filter_order'}]]>
+    </query>
+    <query name="save-child">
+      <![CDATA[delete from elements_contents where child_element_id = {@field='id_element'};
+      insert into elements_contents (element_id, child_element_id, [order])
+        values ({@field='id_parent'}, {@field='id_element'}, {@field='order'});]]>
+    </query>
+    <query name="save-element">
+      <![CDATA[insert into [elements] (element_type, element_title, id_utente)
+        values ({@txtqry='type'}, {@txtqry='title'}, {@field='id_utente'})]]>
+    </query>
+    <query name="update-element">
+      <![CDATA[update [elements] set element_type = {@txtqry='type'}, element_title = {@txtqry='title'}, deleted = NULL
+        where element_id = {@field='id_element'}]]>
+    </query>
+    <query name="undelete-childs">
+      <![CDATA[update e set e.deleted = null
+         from [elements] e
+         join vw_elements_h h on h.ref_element_id = {@field='id_element'} and h.element_id = e.element_id]]>
+    </query>
+    <query name="reset-contents">
+      <![CDATA[delete ec from elements_contents ec where ec.element_id = {@field='id_element'}
+        and not exists (select top 1 1 from elements where element_id = {@field='id_element'} and deleted > 0)
+        and not exists (select top 1 1 from elements where element_id = ec.child_element_id and deleted > 0)]]>
+    </query>
+    <query name="save-child-content">
+      <![CDATA[delete from elements_contents where child_element_id = {@field='id_child'};
+        insert into elements_contents (element_id, child_element_id, [order])
+         values ({@field='id_element'}, {@field='id_child'}, {@field='order'});]]>
+    </query>
+    <query name="delete-attributes">
+      <![CDATA[delete ea from [elements_attrs_{@field='attr_type'}] ea 
+            join attributes a on a.attribute_id = ea.attribute_id
+            where ea.element_id = {@field='id_element'} and a.element_type = '{@field='element_type'}']]>
+    </query>
+    <query name="set-attribute">
+      <![CDATA[if exists (select top 1 1 from [elements_attrs_{@field='attr_type'}] ea
+          join attributes a on a.attribute_id = ea.attribute_id
+          where ea.element_id = {@field='id_element'} and a.attribute_code = '{@field='attr_code'}')
+            update ea set ea.value = {@field='attr_value'} 
+             from [elements_attrs_{@field='attr_type'}] ea
+             join attributes a on a.attribute_id = ea.attribute_id
+             where ea.element_id = {@field='id_element'} and a.attribute_code = '{@field='attr_code'}';
+          else
+            insert into [elements_attrs_{@field='attr_type'}] (element_id, attribute_id, [value])
+             select {@field='id_element'} as element_id, a.attribute_id, {@field='attr_value'} as value
+             from attributes a 
+             where a.element_type = '{@field='element_type'}' and a.attribute_code = '{@field='attr_code'}']]>
     </query>
   </queries>
 </config>

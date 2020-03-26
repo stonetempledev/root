@@ -30,8 +30,8 @@ public partial class _default : tl_master {
         u_email = cry.decrypt(tlp.core.app_setting("ad-mail"), "kokko32!");
         u_id = 0; u_tp = user.type_user.admin;
       } else {
-        DataRow dr = tlp.db_conn.first_row(@"select CONVERT(varchar(100), DecryptByKey(enc_nome)) as nome, CONVERT(varchar(100), DecryptByKey(enc_email)) as email, isnull(activated, 0) as activated 
-        from utenti where CONVERT(varchar(100), DecryptByKey(enc_nome)) = '" + tlp.user + "';", open_key: true);
+        DataRow dr = tlp.db_conn.first_row(@"select nome, email, isnull(activated, 0) as activated 
+        from utenti where nome = '" + u_name + "';");
         if (dr == null || Convert.ToInt16(dr["activated"]) != 1) { tlp.log_out("login.aspx"); return; }
         u_email = dr["email"].ToString(); u_tp = user.type_user.normal;
       }

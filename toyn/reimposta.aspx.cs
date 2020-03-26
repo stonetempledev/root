@@ -13,8 +13,8 @@ public partial class reimposta : tl_page {
   protected void Page_Load (object sender, EventArgs e) {
     try {
       lbl_alert.Visible = lbl_ok.Visible = false;
-      DataRow dr = db_conn.first_row(@"select CONVERT(varchar(100), DecryptByKey(enc_nome)) as nome, CONVERT(varchar(100), DecryptByKey(enc_email)) as email
-          from utenti where activated = 1 and activate_key = '" + qry_val("akey") + "';", open_key: true);
+      DataRow dr = db_conn.first_row(@"select nome, email
+          from utenti where activated = 1 and activate_key = '" + qry_val("akey") + "';");
       if (dr == null) { FormsAuthentication.SignOut(); Response.Redirect("login.aspx"); return; }
 
       _nome = dr["nome"].ToString(); _mail = dr["email"].ToString();
@@ -35,13 +35,9 @@ public partial class reimposta : tl_page {
 
         // ri-registrazione
         string tkey = mlib.tools.cry.rnd_str(32);
-        db_conn.exec(string.Format(@"insert into log_azioni_utenti (id_utente, id_azione, dt_ins)
-         select u.id_utente, au.id_azione, getdate() as dt_ins
-         from utenti u join azioni_utenti au on au.azione = 'repassword'
-         where activated = 1 and CONVERT(varchar(100), DecryptByKey(enc_nome)) = '{0}'", _nome), open_key: true);
         db_conn.exec(string.Format(@"update utenti set pwd = '{0}', dt_upd = getdate()
-          where activated = 1 and CONVERT(varchar(100), DecryptByKey(enc_nome)) = '{1}';"
-          , mlib.tools.cry.encode_tobase64(user_pass.Value), _nome), open_key: true);
+          where activated = 1 and nome = '{1}';"
+          , mlib.tools.cry.encode_tobase64(user_pass.Value), _nome));
 
         Response.Redirect(string.Format("reiscritto.aspx?akey={0}", qry_val("akey")));
       }

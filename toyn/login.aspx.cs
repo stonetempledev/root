@@ -7,6 +7,7 @@ using System.Web.UI.WebControls;
 using System.Web.Security;
 using System.Data;
 using mlib.tools;
+using mlib.db;
 
 public partial class login : tl_page {
   protected void Page_Load (object sender, EventArgs e) {
@@ -30,9 +31,8 @@ public partial class login : tl_page {
           // utente
         else {
           string uname = user_mail.Value, upass = user_pass.Value;
-          DataRow dr = db_conn.first_row(@"select id_utente, CONVERT(varchar(100), DecryptByKey(enc_nome)) as nome, pwd
-            , CONVERT(varchar(100), DecryptByKey(enc_email)) as email, isnull(activated, 0) as activated 
-          from utenti where CONVERT(varchar(100), DecryptByKey(enc_nome)) = '" + uname + "';", open_key: true);
+          DataRow dr = db_conn.first_row(@"select id_utente, nome, pwd, email, isnull(activated, 0) as activated 
+          from utenti where nome = '" + uname + "';");
           if (dr == null) {
             err_login("NON SEI REGISTRATO!"); return;
           } else if (Convert.ToInt16(dr["activated"]) == 0) {
@@ -46,11 +46,7 @@ public partial class login : tl_page {
           }
 
           // ok
-          string uid = dr["id_utente"].ToString();
-          db_conn.exec(string.Format(@"insert into log_azioni_utenti (id_utente, id_azione, dt_ins)
-           select u.id_utente, au.id_azione, getdate() as dt_ins
-           from utenti u join azioni_utenti au on au.azione = 'login'
-           where u.id_utente = {0}", uid));
+          string uid = db_provider.str_val(dr["id_utente"]);
           FormsAuthentication.RedirectFromLoginPage(uname + "|" + uid, true);
         }
       }
@@ -62,18 +58,14 @@ public partial class login : tl_page {
       if (user_mail.Value == "") err_login("DEVI SCRIVERE CHI SEI PER REIMPOSTARE LA PASSWORD!");
       else {
         // check nomignolo
-        DataRow dr = db_conn.first_row(@"select CONVERT(varchar(100), DecryptByKey(enc_nome)) as nome, CONVERT(varchar(100), DecryptByKey(enc_email)) as email
-        from utenti where activated = 1 and CONVERT(varchar(100), DecryptByKey(enc_nome)) = '" + user_mail.Value + "';", open_key: true);
+        DataRow dr = db_conn.first_row(@"select nome, email
+        from utenti where activated = 1 and nome = '" + user_mail.Value + "';");
         if (dr == null) { err_login("NON C'È NESSUN UTENTE " + user_mail.Value + " ATTIVO!"); return; }
 
         // registrazione
         string tkey = mlib.tools.cry.rnd_str(32), akey = mlib.tools.cry.rnd_str(32);
         db_conn.exec(string.Format(@"update utenti set tmp_key = '{0}', activate_key = '{1}', dt_upd = getdate() 
-          where CONVERT(varchar(100), DecryptByKey(enc_nome)) = '{2}' and activated = 1", tkey, akey, user_mail.Value), open_key: true);
-        db_conn.exec(string.Format(@"insert into log_azioni_utenti (id_utente, id_azione, dt_ins)
-         select u.id_utente, au.id_azione, getdate() as dt_ins
-         from utenti u join azioni_utenti au on au.azione = 'req_repassword'
-         where tmp_key = '{0}'", tkey));
+          where nome = '{2}' and activated = 1", tkey, akey, user_mail.Value));
 
         send_mail(dr["email"].ToString(), "reimposta la tua password the Lantern",
           string.Format("<h3>Ciao {0}!</h3><p><a href='{1}reimposta.aspx?akey={2}'>Clicca qui per poter reimpostare la tua password!</a></p>"

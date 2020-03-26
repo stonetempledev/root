@@ -30,15 +30,14 @@ public partial class login : tl_page {
       else {
         // check nomignolo
         DataRow dr = db_conn.first_row(@"select count(*) as cc from utenti 
-        where isnull(activated, 0) in (1, 2, 3) and CONVERT(varchar(100), DecryptByKey(enc_nome)) = '" + user_name.Value + "';", open_key: true);
+        where isnull(activated, 0) in (1, 2, 3) and nome = '" + user_name.Value + "';");
         if ((int)dr["cc"] > 0) { err_msg("c'è già uno che si chiama " + user_name.Value + "!"); return; }
 
         // registrazione
         string tkey = cry.rnd_str(32);
-        db_conn.exec(string.Format(@"insert into utenti (enc_nome, enc_email, pwd, dt_ins, tmp_key, activate_key, activated)
-         values ({0}, {1}, '{2}', getdate(), '{3}', '{4}', 2);"
-          , db_conn.enc_qry(user_name.Value), db_conn.enc_qry(user_mail.Value)
-          , cry.encode_tobase64(user_pass.Value), tkey, cry.rnd_str(32)), open_key: true);
+        db_conn.exec(string.Format(@"insert into utenti (nome, email, pwd, dt_ins, tmp_key, activate_key, activated)
+         values ('{0}', '{1}', '{2}', getdate(), '{3}', '{4}', 2);"
+          , user_name.Value, user_mail.Value, cry.encode_tobase64(user_pass.Value), tkey, cry.rnd_str(32)));
 
         Response.Redirect(string.Format("iscritto.aspx?tkey={0}", tkey));
       }

@@ -12,8 +12,8 @@ public partial class reiscritto : tl_page {
 
   protected void Page_Load (object sender, EventArgs e) {
     try {
-      DataRow dr = db_conn.first_row(@"select CONVERT(varchar(100), DecryptByKey(enc_nome)) as nome, CONVERT(varchar(100), DecryptByKey(enc_email)) as email
-          , activate_key from utenti where activated = 1 and activate_key = '" + qry_val("akey") + "';", open_key: true);
+      DataRow dr = db_conn.first_row(@"select nome, email, activate_key 
+        from utenti where activated = 1 and activate_key = '" + qry_val("akey") + "';");
       if (dr == null) { FormsAuthentication.SignOut(); Response.Redirect("login.aspx"); return; }
 
       db_conn.exec(string.Format(@"update utenti set activate_key = null 

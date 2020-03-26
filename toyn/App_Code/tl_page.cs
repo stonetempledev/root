@@ -188,20 +188,12 @@ public class tl_page : System.Web.UI.Page {
       mm.To.Add(to);
       using (SmtpClient smtp = new SmtpClient(cfg.Network.Host, cfg.Network.Port) {
         EnableSsl = cfg.Network.EnableSsl, UseDefaultCredentials = cfg.Network.DefaultCredentials,
-        Credentials = new NetworkCredential(cry.decrypt(cfg.Network.UserName, "kokko32!"), cry.decrypt(cfg.Network.Password, "homme33!"))
+        Credentials = new NetworkCredential(cry.decrypt(cfg.Network.UserName, "lillo32!"), cry.decrypt(cfg.Network.Password, "lillo32!"))
       }) smtp.Send(mm);
     }
   }
 
   public void log_out(string to_page) {
-    try {
-      if (_db_connected && db_conn.exist_table("log_azioni_utenti")) {
-        db_conn.exec(string.Format(@"insert into log_azioni_utenti (id_utente, id_azione, dt_ins)
-                 select u.id_utente, au.id_azione, getdate() as dt_ins
-                 from utenti u join azioni_utenti au on au.azione = 'logout'
-                 where u.id_utente = {0}", _user.id));
-      }
-    } catch (Exception ex) { log.log_err(ex); }
     FormsAuthentication.SignOut();
     Response.Redirect(to_page);
   }

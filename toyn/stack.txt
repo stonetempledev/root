@@ -1,21 +1,12 @@
-/ caricamento dati flessibile
- / SALVATAGGIO E LETTURA CHE FUNZIONANO E SI PARTE
-  . pulizia elementi cancellati da piu di un mese
-/ cominciamo ad usarlo
+. cominciamo ad usarlo
+ documentazione toyn come si deve
  ACCOUNTS ELEMENT
- / PATH ELEMENT BAR IN ALTO NAVIGABILE
+ PATH ELEMENT BAR IN ALTO NAVIGABILE
  UN COMANDO DI PULIZIA TMP, LOG
  COMANDO DI INIT DATABASE PER LO SVILUPPO
  BACKUP
   dopo il gen backup aprire la lista dei backups
- / documentazione toyn come si deve
-rivedere il senso degli elementi - accounts
- ? aggiungere attributi agli elementi
 elements.aspx 
- autocomplete
- migliorare modifica in xml (evidenziare menu in base alla posizione del cursore)
- come capire se è un elemento o un titolo?
  deve andare anche con il phone
-end mail provider
 thecommands.exe
  rem C:\_lib\thecommands\bin\Release\thecommands.exe --crypt_folder:%dest_folder%\configs dir:*.xml add_ext:tlenc pwd:qswdef34!£

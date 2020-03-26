@@ -33,6 +33,7 @@
     <title-label-err><![CDATA[<h3 style='text-transform: uppercase;'><span class='badge badge-danger d-block' style='white-space:normal;'>{@text@}</span></h3>]]></title-label-err>
 
     <!-- blocks -->
+    <text-box><![CDATA[<input type='text' style='width:100%' value="{@text@}">]]></text-box>
     <label><![CDATA[<span class='h3'><span class='badge badge-primary d-block' style='white-space:normal;font-weight:normal;'>{@text@}</span></span>]]></label>
     <label-sm><![CDATA[<span class='h5'><span class='badge badge-primary ml-1 mr-1' style='white-space:normal;font-weight:normal;'>{@text@}</span></span>]]></label-sm>
     <btn-lg>
@@ -94,9 +95,3 @@
   </blocks>
 
 </config>
-<!--
-       <span class="float-right">
-            <button type="button" class="btn btn-lg btn-warning" onclick="alert('Action2 -> Play');">
-OSTIA            </button>
-          </span>
--->

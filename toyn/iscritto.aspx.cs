@@ -12,8 +12,8 @@ public partial class login : tl_page {
 
   protected void Page_Load (object sender, EventArgs e) {
     try {
-      DataRow dr = db_conn.first_row(@"select CONVERT(varchar(100), DecryptByKey(enc_nome)) as nome, CONVERT(varchar(100), DecryptByKey(enc_email)) as email
-          , activate_key from utenti where isnull(activated, 0) = 2 and tmp_key = '" + qry_val("tkey") + "';", open_key: true);
+      DataRow dr = db_conn.first_row(@"select nome, email, activate_key 
+        from utenti where isnull(activated, 0) = 2 and tmp_key = '" + qry_val("tkey") + "';");
       if (dr == null) { FormsAuthentication.SignOut(); Response.Redirect("login.aspx"); return; }
 
       db_conn.exec(string.Format(@"update utenti set activated = 3 where tmp_key = '{0}';", qry_val("tkey")));

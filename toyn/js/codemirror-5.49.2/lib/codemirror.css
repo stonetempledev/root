@@ -3,6 +3,7 @@
 .CodeMirror {
   /* Set height, width, borders, and global font properties here */
   font-family: monospace;
+  font-size:13pt;
   height: 300px;
   color: black;
   direction: ltr;
@@ -39,7 +40,8 @@
 }
 
 .CodeMirror-guttermarker { color: black; }
-.CodeMirror-guttermarker-subtle { color: #999; }
+.CodeMirror-guttermarker-subtle { color: #999;   
+}
 
 /* CURSOR */
 
@@ -117,30 +119,32 @@
 .cm-link {text-decoration: underline;}
 .cm-strikethrough {text-decoration: line-through;}
 
-.cm-s-default .cm-keyword {color: #708;}
-.cm-s-default .cm-atom {color: #219;}
-.cm-s-default .cm-number {color: #164;}
-.cm-s-default .cm-def {color: #00f;}
+.cm-s-default .cm-keyword {color: #708;font-size:10pt;}
+.cm-s-default .cm-atom {color: #219;font-size:10pt;}
+.cm-s-default .cm-number {color: #164;font-size:10pt;}
+.cm-s-default .cm-def {color: #00f;font-size:10pt;}
 .cm-s-default .cm-variable,
 .cm-s-default .cm-punctuation,
 .cm-s-default .cm-property,
 .cm-s-default .cm-operator {}
-.cm-s-default .cm-variable-2 {color: #05a;}
-.cm-s-default .cm-variable-3, .cm-s-default .cm-type {color: #085;}
-.cm-s-default .cm-comment {color: #a50;}
-.cm-s-default .cm-string {color: #a11;}
-.cm-s-default .cm-string-2 {color: #f50;}
-.cm-s-default .cm-meta {color: #555;}
-.cm-s-default .cm-qualifier {color: #555;}
-.cm-s-default .cm-builtin {color: #30a;}
-.cm-s-default .cm-bracket {color: #997;}
-.cm-s-default .cm-tag {color: #170;}
-.cm-s-default .cm-attribute {color: #00c;}
-.cm-s-default .cm-hr {color: #999;}
-.cm-s-default .cm-link {color: #00c;}
+.cm-s-default .cm-variable-2 {color: #05a;font-size:10pt;}
+.cm-s-default .cm-variable-3, .cm-s-default .cm-type {color: #085;font-size:10pt;}
+.cm-s-default .cm-comment {color: #a50;font-size:10pt;}
+.cm-s-default .cm-string {color: #d11;font-size:10pt;}
+.cm-s-default .cm-string-2 {color: #f50;font-size:10pt;}
+.cm-s-default .cm-meta {color: #555;font-size:10pt;}
+.cm-s-default .cm-qualifier {color: #555;font-size:10pt;}
+.cm-s-default .cm-builtin {color: #30a;font-size:10pt;}
+.cm-s-default .cm-bracket {color: #997;font-size:10pt;}
+.cm-s-default .cm-tag {color: #6a0;font-weight:bold;font-size:10pt;}
+.cm-s-default .cm-attribute {color: #00c;font-size:10pt;}
+.cm-s-default .cm-hr {color: #999;font-size:10pt;}
+.cm-s-default .cm-link {color: #00c;font-size:10pt;}
 
-.cm-s-default .cm-error {color: #f00;}
-.cm-invalidchar {color: #f00;}
+.cm-s-default .cm-error {color: #f00;font-size:10pt;}
+.cm-invalidchar {color: #f00;font-size:10pt;}
+
+/*span.tag-wrapper { font-weight:bold; }*/
 
 .CodeMirror-composing { border-bottom: 2px solid; }
 
