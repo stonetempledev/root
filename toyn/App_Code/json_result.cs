@@ -14,9 +14,11 @@ public class json_result {
   public string contents { get; set; }
   public string doc_xml { get; set; }
   public string menu_html { get; set; }
+  public string html_element { get; set; }
   public string url_file { get; set; }
   public string url_name { get; set; }
   public Dictionary<string, string> vars { get; set; }
+  public void add_var(string name, string val) { this.vars.Add(name, val); }
 
   public json_result(type_result tr, string message = "", string contents = "") {
     this.result = tr; this.message = message; this.contents = contents;

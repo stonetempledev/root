@@ -20,7 +20,7 @@ using mlib.tiles;
 namespace toyn {
   public class element {
 
-    public enum type_element { element, text, title }
+    public enum type_element { element, text, title, list, link, account, value, attivita }
 
     protected List<element> _childs;
     protected List<attribute> _attributes;
@@ -47,8 +47,11 @@ namespace toyn {
     public bool has_content { get { return !string.IsNullOrEmpty(this.content); } }
     public bool added { get; set; }
     public bool undeleted { get; set; }
+    public bool in_list { get; set; }
     public long? back_element_id { get; set; }
     public string key_page { get; set; }
+    public DateTime? dt_ins { get; set; }
+    public DateTime? dt_upd { get; set; }
 
     // attributes
     public List<attribute> attributes { get { return _attributes; } }
@@ -86,10 +89,9 @@ namespace toyn {
       } else a.value = value;
     }
 
-    public element(core c, type_element type, string title
-      , int level = 0, long id = 0, long parent_id = 0, long content_id = 0
-      , bool has_childs = false, bool has_child_elements = false
-      , int order_xml = 0, int order = 0, bool sham = false) {
+    public element(core c, type_element type, string title, int level = 0, long id = 0, long parent_id = 0, long content_id = 0
+      , bool has_childs = false, bool has_child_elements = false, bool in_list = false
+      , DateTime? dt_ins = null, DateTime? dt_upd = null, int order_xml = 0, int order = 0, bool sham = false) {
       _childs = new List<element>();
       _attributes = new List<attribute>();
       this.id = id;
@@ -102,6 +104,9 @@ namespace toyn {
       this.title = title;
       this.has_childs = has_childs;
       this.has_child_elements = has_child_elements;
+      this.in_list = in_list;
+      this.dt_ins = dt_ins;
+      this.dt_upd = dt_upd;
       this.order_xml = order_xml;
       this.order = order;
       this.sham = sham;
@@ -183,17 +188,23 @@ namespace toyn {
     }
 
     public void set_xml_node(xml_node nd) {
-      // attributes
-      nd.set_attrs(new Dictionary<string, string>() { { "title", this.title }, { "id", this.id.ToString() + (this.key_page != null ? ":" + this.key_page : ":") } });
 
-      if (this.sham) nd.set_attr("sham", "true");
+      // title
+      nd.set_attr("title", this.title);
 
+      // attributi
       bool set_text = false;
       foreach (attribute a in this.attributes.Where(x => x.value != null)) {
         if (!a.content_txt_xml) nd.set_attr(a.code, a.value.ToString());
         else { nd.text = a.value.ToString(); set_text = true; }
       }
       if (!set_text) nd.text = " ";
+
+      // id
+      nd.set_attr( "id", this.id.ToString() + (this.key_page != null ? ":" + this.key_page : ":"));
+
+      // sham
+      if (this.sham) nd.set_attr("sham", "true");
 
       if (!this.sham) {
         foreach (element ec in this.childs)

@@ -14,7 +14,7 @@
   </script>
 </asp:Content>
 <asp:Content ContentPlaceHolderID="contents" runat="Server">
-  <div class="container-fluid" style='margin-top:10px;'>
+  <div class="container-fluid" style='margin-top: 10px;'>
     <div class="row">
       <!-- contenuti -->
       <div id='div_contents' runat='server' class="col-12">

@@ -14,6 +14,8 @@ using mlib.tiles;
 
 public partial class _default : tl_master {
 
+  protected Dictionary<string, string> _qvals = null;
+
   protected void Page_Init (object sender, EventArgs e) {
 
     try {
@@ -41,6 +43,11 @@ public partial class _default : tl_master {
       // command
       txt_cmd.Value = tlp.qry_val("cmd");
 
+      // parameters
+      _qvals = new Dictionary<string, string>();
+      foreach (string qs in Request.QueryString.AllKeys.Where(x => x != "cmd")) 
+        _qvals.Add(qs, tlp.qry_val(qs));
+
     } catch { }
   }
 
@@ -51,7 +58,12 @@ public partial class _default : tl_master {
 
   public void elab_cmd(string page) { Response.Redirect(url_cmd(txt_cmd.Value, page)); }
 
-  public override void redirect_to (string page) { Response.Redirect(page + "?cmd=" + HttpUtility.UrlEncode(txt_cmd.Value)); }
+  public override void redirect_to (string page) {
+    string url = page + "?cmd=" + HttpUtility.UrlEncode(txt_cmd.Value);
+    foreach (string qs in _qvals.Keys)
+      url += "&" + qs + "=" + HttpUtility.UrlEncode(_qvals[qs]);
+    Response.Redirect(url); 
+  }
 
   public override string get_val (string id) {
     Control ctrl = FindControl(id); return ctrl != null ? (ctrl is HtmlInputText ? ((HtmlInputText)ctrl).Value

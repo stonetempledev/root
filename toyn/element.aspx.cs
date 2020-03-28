@@ -46,6 +46,7 @@ public partial class _element : tl_page {
 
           if (!string.IsNullOrEmpty(json)) {
             JObject jo = JObject.Parse(json);
+
             // save_element
             if (jo["action"].ToString() == "save_element") {
 
@@ -81,7 +82,42 @@ public partial class _element : tl_page {
               parse_menu(element_id, els, sb, true, max_level);
               res.menu_html = sb.ToString();
 
-            } else if (jo["action"].ToString() == "check_paste_xml") {
+            } // remove_element
+            else if (jo["action"].ToString() == "remove_element") {
+              long id = long.Parse(jo["id"].ToString());
+
+              // pulizia
+              DataRow dr = db_conn.first_row(core.parse(config.get_query("id-deleted").text, new Dictionary<string, object>() { { "id_utente", _user.id } }));
+              int id_deleted = db_provider.int_val(dr["id_deleted"]);
+              db_conn.exec(core.parse(config.get_query("delete-element").text
+                , new Dictionary<string, object>() { { "id_element", id }, { "id_utente", _user.id }, { "id_deleted", id_deleted } }));
+
+            }
+              // change_stato_attivita
+            else if (jo["action"].ToString() == "change_stato_attivita") {
+              long id = long.Parse(jo["id"].ToString());
+              bool in_list = bool.Parse(jo["in_list"].ToString());
+              string stato = jo["stato_now"].ToString()
+                , new_stato = stato == "" || stato == "da iniziare" ? "in corso" : (stato == "in corso" ? "sospesa"
+                  : (stato == "sospesa" ? "fatta" : (stato == "fatta" ? "da iniziare" : "fatta")));
+
+              set_attribute(new element(this.core) { type = element.type_element.attivita, id = id }
+               , load_attribute(element.type_element.attivita, "stato"), "'" + new_stato + "'");
+              res.html_element = parse_element_2(load_element(id), in_list);
+
+            } // change_priorita_attivita 
+            else if (jo["action"].ToString() == "change_priorita_attivita") {
+              long id = long.Parse(jo["id"].ToString());
+              bool in_list = bool.Parse(jo["in_list"].ToString());
+              string priorita = jo["priorita_now"].ToString()
+                , new_priorita = priorita == "" || priorita == "normale" ? "alta" : (priorita == "alta" ? "bassa" : "normale");
+
+              set_attribute(new element(this.core) { type = element.type_element.attivita, id = id }
+               , load_attribute(element.type_element.attivita, "priorita"), "'" + new_priorita + "'");
+              res.html_element = parse_element_2(load_element(id), in_list);
+
+            } // check_paste_xml 
+            else if (jo["action"].ToString() == "check_paste_xml") {
               StringBuilder text_xml = new StringBuilder();
               foreach (JValue j in jo["text_xml"] as JArray)
                 text_xml.AppendLine(j.Value.ToString());
@@ -146,31 +182,32 @@ public partial class _element : tl_page {
       // view
       if (c.action == "view" && c.obj == "element") {
 
-        string element_id = c.sub_cmd("id"); int max_level = 0;
+        string element_id = c.sub_cmd("id"); int max_lvl_els = 0, max_level = 0;
 
-        List<element> els = load_elements(out max_level, element_id != "" ? int.Parse(element_id) : (int?)null, _max_level);
+        List<element> els = load_elements(out max_lvl_els, out max_level, element_id != "" ? int.Parse(element_id) : (int?)null, _max_level);
 
         // client vars
         url_xml.Value = master.url_cmd("xml element" + (element_id != "" ? " id:" + element_id : ""));
-        max_lvl.Value = max_level.ToString();
+        url_xml_clean.Value = master.url_cmd("xml element");
+        max_lvl.Value = max_lvl_els.ToString();
 
         // document
         StringBuilder sb = new StringBuilder();
-        parse_elements(element_id, els, sb);
+        parse_elements(els, sb);
         contents_doc.InnerHtml = sb.ToString();
         contents_xml.Visible = false;
         sb.Clear();
 
         // menu
-        parse_menu(element_id, els, sb, false, max_level);
+        parse_menu(element_id, els, sb, false, max_lvl_els);
         menu.InnerHtml = sb.ToString();
 
       }
         // xml
       else if (c.action == "xml" && c.obj == "element") {
 
-        string element_id = c.sub_cmd("id"), kp = strings.random_hex(4); int max_level = 0;
-        List<element> els = load_elements(out max_level, element_id != "" ? int.Parse(element_id) : (int?)null, _max_level, key_page: kp);
+        string element_id = c.sub_cmd("id"), kp = strings.random_hex(4); int max_level_els = 0, max_level = 0;
+        List<element> els = load_elements(out max_level_els, out max_level, element_id != "" ? int.Parse(element_id) : (int?)null, _max_level, key_page: kp);
 
         // client vars
         url_view.Value = master.url_cmd("view element" + (element_id != "" ? " id:" + element_id : ""));
@@ -178,7 +215,7 @@ public partial class _element : tl_page {
         parent_id.Value = els.Count > 0 ? els[0].parent_id.ToString() : "";
         first_order.Value = els.Count > 0 ? els[0].order.ToString() : "";
         last_order.Value = els.Count > 0 ? els[els.Count - 1].order.ToString() : "";
-        max_lvl.Value = max_level.ToString();
+        max_lvl.Value = max_level_els.ToString();
         key_page.Value = kp;
 
         // xml document
@@ -188,7 +225,7 @@ public partial class _element : tl_page {
 
         // menu
         StringBuilder sb = new StringBuilder();
-        parse_menu(element_id, els, sb, true, max_level);
+        parse_menu(element_id, els, sb, true, max_level_els);
         menu.InnerHtml = sb.ToString();
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
@@ -293,9 +330,7 @@ public partial class _element : tl_page {
           qry_val = Convert.ToDouble(val).ToString();
         else qry_val = db_provider.str_qry(val.ToString());
 
-        db_conn.exec(core.parse(config.get_query("set-attribute").text
-          , new Dictionary<string, object>() { { "attr_type", a.type.ToString() }, { "attr_value", qry_val }
-            , { "id_element", e.id }, { "attr_code", a.code }, { "element_type", e.type.ToString() } }));
+        set_attribute(e, a, qry_val);
       } else {
         if (!e.added) db_conn.exec(core.parse(config.get_query("delete-attributes").text
           , new Dictionary<string, object>() { { "id_element", e.id }, { "attr_type", a.type.ToString() }
@@ -323,34 +358,57 @@ public partial class _element : tl_page {
     return e.id;
   }
 
+  protected void set_attribute(element e, attribute a, string qry_val) {
+    db_conn.exec(core.parse(config.get_query("set-attribute").text
+      , new Dictionary<string, object>() { { "attr_type", a.type.ToString() }, { "attr_value", qry_val }
+        , { "id_element", e.id }, { "attr_code", a.code }, { "element_type", e.type.ToString() } }));
+  }
+
+  protected attribute load_attribute(element.type_element te, string code) {
+    DataRow dr = db_conn.first_row(core.parse(config.get_query("element-attribute").text
+      , new Dictionary<string, object>() { { "type", te.ToString() }, { "code", code } }));
+    return create_attribute(dr);
+  }
+
   protected List<attribute> load_attributes() {
     List<attribute> attrs = new List<attribute>();
-    foreach (DataRow dr in db_conn.dt_table(core.parse(config.get_query("elements-attributes").text)).Rows) {
-      string etype = db_provider.str_val(dr["element_type"]), acode = db_provider.str_val(dr["attribute_code"])
-        , atype = db_provider.str_val(dr["attribute_type"]);
-      int aid = db_provider.int_val(dr["attribute_id"]);
-      bool content_txt_xml = db_provider.int_val(dr["content_txt_xml"]) == 1;
-
-      attrs.Add(new attribute((element.type_element)Enum.Parse(typeof(element.type_element), etype), aid, acode
-        , (attribute.attribute_type)Enum.Parse(typeof(attribute.attribute_type), atype), content_txt_xml));
-    }
+    foreach (DataRow dr in db_conn.dt_table(core.parse(config.get_query("elements-attributes").text)).Rows)
+      attrs.Add(create_attribute(dr));
     return attrs;
   }
 
-  protected List<element> load_childs(long element_id, bool also_deleted = false) {
-    int out_max_level = 0; return load_elements(out out_max_level, element_id, also_deleted: also_deleted, only_childs: true);
+  protected attribute create_attribute(DataRow dr) {
+    string etype = db_provider.str_val(dr["element_type"]), acode = db_provider.str_val(dr["attribute_code"])
+      , atype = db_provider.str_val(dr["attribute_type"]);
+    int aid = db_provider.int_val(dr["attribute_id"]);
+    bool content_txt_xml = db_provider.int_val(dr["content_txt_xml"]) == 1;
+
+    return new attribute((element.type_element)Enum.Parse(typeof(element.type_element), etype), aid, acode
+      , (attribute.attribute_type)Enum.Parse(typeof(attribute.attribute_type), atype), content_txt_xml);
   }
 
-  protected List<element> load_elements(out int out_max_level, long? element_id = null, int? max_level = null, bool only_childs = false, bool also_deleted = false, string key_page = null) {
+  protected List<element> load_childs(long element_id, bool also_deleted = false) {
+    int max_lvl_els = 0, max_lvl = 0;
+    return load_elements(out max_lvl_els, out max_lvl, element_id, also_deleted: also_deleted, only_childs: true);
+  }
 
-    List<element> els = new List<element>(); out_max_level = -1;
-    string sql = !element_id.HasValue ? core.parse(config.get_query("open-roots-element").text
-        , new Dictionary<string, object>() { { "filter_level", max_level.HasValue ? "h.livello <= " + (max_level.Value + 1).ToString() : "1 = 1" }
-         , {"id_utente", _user.id }, { "filter_deleted", !also_deleted ? "isnull(h.deleted, 0) = 0" : "1 = 1" } })
-      : core.parse(config.get_query("open-element").text
-        , new Dictionary<string, object>() { { "id_element", element_id }, { "filter_only_childs", only_childs ? "and 1 = 0" : "" }
-          , { "filter_level", max_level.HasValue ? "h.livello <= " + max_level.Value.ToString() : "1 = 1" }
-          , {"id_utente", _user.id }, { "filter_deleted", !also_deleted ? "isnull(h.deleted, 0) = 0" : "1 = 1" } });
+  protected element load_element(long element_id) {
+    int max_lvl_els = 0, max_lvl = 0;
+    List<element> els = load_elements(out max_lvl_els, out max_lvl, element_id, childs: false);
+    return els.Count > 0 ? els[0] : null;
+  }
+
+  protected List<element> load_elements(out int out_max_lvl_els, out int out_max_lvl, long? element_id = null, int? max_level = null, bool only_childs = false, bool childs = true, bool also_deleted = false, string key_page = null) {
+
+    List<element> els = new List<element>(); out_max_lvl_els = -1; out_max_lvl = -1;
+    string sql = !element_id.HasValue ? core.parse(config.get_query("open-roots-elements").text
+        , new Dictionary<string, object>() { { "filter_level", max_level.HasValue ? "(h.in_list = 1 or (h.in_list = 0 and h.livello <= " + (max_level.Value + 1).ToString() + "))" : "1 = 1" }
+         , { "id_utente", _user.id }, { "filter_deleted", !also_deleted ? "isnull(h.deleted, 0) = 0" : "1 = 1" } })
+      : core.parse(config.get_query("open-elements").text
+        , new Dictionary<string, object>() { { "id_element", element_id }
+          , { "filter_head", only_childs ? "and 1 = 0" : "" }, { "filter_childs", !childs ? "and 1 = 0" : "" }
+          , { "filter_level", max_level.HasValue ? "(h.in_list = 1 or (h.in_list = 0 and h.livello <= " + (max_level.Value + 1).ToString() + "))" : "1 = 1" }
+          , { "id_utente", _user.id }, { "filter_deleted", !also_deleted ? "isnull(h.deleted, 0) = 0" : "1 = 1" } });
     DataTable dt = db_conn.dt_table(sql);
     foreach (DataRow re in dt.Rows) {
 
@@ -359,16 +417,18 @@ public partial class _element : tl_page {
         , id = db_provider.long_val(re["element_id"]);
       int livello = db_provider.int_val(re["livello"]), order = db_provider.int_val(re["order"]);
       string element_type = db_provider.str_val(re["element_type"]), title = db_provider.str_val(re["element_title"]);
-      bool has_childs = db_provider.int_val(re["has_childs"]) == 1
+      bool has_childs = db_provider.int_val(re["has_childs"]) == 1, in_list = db_provider.int_val(re["in_list"]) == 1
         , has_child_elements = db_provider.int_val(re["has_child_elements"]) == 1;
+      DateTime? dt_ins = db_provider.dt_val(re["dt_ins"]), dt_upd = db_provider.dt_val(re["dt_upd"]);
 
-      if (out_max_level < livello) out_max_level = livello;
+      if (out_max_lvl_els < livello && !in_list) out_max_lvl_els = livello;
+      if (out_max_lvl < livello) out_max_lvl = livello;
 
       element e = els.FirstOrDefault(x => x.id == id);
       if (e == null) {
         e = new element(_core, (element.type_element)Enum.Parse(typeof(element.type_element), element_type), title, livello
-          , id, parent_id, contents_id, has_childs, has_child_elements, order: order
-          , sham: max_level.HasValue ? livello == max_level + 1 && has_childs : false);
+          , id, parent_id, contents_id, has_childs, has_child_elements, in_list, dt_ins, dt_upd, order: order
+          , sham: max_level.HasValue ? livello == max_level + 1 && has_childs && !in_list : false);
         e.key_page = key_page;
         if (livello == 0 && element_id.HasValue) e.back_element_id = parent_id != 0 ? parent_id : (long?)null;
         els.Add(e);
@@ -386,7 +446,7 @@ public partial class _element : tl_page {
 
     // hierarchy
     List<element> res = new List<element>(els.Where(x => x.level == 0));
-    for (int l = 1; l <= out_max_level; l++) {
+    for (int l = 1; l <= out_max_lvl; l++) {
       foreach (element el in els.Where(x => x.level == l)) {
         element pe = els.FirstOrDefault(x => x.id == el.parent_id);
         pe.add_child(el);
@@ -407,7 +467,7 @@ public partial class _element : tl_page {
     if (root) sb.AppendFormat("<ul class='nav flex-column' style='padding:0px;margin-top:10px;' >\n");
     if (e.has_title) {
       parse_title_menu(e, e.title, sb
-        , open_element_id: (e.level == max_level && e.has_childs ? e.id : 0)
+        , open_element_id: (e.level == _max_level + 1 && e.has_childs ? e.id : 0)
         , back_element_id: e.back_element_id.HasValue && active_element_id != "" ? e.back_element_id.Value : 0, for_xml: for_xml);
     }
 
@@ -428,12 +488,13 @@ public partial class _element : tl_page {
 
   protected void parse_title_menu(element e, string title, StringBuilder sb, bool close = true
     , long open_element_id = 0, long back_element_id = 0, bool for_xml = false) {
+
     int level = e.level;
     string ref_id = "ele_" + e.id.ToString(), reference = e.get_attribute_string("ref")
       , rf = !for_xml ? "#" + ref_id : "javascript:got_to_id(" + e.id.ToString() + ")";
 
     sb.AppendFormat(@"<li style='{7}'><div style='display:block;'>{6}<a {3} style='{4}' href='{1}'>{0}{5}</a></div>{2}"
-      , (e.type == element.type_element.element ? "<span class='menu-el-arrow'>&#10148;</span>" : "") + title
+      , (e.type == element.type_element.element ? "<img src='images/tr-gray-10.png' style='margin-right:3px;'>" : "") + title
       , rf, close ? "</li>" : "", e.type == element.type_element.element && e.level == 0 ? "class='h5'" : ""
       , level == 0 ? "color:steelblue;"
         : (level == 1 ? "color:skyblue;margin-top:10px;padding-top:5px;padding-left:3px;" : "font-size:90%;color:lightcyan;")
@@ -449,46 +510,168 @@ public partial class _element : tl_page {
 
   #region document
 
-  protected void parse_elements(string active_element_id, List<element> els, StringBuilder sb) {
+  protected void parse_elements(List<element> els, StringBuilder sb) {
     foreach (element e in els)
       parse_element(e, sb);
   }
 
-  protected void parse_element(element e, StringBuilder sb) {
-    if (e.has_title && e.type == element.type_element.element)
-      parse_type_element(e, sb);
+  protected void parse_element(element e, StringBuilder sb, bool in_list = false) {
+    if ((e.has_title || e.get_attribute_string("ref") != "") && e.type == element.type_element.element)
+      parse_type_element(e, sb, in_list);
     if (!e.sham) {
-      foreach (element ec in e.childs) {
-        if (ec.type == element.type_element.title)
-          parse_type_title(ec, sb);
-        else if (ec.type == element.type_element.text)
-          parse_type_text(ec, sb);
-        else if (ec.type == element.type_element.element)
-          parse_element(ec, sb);
-      }
+      foreach (element ec in e.childs)
+        parse_element_2(ec, sb, in_list);
     }
   }
 
-  protected void parse_type_title(element e, StringBuilder sb, element hide_element = null) {
+  protected string parse_element_2(element e, bool in_list = false) {
+    StringBuilder sb = new StringBuilder();
+    parse_element_2(e, sb, in_list);
+    return sb.ToString();
+  }
+
+  protected void parse_element_2(element e, StringBuilder sb, bool in_list = false) {
+    if (e == null) return;
+    if (e.type == element.type_element.title) parse_type_title(e, sb, in_list);
+    else if (e.type == element.type_element.text) parse_type_text(e, sb);
+    else if (e.type == element.type_element.element) parse_element(e, sb, in_list);
+    else if (e.type == element.type_element.list) parse_type_list(e, sb, in_list);
+    else if (e.type == element.type_element.account) parse_type_account(e, sb, in_list);
+    else if (e.type == element.type_element.value) parse_type_value(e, sb, in_list);
+    else if (e.type == element.type_element.link) parse_type_link(e, sb, in_list);
+    else if (e.type == element.type_element.attivita) parse_type_attivita(e, sb, in_list);
+  }
+
+  protected void parse_type_list(element e, StringBuilder sb, bool in_list = false) {
+    if (e.type != element.type_element.list) throw new Exception("elemento di tipo errato!");
+
+    if (e.id == 43) { int h = 0; }
+
+    // head
+    if (e.has_title) {
+      if (!in_list) sb.AppendFormat(@"<h4 element_id='{1}'>{0}<h4>", e.title, e.id);
+      else sb.AppendFormat(@"<li contenitor_id='{1}'><h4 element_id='{1}'>{0}<h4></li>", e.title, e.id);
+    }
+
+    // childs
+    if (e.childs.Count > 0) {
+      sb.AppendFormat(@"<div childs_element_id='{0}'><ul>", e.id);
+      foreach (element ec in e.childs) {
+        if (ec.type == element.type_element.list)
+          parse_type_list(ec, sb, true);
+        else if (ec.type == element.type_element.attivita)
+          parse_type_attivita(ec, sb, true);
+        else {
+          sb.AppendFormat(@"<li contenitor_id='{0}'>", ec.id);
+          parse_element_2(ec, sb, true);
+          sb.AppendFormat(@"</li>");
+        }
+      }
+      sb.AppendFormat(@"</ul></div>");
+    }
+
+  }
+
+  protected string image_attivita(string stato) {
+    string img = stato == "in corso" ? "circle-ic-24.png" : (stato == "fatta" ? "circle-ft-24.png"
+      : (stato == "sospesa" ? "circle-sp-24.png" : "circle-df-24.png"));
+    return "images/" + img;
+  }
+
+  protected void parse_type_attivita(element e, StringBuilder sb, bool in_list = false) {
+    if (e.type != element.type_element.attivita) throw new Exception("elemento di tipo errato!");
+
+    // head
+    string title = e.has_title ? "Attività: " + e.title : "attività"
+      , priorita = e.get_attribute_string("priorita"), stato = e.get_attribute_string("stato")
+      , dt_upd = e.dt_upd.HasValue ? " - " + e.dt_upd.Value.ToString("dddd dd MMMM yyyy") : ""
+      , dt_ins = e.dt_ins.HasValue ? " - " + e.dt_ins.Value.ToString("dddd dd MMMM yyyy") : "";
+
+    string h_stato = "<img src='" + image_attivita(stato) + "' onclick=\"change_stato_attivita(" + e.id.ToString() + ", '" + stato + "', " + (in_list ? "true" : "false") + ")\""
+      + " style='cursor:pointer;margin-right:5px;margin-bottom:5px;'>"
+     , cl = stato == "fatta" ? "success" : (stato == "sospesa" ? "secondary"
+      : (stato == "in corso" ? "warning" : (priorita == "alta" ? "danger" : (priorita == "bassa" ? "light" : "primary"))));
+
+    sb.AppendFormat("<div element_id='{3}'>{4}"
+     + "{0}<h4 style='display:inline-block;'  ondblclick=\"change_priorita_attivita(" + e.id.ToString() + ", '" + priorita + "', " + (in_list ? "true" : "false") + ")\">"
+     + "<span style='cursor:pointer;' class='badge badge-{2}'>{1}</span></h4>{5}</div>"
+     , h_stato, title + (stato == "in corso" ? " - IN CORSO" + dt_upd : (stato == "sospesa" ? " - SOSPESA" + dt_upd
+        : (stato == "fatta" ? " - FATTA" + dt_upd : dt_ins)))
+        + (priorita == "alta" ? " - ALTA PRIORITÀ" : (priorita == "bassa" ? " - BASSA PRIORITÀ" : ""))
+     , cl, e.id, in_list ? "<li>" : "", in_list ? "</li>" : "");
+
+    // childs
+    if (e.childs.Count > 0) {
+      sb.AppendFormat(@"<div childs_element_id='{0}'><ul>", e.id);
+      foreach (element ec in e.childs) {
+        if (ec.type == element.type_element.list)
+          parse_type_list(ec, sb, true);
+        else if (ec.type == element.type_element.attivita)
+          parse_type_attivita(ec, sb, true);
+        else {
+          sb.AppendFormat(@"<li contenitor_id='{0}'>", ec.id);
+          parse_element_2(ec, sb, true);
+          sb.AppendFormat(@"</li>");
+        }
+      }
+      sb.AppendFormat(@"</ul></div>");
+    }
+  }
+
+  protected void parse_type_account(element e, StringBuilder sb, bool in_list = false) {
+    if (e.type != element.type_element.account) throw new Exception("elemento di tipo errato!");
+
+    string title = e.has_title ? e.title : "login", user = e.get_attribute_string("user")
+      , pass = e.get_attribute_string("password"), notes = e.get_attribute_string("notes");
+    sb.AppendFormat(@"<span element_id='{5}' class='lead'>{4}{0}{1}{2}{3}</span>"
+      , !string.IsNullOrEmpty(title) ? "<b>" + title + ": </b>" : ""
+      , user != "" ? user : "", pass != "" ? "/" + pass : ""
+      , notes != "" ? "<span style='font-style:italic;margin-left:5px;color:darkgray;'>(" + notes + ")</span>" : ""
+      , !in_list ? "<span style='padding:5px;color:blue;font-weight:bold;'>&#183;</span>" : "", e.id);
+
+  }
+
+  protected void parse_type_value(element e, StringBuilder sb, bool in_list = false) {
+    if (e.type != element.type_element.value) throw new Exception("elemento di tipo errato!");
+
+    string title = e.title, content = e.get_attribute_string("content"), notes = e.get_attribute_string("notes");
+
+    sb.AppendFormat(@"<span element_id='{4}' class='lead'>{3}{0}{1}{2}</span>"
+      , !string.IsNullOrEmpty(title) ? "<b>" + title + ": </b>" : ""
+      , content, notes != "" ? "<span style='font-style:italic;margin-left:5px;color:darkgray;'>(" + notes + ")</span>" : ""
+      , !in_list ? "<span style='padding:5px;color:blue;font-weight:bold;'>&#183;</span>" : "", e.id);
+  }
+
+  protected void parse_type_link(element e, StringBuilder sb, bool in_list = false) {
+    if (e.type != element.type_element.link) throw new Exception("elemento di tipo errato!");
+
+    string title = e.title, reference = get_ref(e.get_attribute_string("ref")), notes = e.get_attribute_string("notes");
+    bool title_ref_cmd = reference_cmd(e.get_attribute_string("ref"));
+
+    sb.AppendFormat("<div element_id='{5}'><a class='lead' href=\"{0}\" {3}>{4}{1}</a>{2}</div>"
+      , reference, !string.IsNullOrEmpty(title) ? title : reference
+      , notes != "" ? "<span class='lead' style='font-style:italic;margin-left:5px;color:darkgray;'>(" + notes + ")</span>" : ""
+      , !title_ref_cmd ? "target='blank'" : "", !in_list ? "<span style='padding:5px;color:blue;font-weight:bold;'>&#183;</span>" : "", e.id);
+  }
+
+  protected void parse_type_title(element e, StringBuilder sb, bool in_list = false) {
     if (e.type != element.type_element.title) throw new Exception("elemento di tipo errato!");
 
-    int level = e.level;
+    int level = !in_list ? e.level : 5;
     string ref_id = "ele_" + e.id.ToString(), title = e.has_content ? e.content : "<titolo>"
       , reference = get_ref(e.get_attribute_string("ref"));
     bool title_ref_cmd = reference_cmd(e.get_attribute_string("ref"));
     string a = string.Format("<a id='{0}' class='anchor'></a>", ref_id)
-      , st = (level == 1 ? "style='color:dimgray;border-top:1pt solid lightgrey;margin-top:20px;padding-top:15px;margin-bottom:0px;padding-bottom:0px;'"
-      : (level >= 2 ? "style='color:dimgray;margin-bottom:0px;padding-bottom:0px;'" : "style='color:dimgray;'"));
-    if (hide_element != null) { reference = get_url_cmd("view element id:" + hide_element.id.ToString()); title_ref_cmd = true; }
+      , st = (level == 1 ? "style='color:dimgray;border-top:1pt solid lightgrey;margin-top:20px;padding-top:15px;margin-bottom:5px;padding-bottom:0px;'"
+      : (level >= 2 ? "style='color:dimgray;margin-bottom:5px;padding-bottom:0px;'" : "style='color:dimgray;margin-bottom:5px;'"));
+    string tag = level == 0 ? "h3" : (level == 1 ? "h3" : (level == 2 ? "h4" : (level == 3 ? "h5" : "h5")));
     if (reference != "")
-      sb.AppendFormat("{5}<{0} {4}><a href='{2}' {3}>{1}</a></{0}>"
-        , level == 0 ? "h1" : (level == 1 ? "h2" : (level == 2 ? "h4" : (level == 3 ? "h5" : "h5")))
-        , title, reference, !title_ref_cmd ? "target='blank'" : "", st, a);
+      sb.AppendFormat("<div element_id='{6}'>{5}<{0} {4}><a href='{2}' {3}>{1}</a></{0}></div>"
+        , tag, title, reference, !title_ref_cmd ? "target='blank'" : "", st, a, e.id);
     else
-      sb.AppendFormat("{3}<{0} {2}><span>{1}</span></{0}>", level == 0 ? "h1" : (level == 1 ? "h2"
-        : (level == 2 ? "h3" : (level == 3 ? "h4" : "h5"))), title, st, a);
+      sb.AppendFormat("<div element_id='{4}'>{3}<{0} {2}><span>{1}</span></{0}></div>", tag, title, st, a, e.id);
 
-    sb.AppendFormat("<br/>");
+    //sb.AppendFormat("<br/>");
   }
 
   protected bool reference_cmd(string reference) { return reference.StartsWith("{@cmdurl='"); }
@@ -498,32 +681,42 @@ public partial class _element : tl_page {
       , ref_url.Substring(10, ref_url.Length - 12)) : ref_url;
   }
 
-  protected void parse_type_element(element e, StringBuilder sb) {
+  protected void parse_type_element(element e, StringBuilder sb, bool in_list = false) {
     if (e.type != element.type_element.element) throw new Exception("elemento di tipo errato!");
 
-    int level = e.level;
+    int level = !in_list ? e.level : 5;
     string code = e.get_attribute_string("code"), type = e.get_attribute_string("type")
-      , reference = get_ref(e.get_attribute_string("ref")), title = e.title;
+      , reference = get_ref(e.get_attribute_string("ref")), title = e.has_title ? e.title : (reference != "" ? reference : "elemento");
     bool title_ref_cmd = reference_cmd(e.get_attribute_string("ref"));
     string a = string.Format("<a id='{0}' class='anchor'></a>", "ele_" + e.id.ToString())
-      , st = (level == 1 ? "style='background-color:azure;border-top:1pt solid lightgrey;margin-top:30px;padding-top:5px;margin-bottom:0px;padding-bottom:5px;'"
-      : (level >= 2 ? "style='margin-bottom:0px;padding-bottom:0px;background-color:whitesmoke;'" : "style='background-color:aliceblue;'"));
+      , st = level == 0 ? "style='margin-bottom:5px;padding-bottom:5px;background-color:white;color:steelblue;'"
+       : (level == 1 ? "style='background-color:whitesmoke;border-top:1pt solid lightgrey;margin-top:15px;padding-top:5px;margin-bottom:5px;padding-bottom:5px;'"
+       : "style='margin-bottom:5px;padding-bottom:0px;background-color:whitesmoke;'");
     string open = e.sham ? "<a style='margin-left:20px;' href=\"" + get_url_cmd("view element id:" + e.id.ToString()) + "\"><img src='images/right-arrow-24-black.png' style='margin-bottom:4px;'></a>" : "";
 
-    string tag = level == 0 ? "h1" : (level == 1 ? "h2" : (level == 2 ? "h4" : (level == 3 ? "h5" : "h5")));
-    if (reference != "")
-      sb.AppendFormat("{5}<{0} {4}><a href='{2}' {3}><span class='doc-el-arrow'>&#10148;</span>{1}</a></{0}>"
-        , tag, title, reference, !title_ref_cmd ? "target='blank'" : "", st, a);
-    else
-      sb.AppendFormat("{3}<{0} {2}><span><span class='doc-el-arrow'>&#10148;</span>{1}</span>{4}</{0}>"
-        , tag, title, st, a, open);
+    string small = (!string.IsNullOrEmpty(code) || !string.IsNullOrEmpty(type)) && (e.sham || in_list) ?
+      string.Format("<small>{0}{1}</small>", !string.IsNullOrEmpty(code) ? " code: " + code : ""
+        , !string.IsNullOrEmpty(type) ? " type: " + type : "") : "";
 
-    if ((!string.IsNullOrEmpty(code) || !string.IsNullOrEmpty(type)) && !e.sham) {
+    string sym = level < 1 ? "<img src='images/tr-16.png' style='margin-right:3px;'></img>"
+      : (level <= 2 ? "<img src='images/tr-14.png' style='margin-right:3px;'></img>"
+        : "<img src='images/tr-12.png' style='margin-right:3px;'></img>");
+
+    string tag = level == 0 ? "h2" : (level == 1 ? "h3" : (level == 2 ? "h3" : (level == 3 ? "h4" : "h5")));
+    if (reference != "")
+      sb.AppendFormat("<div element_id='{8}' style='{9}'>{5}<{0} {4}><a href='{2}' {3}>{7}{1}</a>{6}</{0}>"
+        , tag, title, reference, !title_ref_cmd ? "target='blank'" : "", st, a, small, sym, e.id, level == 0 ? "margin-bottom:30px;" : "");
+    else
+      sb.AppendFormat("<div element_id='{7}' style='{8}'>{3}<{0} {2}>{6}<span>{1}</span>{4}{5}</{0}>"
+        , tag, title, st, a, open, small, sym, e.id, level == 0 ? "margin-bottom:30px;" : "");
+
+    if ((!string.IsNullOrEmpty(code) || !string.IsNullOrEmpty(type)) && !e.sham && !in_list) {
       sb.AppendFormat("<p class='lead' style='font-size:90%;color:darkgray;padding:0px;margin:0px;margin-bottom:15px;'>{0}{2}{1}</p>"
         , !string.IsNullOrEmpty(code) ? string.Format("code: <span style='font-weight:bold;'>{0}</span>", code) : ""
         , !string.IsNullOrEmpty(type) ? string.Format("type: <span style='font-weight:bold;'>{0}</span>", type) : ""
         , !string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(type) ? ", " : "");
-    } else sb.AppendFormat("<br/>");
+    }
+    sb.AppendFormat("</div>");
   }
 
   public enum text_styles { underline, bold }
@@ -543,7 +736,9 @@ public partial class _element : tl_page {
     string fs = level > 1 ? "font-size:95%;" : "", style = (is_style(el_style) ? string.Join(""
       , get_styles(el_style).Select(s => s == text_styles.bold ? "font-weight:bold;"
         : (s == text_styles.underline ? "font-style:italic;" : ""))) : "") + fs;
-    sb.AppendFormat("<p class='lead' level='{2}' {1}>{0}</p>", content, style != "" ? "style='" + style + "'" : "", level);
+    sb.AppendFormat("<p element_id='{4}' class='lead' level='{2}' {1}>{3}{0}</p>"
+      , content, style != "" ? "style='" + style + "'" : "", level
+      , !string.IsNullOrEmpty(e.title) ? "<span style='margin-right:10px;font-weight:bold;'>" + e.title + "</span>" : "", e.id);
   }
 
   #endregion

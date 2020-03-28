@@ -36,16 +36,3 @@ a.anchor
   padding-left: 10px;
   list-style-type: none;
 }
-
-span.menu-el-arrow
-{
-  font-size: 6pt;
-  padding: 3px;
-  padding-bottom: 5px;
-}
-
-span.doc-el-arrow
-{
-  font-size: 7pt;
-  padding: 3px;
-}
