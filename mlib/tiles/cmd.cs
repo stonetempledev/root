@@ -5,10 +5,12 @@ using System.Text;
 
 namespace mlib.tiles {
   public class cmd {
-    string _cmd; List<string> _keys; List<string> _subcmds;
-    public cmd (string txt) { _cmd = txt; _keys = parse_cmds(_cmd); _subcmds = new List<string>(); }
+    string _cmd, _type, _page; List<string> _keys; List<string> _subcmds;
+    public cmd(string txt) { _cmd = txt; _type = ""; _page = ""; _keys = parse_cmds(_cmd); _subcmds = new List<string>(); }
 
     public string txt { get { return _cmd; } }
+    public string type { get { return _type; } set { _type = value; } }
+    public string page { get { return _page; } set { _page = value; } }
     public string action { get { return _keys.Count > 0 ? _keys[0] : null; } }
     public string obj { get { return _keys.Count > 1 ? _keys[1] : null; } }
     public string sub_obj (int i = 0) {

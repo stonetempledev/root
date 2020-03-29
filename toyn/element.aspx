@@ -42,7 +42,7 @@
         attrs: { title: null },
         children: ["element", "title", "text", "link", "account", "value", "list", "attivita"]
       }, account: {
-        attrs: { title: null, user: null, password: null, notes: null },
+        attrs: { title: null, email: null, user: null, password: null, notes: null },
         children: null
       }, value: {
         attrs: { title: null, notes: null },

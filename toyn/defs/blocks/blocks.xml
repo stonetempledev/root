@@ -90,7 +90,7 @@
         <button type="button" class="btn btn-{@style-btn-2@}" onclick="{@on-click-btn-2@} return false;">{@title-btn-2@}</button>
       </span></a>]]>
     </l-row-btn-2>
-    <d-row><![CDATA[<div style='border-bottom:1pt solid lightgrey;'>{@text@}</div>]]></d-row>
+    <d-row><![CDATA[<div style='border-bottom:1pt solid lightgrey;'><b>{@title@}</b>{@text@}</div>]]></d-row>
 
   </blocks>
 

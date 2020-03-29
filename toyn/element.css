@@ -1,4 +1,5 @@
 ﻿
+
 /* base */
 a.anchor
 {
@@ -35,4 +36,28 @@ a.anchor
   padding: 0;
   padding-left: 10px;
   list-style-type: none;
+}
+
+/* ul */
+
+ul.no-bullet
+{
+  list-style-type: none;
+  padding-left: 15px;
+}
+
+li.bullet
+{
+  background: url('images/circle-8.png') no-repeat 0px 10px;
+  padding-left: 12px;
+  padding-bottom: 4px; 
+}
+
+li.nobullet
+{
+}
+
+div.childs-element
+{
+  padding-left: 10px;
 }

@@ -19,32 +19,50 @@ using mlib.tiles;
 
 public partial class _router : tl_page {
 
-  protected override void OnInit (EventArgs e) {
+  protected override void OnInit(EventArgs e) {
     base.OnInit(e);
 
     // elab cmd
     if (!IsPostBack) {
       blocks blk = new blocks();
       try {
-        cmd c = new cmd(qry_val("cmd"));
+        string cmd = qry_val("cmd");
+        if (string.IsNullOrEmpty(cmd)) return;
 
-        // check
-        if (string.IsNullOrEmpty(qry_val("cmd"))) return;
+        cmd c = read_cmd(cmd);
+        if (c == null)
+          throw new Exception("Comando '" + cmd + "' non riconosciuto!");
 
-        string page = cmd_page(c);
-        if (!string.IsNullOrEmpty(page)) { master.redirect_to(page); return; }
+        // filtro type
+        if (c.type != "" && !c.type.Split(new char[] { ',' }).Contains(_user.type.ToString()))
+          throw new Exception("Comando '" + cmd + "' non riconosciuto!");
+
+        // page
+        if (!string.IsNullOrEmpty(c.page)) { master.redirect_to(c.page); return; }
 
         if (c.action == "view" && c.obj == "cmds") {
 
           bool first_gr = true;
           foreach (config.table_row gr in _core.config.get_table("cmds.cmds-groups").rows_ordered("title")) {
-            blk.add_xml(string.Format(@"{2}<title-blu des=""{1}"">{0}</title-blu><m-20/>"
-              , gr.field("title"), gr.field("des"), !first_gr ? "<m-40/>" : ""));
-            nano_node list = blk.add("list");
+            nano_node list = null;
             foreach (config.table_row tr in _core.config.get_table("cmds.base-cmds")
-              .rows_ordered("action", "object", "subobjs").Where(r => r.field("group") == gr.field("name")))
+              .rows_ordered("action", "object", "subobjs").Where(r => r.field("group") == gr.field("name"))) {
+
+              // filtro type
+              string type = tr.field("type");
+              if (type != "" && !type.Split(new char[] { ',' }).Contains(_user.type.ToString())) continue;
+
+              // gruppo
+              if (list == null) {
+                blk.add_xml(string.Format(@"{2}<title-blu des=""{1}"">{0}</title-blu><m-20/>"
+                  , gr.field("title"), gr.field("des"), !first_gr ? "<m-40/>" : ""));
+                list = blk.add("list");
+              }
+
+              // comando
               list.add_xml(string.Format("<l-row title=\"{0}\">{1}</l-row>"
                 , tr.field("action") + " " + tr.field("object") + (tr.field("subobjs") != "" ? " " + tr.field("subobjs") : ""), tr.field("des")));
+            }
             first_gr = false;
           }
 
@@ -132,7 +150,7 @@ public partial class _router : tl_page {
                 list.add_xml(string.Format("<l-row title=\"{0}\" href=\"{2}\">{1}</l-row>"
                   , f.file_name, "data: " + f.lw.ToString("yyyy/MM/dd") + ", size: " + ((int)(f.size / 1024)).ToString("N0", new System.Globalization.CultureInfo("it-IT")) + " Kb"
                   , master.url_cmd("view log '" + f.file_name + "'")));
-            } 
+            }
           } else throw new Exception("NON È IMPOSTATO IL LOG!");
         } else if (c.action == "view" && c.obj == "log") {
           view_log(Path.Combine(log.dir_path(), c.sub_obj()), blk);
@@ -147,27 +165,49 @@ public partial class _router : tl_page {
     }
   }
 
-  protected void view_log (string fn, blocks blk) {
+  protected void view_log(string fn, blocks blk) {
     file f = new file(fn);
     blk.add_xml("<title-blu>" + fn + "</title-blu>");
     blk.add_xml("<title-sm>" + string.Format("data: {0}, size: {1}"
       , f.lw.ToString("yyyy/MM/dd"), ((int)(f.size / 1024)).ToString("N0", new System.Globalization.CultureInfo("it-IT")) + " Kb") + "</title-sm>");
     string[] lines = File.ReadAllLines(fn);
-    for (int i = lines.Length - 1; i >= 0; i--)
-      blk.add_xml(string.Format("<d-row>{0}</d-row>", lines[i]));
+    string block = "";
+    for (int i = lines.Length - 1; i >= 0; i--) {
+      string ln = lines[i].Replace("<", "&lt;").Replace(">", "&gt;");
+
+      //2020
+      if (ln.Length > 4 && ln.Substring(0, 4) == DateTime.Now.Year.ToString()) {
+        if (block != "") {
+          string title = block.IndexOf(" - ") > 0 ? block.Substring(0, block.IndexOf(" - ")) : ""
+            , txt = block.IndexOf(" - ") > 0 ? block.Substring(block.IndexOf(" - ")) : block;
+          blk.add_xml(string.Format("<d-row title=\"{1}\">{0}</d-row>", txt, title)); 
+        }
+        block = ln;
+      } else block += ln;
+    }
+    if (block != "") {
+      string title = block.IndexOf(" - ") > 0 ? block.Substring(0, block.IndexOf(" - ")) : ""
+        , txt = block.IndexOf(" - ") > 0 ? block.Substring(block.IndexOf(" - ")) : block;
+      blk.add_xml(string.Format("<d-row title=\"{1}\">{0}</d-row>", txt, title));
+    }
   }
 
-  protected string cmd_page(cmd c) {
-      config.table_row tr = config.get_table("cmds.base-cmds").find_row(
-          new Dictionary<string, string>() { { "action", c.action }, { "object", c.obj } });
-      return tr != null ? tr.field("page") : "";
+  protected cmd read_cmd(string cmd) {
+    cmd c = new cmd(cmd);
+    config.table_row tr = config.get_table("cmds.base-cmds").find_row(
+        c.obj != null ? new Dictionary<string, string>() { { "action", c.action }, { "object", c.obj } }
+        : new Dictionary<string, string>() { { "action", c.action } });
+    if (tr == null) return null;
+    c.type = tr.field("type");
+    c.page = tr.field("page");
+    return c;
   }
 
-  protected override void OnLoad (EventArgs e) {
+  protected override void OnLoad(EventArgs e) {
     base.OnLoad(e);
   }
 
-  protected override void OnUnload (EventArgs e) {
+  protected override void OnUnload(EventArgs e) {
     base.OnUnload(e);
   }
 
