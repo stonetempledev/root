@@ -6,7 +6,7 @@
     <div class='row'>
       <div class="col">
         <h2 id='txt_title' runat='server'>
-          Entra nel club the Lantern!</h2>
+          Entra in toyn!</h2>
       </div>
     </div>
     <div class='row' style='padding-top: 20px;'>

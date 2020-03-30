@@ -153,7 +153,7 @@ namespace mlib.tools {
 
     public config (core cr) { _cr = cr; }
 
-    public void reset () { _tables.Clear(); _folders.Clear(); _vars.Clear(); _conns.Clear(); _blocks.Clear(); _levels.Clear(); _max_level = -1; }
+    public void reset() { _tables.Clear(); _folders.Clear(); _vars.Clear(); _conns.Clear(); _blocks.Clear(); _queries.Clear(); _levels.Clear(); _max_level = -1; }
 
     public void load_doc (string doc_key, string vars_key, xml_doc doc, bool for_pg = false) {
 

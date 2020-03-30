@@ -18,11 +18,11 @@ public partial class login : tl_page {
 
       db_conn.exec(string.Format(@"update utenti set activated = 3 where tmp_key = '{0}';", qry_val("tkey")));
 
-      send_mail(dr["email"].ToString(), "conferma iscrizione the Lantern",
+      send_mail(dr["email"].ToString(), "conferma iscrizione al toyn",
         string.Format("<h3>Ciao {0}!</h3><p><a href='{1}confirm.aspx?akey={2}'>Clicca qui per confermare la tua iscrizione!</a></p>"
         , dr["nome"], base_url, dr["activate_key"]));
 
-      txt_title.InnerText = string.Format("Benvenuto {0} in the Lantern!", dr["nome"]);
+      txt_title.InnerText = string.Format("Benvenuto {0} nel toyn!", dr["nome"]);
       txt_body.InnerText = "Ora vai nella tua mail e conferma la tua iscrizione!";
     } catch (Exception ex) {
       log.log_err(ex);

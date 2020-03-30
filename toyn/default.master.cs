@@ -41,7 +41,7 @@ public partial class _default : tl_master {
       tlp.set_user(u_id, u_name, u_email, u_tp);
 
       // command
-      txt_cmd.Value = tlp.qry_val("cmd");
+      txt_cmd.Value = this.cmd = tlp.qry_val("cmd");
 
       // parameters
       _qvals = new Dictionary<string, string>();
@@ -56,7 +56,7 @@ public partial class _default : tl_master {
 
   protected void Cmd_Click (object sender, EventArgs e) { elab_cmd(config.get_var("vars.router-page").value); }
 
-  public void elab_cmd(string page) { Response.Redirect(url_cmd(txt_cmd.Value, page)); }
+  public void elab_cmd(string page, string cmd = "") { Response.Redirect(url_cmd(cmd != "" ? cmd : txt_cmd.Value, page)); }
 
   public override void redirect_to (string page) {
     string url = page + "?cmd=" + HttpUtility.UrlEncode(txt_cmd.Value);

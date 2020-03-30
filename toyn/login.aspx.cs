@@ -67,7 +67,7 @@ public partial class login : tl_page {
         db_conn.exec(string.Format(@"update utenti set tmp_key = '{0}', activate_key = '{1}', dt_upd = getdate() 
           where nome = '{2}' and activated = 1", tkey, akey, user_mail.Value));
 
-        send_mail(dr["email"].ToString(), "reimposta la tua password the Lantern",
+        send_mail(dr["email"].ToString(), "reimposta la tua password del toyn",
           string.Format("<h3>Ciao {0}!</h3><p><a href='{1}reimposta.aspx?akey={2}'>Clicca qui per poter reimpostare la tua password!</a></p>"
           , dr["nome"], base_url, akey));
 

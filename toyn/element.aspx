@@ -147,13 +147,16 @@
 
     function init_context(id) {
       // context menu
-      $( id ? "[element_id=" + id + "]" : "*[element_id]").contextmenu('#vw_menu', function (clicked, selected) {
+      $(id ? "[element_id=" + id + "]" : "*[element_id]").contextmenu('#vw_menu', function (clicked, selected) {
         var tp = selected.attr("value"), id = clicked.closest('[element_id]').attr("element_id");
         if (tp == "elimina") {
+          var sc = $(window).scrollTop();
           remove_element(id);
+          window.setTimeout(function () { $(window).scrollTop(sc); }, 200);
         } else if (tp == "modifica") {
           window.location.href = set_param("back_cmd", get_param("cmd")
               , set_param("sc", $(window).scrollTop(), $("#url_xml_clean").val() + "+id%3a" + id));
+          return false;
         }
       });
     }

@@ -12,7 +12,7 @@
     <div class='row text-center'>
       <div class="col">
         <h2 class='my-4'>
-          THELANTERN.IT</h2>
+          TOYN</h2>
       </div>
     </div>
     <div class='row'>

@@ -25,7 +25,7 @@ public partial class test : tl_page {
     try {
       add_class(email, "show");
 
-      send_mail(mail_ad.Value, "mail test il Lantern!", "the body of the mail");
+      send_mail(mail_ad.Value, "test mail test toyn!", "the body of the mail");
       
       show_result(result_email, "MAIL INVIATA CON SUCCESSO!");
     } catch (Exception ex) { show_result(result_email, "<b>" + ex.Message + "</b>", true); }

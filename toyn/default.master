@@ -132,7 +132,7 @@
   <!-- navbar -->
   <nav id='navbar' class="navbar navbar-expand navbar-dark bg-primary fixed-top">   
     <a class="navbar-brand" href="./">
-      <img src="images/tL-35.png" class="d-inline-block align-middle" alt="">
+      <img src="images/toyn-50-b.png" class="d-inline-block align-middle" alt="">
     </a>
 
     <div id='grp_vai' class="input-group">

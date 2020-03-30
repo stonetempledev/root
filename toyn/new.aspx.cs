@@ -9,7 +9,9 @@ using System.Data;
 using System.Net;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
+using toyn;
 using mlib.tools;
+using mlib.xml;
 
 public partial class login : tl_page {
 
@@ -35,9 +37,20 @@ public partial class login : tl_page {
 
         // registrazione
         string tkey = cry.rnd_str(32);
-        db_conn.exec(string.Format(@"insert into utenti (nome, email, pwd, dt_ins, tmp_key, activate_key, activated)
+        int id_utente = int.Parse(db_conn.exec(string.Format(@"insert into utenti (nome, email, pwd, dt_ins, tmp_key, activate_key, activated)
          values ('{0}', '{1}', '{2}', getdate(), '{3}', '{4}', 2);"
-          , user_name.Value, user_mail.Value, cry.encode_tobase64(user_pass.Value), tkey, cry.rnd_str(32)));
+          , user_name.Value, user_mail.Value, cry.encode_tobase64(user_pass.Value), tkey, cry.rnd_str(32)), true));
+
+        // salvo il documento di benvenuto
+        elements el = new elements(this.db_conn, this.core, this.config, id_utente);
+        List<element> els = el.load_xml(@"<element title=""Benvenuto ##user##!""> 
+         <text style=""bold"">Ciao ##user##, benvenuto nel toyn!</text>
+         <text>Ci sono un sacco di funzionalità utili per salvare i tuoi appunti, prendere note, seguire le tue attività.</text>
+         <text>Avrai anche la possibilità di organizzare i tuoi documenti, le tue foto, i tuoi contatti e tutta una serie di informazioni che ti saranno utili.</text>
+         <title ref=""{cmdurl='view cmds'}"">view cmds</title>
+         <text>Come prima cosa per cominciare comincia con il visualizzare l'elenco dei comandi a disposizione, poi piano piano col tempo sarai in grado di capire come funziona il toyn!</text></element>"
+          .Replace("##user##", user_name.Value));
+        el.save_elements(els);
 
         Response.Redirect(string.Format("iscritto.aspx?tkey={0}", tkey));
       }

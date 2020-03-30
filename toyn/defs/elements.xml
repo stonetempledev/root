@@ -1,4 +1,4 @@
-﻿<config namespace="page">
+﻿<config>
   <queries>
     <query name="elements-attributes">
       <![CDATA[select a.element_type, a.attribute_id
