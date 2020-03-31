@@ -192,12 +192,13 @@ public partial class _element : tl_page {
 
         // client vars
         url_xml.Value = master.url_cmd("xml element" + (element_id != "" ? " id:" + element_id : "s"));
-        url_xml_clean.Value = master.url_cmd("xml elements");
+        url_xml_clean.Value = master.url_cmd("xml element");
         max_lvl.Value = max_lvl_els.ToString();
 
         // document
         StringBuilder sb = new StringBuilder();
         parse_elements(els, sb);
+
         contents_doc.InnerHtml = sb.ToString();
         contents_xml.Visible = false;
         sb.Clear();
@@ -248,7 +249,7 @@ public partial class _element : tl_page {
   #region menu
 
   protected void parse_menu(string active_element_id, List<element> els, StringBuilder sb, bool for_xml = false, int? max_level = null) {
-    foreach (element el in els.Where(x => x.type == element.type_element.element 
+    foreach (element el in els.Where(x => x.type == element.type_element.element
       || x.type == element.type_element.list || x.type == element.type_element.title))
       parse_menu(active_element_id, el, sb, true, for_xml, max_level);
   }
@@ -310,15 +311,17 @@ public partial class _element : tl_page {
       parse_type_element(e, sb, in_list);
     if (!e.sham) {
       if (e.childs.Count > 0) {
-        if (in_list) sb.AppendFormat("<ul childs_element_id='{0}' class='no-bullet'>", e.id);
-        else sb.AppendFormat("<div childs_element_id='{0}' class='childs-element'>", e.id);
+        string cls = _is_mobile ? "-mobile" : "";
+        if (in_list) sb.AppendFormat("<ul childs_element_id='{0}' class='no-bullet{1}'>", e.id, cls);
+        else sb.AppendFormat("<div childs_element_id='{0}' class='childs-element{1}'>", e.id, cls);
         foreach (element ec in e.childs) {
           if (ec.type == element.type_element.list)
             parse_type_list(ec, sb, in_list);
           else if (ec.type == element.type_element.attivita)
             parse_type_attivita(ec, sb, in_list);
           else {
-            if (in_list) sb.AppendFormat(@"<li {1} contenitor_id='{0}'>", ec.id, ec.type != element.type_element.element ? "class='bullet'" : "class='nobullet'");
+            if (in_list) sb.AppendFormat(@"<li {1} contenitor_id='{0}'>"
+              , ec.id, (ec.type != element.type_element.element ? "class='bullet" + bullet_i(ec) : "class='nobullet") + cls + "'");
             parse_element_2(ec, sb, in_list);
             if (in_list) sb.AppendFormat(@"</li>");
           }
@@ -346,6 +349,8 @@ public partial class _element : tl_page {
     else if (e.type == element.type_element.attivita) parse_type_attivita(e, sb, in_list);
   }
 
+
+
   protected void parse_type_list(element e, StringBuilder sb, bool in_list = false) {
     if (e.type != element.type_element.list) throw new Exception("elemento di tipo errato!");
 
@@ -353,14 +358,17 @@ public partial class _element : tl_page {
 
     // head
     if (e.has_title) {
-      if (!in_list) sb.AppendFormat(@"<h5 element_id='{1}' style='margin-bottom:0px;'>{2}{0}</h5>", e.title, e.id, a);
-      else sb.AppendFormat(@"<li class='bullet' contenitor_id='{1}'><h5 element_id='{1}' style='margin-bottom:0px;'>{2}{0}</h5></li>"
-        , e.title, e.id, a);
+      string tag = e.level <= 1 ? "h4" : "h5", style = e.level <= 1 ? "margin-bottom:5px;" : "margin-bottom:0px;";
+      if (!in_list) sb.AppendFormat(@"<{3} element_id='{1}' style='{4}'>{2}{0}</{3}>"
+        , e.title, e.id, a, tag, style);
+      else sb.AppendFormat(@"<li class='bullet{5}' contenitor_id='{1}' style='overflow-wrap:break-word;'><{3} element_id='{1}' style='{4}'>{2}{0}</{3}></li>"
+        , e.title, e.id, a, tag, style, bullet_i(e) + (_is_mobile ? "-mobile" : ""));
     }
 
     // childs
     if (e.childs.Count > 0) {
-      sb.AppendFormat(@"<div childs_element_id='{0}'><ul class='no-bullet'><div id='virtual_{0}'></div>", e.id);
+      string cls = _is_mobile ? "-mobile" : "";
+      sb.AppendFormat(@"<div childs_element_id='{0}'><ul class='no-bullet{1}'><div id='virtual_{0}'></div>", e.id, cls);
       foreach (element ec in e.childs) {
         if (ec.type == element.type_element.list)
           parse_type_list(ec, sb, true);
@@ -368,10 +376,10 @@ public partial class _element : tl_page {
           parse_type_attivita(ec, sb, true);
         else {
           bool inline = e.get_attribute_string("style") == "inline";
-          string style = inline && (ec.type == element.type_element.account || ec.type == element.type_element.value 
-            || ec.type == element.type_element.link) ? "display:inline-block;margin-left:10px;" : "";
-          sb.AppendFormat(@"<li {1} style='{2}' contenitor_id='{0}'>"
-            , ec.id, ec.type != element.type_element.element ? "class='bullet'" : "class='nobullet'", style);
+          string style = inline && (ec.type == element.type_element.account || ec.type == element.type_element.value
+            || ec.type == element.type_element.link) ? (!_is_mobile ? "display:inline-block;margin-left:10px;" : "display:inline-block;margin-left:5px;") : "";
+          sb.AppendFormat(@"<li {1} style='{2}overflow-wrap:break-word;' contenitor_id='{0}'>"
+            , ec.id, (ec.type != element.type_element.element ? "class='bullet" + bullet_i(ec) : "class='nobullet") + cls + "'", style);
           parse_element_2(ec, sb, true);
           sb.AppendFormat(@"</li>");
         }
@@ -382,8 +390,8 @@ public partial class _element : tl_page {
   }
 
   protected string image_attivita(string stato) {
-    string img = stato == "in corso" ? "circle-ic-24.png" : (stato == "fatta" ? "circle-ft-24.png"
-      : (stato == "sospesa" ? "circle-sp-24.png" : "circle-df-24.png"));
+    string img = stato == "in corso" ? "circle-ic-18.png" : (stato == "fatta" ? "circle-ft-18.png"
+      : (stato == "sospesa" ? "circle-sp-18.png" : "circle-df-18.png"));
     return "images/" + img;
   }
 
@@ -396,29 +404,31 @@ public partial class _element : tl_page {
       , dt_upd = e.dt_upd.HasValue ? " - " + e.dt_upd.Value.ToString("dddd dd MMMM yyyy") : ""
       , dt_ins = e.dt_ins.HasValue ? " - " + e.dt_ins.Value.ToString("dddd dd MMMM yyyy") : "";
 
-    string h_stato = "<img src='" + image_attivita(stato) + "' onclick=\"change_stato_attivita(" + e.id.ToString() + ", '" + stato + "', " + (in_list ? "true" : "false") + ")\""
-      + " style='cursor:pointer;margin-right:5px;margin-bottom:5px;'>"
-     , cl = stato == "fatta" ? "success" : (stato == "sospesa" ? "secondary"
+    //h_stato = "<img src='" + image_attivita(stato) + "' onclick=\"change_stato_attivita(" + e.id.ToString() + ", '" + stato + "', " + (in_list ? "true" : "false") + ")\""
+    // + " style='cursor:pointer;margin-right:5px;margin-bottom:3px;'>"
+    string cl = stato == "fatta" ? "success" : (stato == "sospesa" ? "secondary"
       : (stato == "in corso" ? "warning" : (priorita == "alta" ? "danger" : (priorita == "bassa" ? "light" : "primary"))));
 
-    sb.AppendFormat("<div element_id='{3}' style='white-space:nowrap;'>{4}"
-     + "{0}<h4 style='display:inline-block;margin:0px;' ondblclick=\"change_priorita_attivita(" + e.id.ToString() + ", '" + priorita + "', " + (in_list ? "true" : "false") + ")\">"
-     + "<span style='cursor:pointer;white-space:normal;' class='badge badge-{2}'>{1}</span></h4>{5}</div>"
-     , h_stato, title + (stato == "in corso" ? " - IN CORSO" + dt_upd : (stato == "sospesa" ? " - SOSPESA" + dt_upd
+    sb.AppendFormat("<div element_id='{3}' style='margin-top:3px;margin-bottom:3px;'>{4}"
+     + "<h4 style=\"background: url('{0}') no-repeat 2px 2px;padding-left:22px;display:inline-block;margin:0px;\" ondblclick=\"change_priorita_attivita(" + e.id.ToString() + ", '" + priorita + "', " + (in_list ? "true" : "false") + ")\">"
+     + "<span style=\"cursor:pointer;white-space:normal;overflow-wrap:break-word;font-weight:normal;\" class='badge badge-{2}'>{1}</span></h4>{5}</div>"
+     , image_attivita(stato), title + (stato == "in corso" ? " - IN CORSO" + dt_upd : (stato == "sospesa" ? " - SOSPESA" + dt_upd
         : (stato == "fatta" ? " - FATTA" + dt_upd : dt_ins)))
         + (priorita == "alta" ? " - ALTA PRIORITÀ" : (priorita == "bassa" ? " - BASSA PRIORITÀ" : ""))
      , cl, e.id, in_list ? "<li>" : "", in_list ? "</li>" : "");
 
     // childs
     if (e.childs.Count > 0) {
-      sb.AppendFormat(@"<div childs_element_id='{0}'><ul class='no-bullet'><div id='virtual_{0}'></div>", e.id);
+      string cls = _is_mobile ? "-mobile" : "";
+      sb.AppendFormat(@"<div childs_element_id='{0}'><ul class='no-bullet{1}'><div id='virtual_{0}'></div>", e.id, cls);
       foreach (element ec in e.childs) {
         if (ec.type == element.type_element.list)
           parse_type_list(ec, sb, true);
         else if (ec.type == element.type_element.attivita)
           parse_type_attivita(ec, sb, true);
         else {
-          sb.AppendFormat(@"<li {1} contenitor_id='{0}'>", ec.id, ec.type != element.type_element.element ? "class='bullet'" : "class='nobullet'");
+          sb.AppendFormat(@"<li {1} contenitor_id='{0}'>"
+            , ec.id, (ec.type != element.type_element.element ? "class='bullet" + bullet_i(ec) : "class='nobullet") + cls + "'");
           parse_element_2(ec, sb, true);
           sb.AppendFormat(@"</li>");
         }
@@ -427,17 +437,21 @@ public partial class _element : tl_page {
     }
   }
 
+  protected string bullet_i(element e) { return e.level <= 1 ? "" : (e.level == 2 ? "-2" : "-3"); }
+
+  protected string image_bullet(element e) { return "images/circle-8" + bullet_i(e) + ".png"; }
+
   protected void parse_type_account(element e, StringBuilder sb, bool in_list = false) {
     if (e.type != element.type_element.account) throw new Exception("elemento di tipo errato!");
 
     string title = e.has_title ? e.title : "account", user = e.get_attribute_string("user")
       , pass = e.get_attribute_string("password"), notes = e.get_attribute_string("notes")
       , email = e.get_attribute_string("email");
-    sb.AppendFormat(@"<span element_id='{5}' class='lead'>{4}{0}{1}{2}{3}</span>"
+    sb.AppendFormat(@"<span element_id='{5}' style='overflow-wrap:break-word;' class='lead'>{4}{0}{1}{2}{3}</span>"
       , !string.IsNullOrEmpty(title) ? "<b>" + title + ": </b>" : ""
       , user != "" || email != "" ? email + (email != "" && user != "" ? " - " : "") + user : "", pass != "" ? "/" + pass : ""
       , notes != "" ? "<span style='font-style:italic;margin-left:5px;color:darkgray;'>(" + notes + ")</span>" : ""
-      , !in_list ? "<img src='images/circle-8.png' style='padding-left:3px;padding-right:3px;'></img>" : "", e.id);
+      , !in_list ? "<img src='" + image_bullet(e) + "' style='padding-left:3px;padding-right:3px;'></img>" : "", e.id);
   }
 
   protected void parse_type_value(element e, StringBuilder sb, bool in_list = false) {
@@ -445,10 +459,10 @@ public partial class _element : tl_page {
 
     string title = e.title, content = e.get_attribute_string("content"), notes = e.get_attribute_string("notes");
 
-    sb.AppendFormat(@"<span element_id='{4}' style='white-space:normal;' class='lead'>{3}{0}{1}{2}</span>"
+    sb.AppendFormat(@"<span element_id='{4}' style='overflow-wrap:break-word;' class='lead'>{3}{0}{1}{2}</span>"
       , !string.IsNullOrEmpty(title) ? "<b>" + title + ": </b>" : ""
       , content, notes != "" ? "<span style='font-style:italic;margin-left:5px;color:darkgray;'>(" + notes + ")</span>" : ""
-      , !in_list ? "<img src='images/circle-8.png' style='padding-left:3px;padding-right:3px;'></img>" : "", e.id);
+      , !in_list ? "<img src='" + image_bullet(e) + "' style='padding-left:3px;padding-right:3px;'></img>" : "", e.id);
   }
 
   protected void parse_type_link(element e, StringBuilder sb, bool in_list = false) {
@@ -457,10 +471,10 @@ public partial class _element : tl_page {
     string title = e.title, reference = get_ref(e.get_attribute_string("ref")), notes = e.get_attribute_string("notes");
     bool title_ref_cmd = reference_cmd(e.get_attribute_string("ref"));
 
-    sb.AppendFormat("<div element_id='{5}'><a class='lead' href=\"{0}\" {3}>{4}{1}</a>{2}</div>"
+    sb.AppendFormat("<div element_id='{5}' style='overflow-wrap:break-word;'><a class='lead' href=\"{0}\" style='overflow-wrap:break-word;' {3}>{4}{1}</a>{2}</div>"
       , reference, !string.IsNullOrEmpty(title) ? title : reference
       , notes != "" ? "<span class='lead' style='font-style:italic;margin-left:5px;color:darkgray;'>(" + notes + ")</span>" : ""
-      , !title_ref_cmd ? "target='blank'" : "", !in_list ? "<img src='images/circle-8.png' style='padding-left:3px;padding-right:3px;'></img>" : "", e.id);
+      , !title_ref_cmd ? "target='blank'" : "", !in_list ? "<img src='" + image_bullet(e) + "' style='padding-left:3px;padding-right:3px;'></img>" : "", e.id);
   }
 
   protected void parse_type_title(element e, StringBuilder sb, bool in_list = false) {
@@ -475,10 +489,10 @@ public partial class _element : tl_page {
       : (level >= 2 ? "style='color:dimgray;margin-bottom:5px;padding-bottom:0px;'" : "style='color:dimgray;margin-bottom:5px;'"));
     string tag = level == 0 ? "h3" : (level == 1 ? "h3" : (level == 2 ? "h4" : (level == 3 ? "h5" : "h5")));
     if (reference != "")
-      sb.AppendFormat("<div element_id='{6}'>{5}<{0} {4}><a href='{2}' {3}>{1}</a></{0}></div>"
+      sb.AppendFormat("<div element_id='{6}' style='overflow-wrap:break-word;'>{5}<{0} {4}><a href='{2}' {3}>{1}</a></{0}></div>"
         , tag, title, reference, !title_ref_cmd ? "target='blank'" : "", st, a, e.id);
     else
-      sb.AppendFormat("<div element_id='{4}'>{3}<{0} {2}><span>{1}</span></{0}></div>", tag, title, st, a, e.id);
+      sb.AppendFormat("<div element_id='{4}' style='overflow-wrap:break-word;'>{3}<{0} {2}><span>{1}</span></{0}></div>", tag, title, st, a, e.id);
   }
 
   protected bool reference_cmd(string reference) { return reference.StartsWith("{cmdurl='"); }
@@ -512,16 +526,16 @@ public partial class _element : tl_page {
 
     string tag = level == 0 ? "h1" : (level == 1 ? "h2" : (level == 2 ? "h3" : (level == 3 ? "h3" : "h4")));
     if (reference != "")
-      sb.AppendFormat("<div element_id='{8}' style='{9}'>{5}<{0} {4}><a href='{2}' {3}>{7}{1}</a>{6}{10}</{0}>"
+      sb.AppendFormat("<div element_id='{8}' style='overflow-wrap:break-word;{9}'>{5}<{0} {4}><a href='{2}' {3}>{7}{1}</a>{6}{10}</{0}>"
         , tag, title, reference, !title_ref_cmd ? "target='blank'" : "", st, a, small, sym, e.id, level == 0 ? "border-top:1pt solid lightgray;margin-bottom:30px;" : ""
         , notes != "" ? "<small>  " + notes + "</small>" : "");
     else
-      sb.AppendFormat("<div element_id='{7}' style='{8}'>{3}<{0} {2}>{6}<span>{1}</span>{4}{5}{9}</{0}>"
+      sb.AppendFormat("<div element_id='{7}' style='overflow-wrap:break-word;{8}'>{3}<{0} {2}>{6}<span>{1}</span>{4}{5}{9}</{0}>"
         , tag, title, st, a, open, small, sym, e.id, level == 0 ? "border-top:1pt solid lightgray;margin-bottom:30px;" : ""
         , notes != "" ? "<small>  " + notes + "</small>" : "");
 
     if ((!string.IsNullOrEmpty(code) || !string.IsNullOrEmpty(type)) && !e.sham && !in_list) {
-      sb.AppendFormat("<p class='lead' style='font-size:95%;color:darkgray;padding:0px;margin:0px;margin-bottom:15px;'>{0}{2}{1}</p>"
+      sb.AppendFormat("<p class='lead' style='overflow-wrap:break-word;font-size:95%;color:darkgray;padding:0px;margin:0px;margin-bottom:15px;'>{0}{2}{1}</p>"
         , !string.IsNullOrEmpty(code) ? string.Format("code: <span style='font-weight:bold;'>{0}</span>", code) : ""
         , !string.IsNullOrEmpty(type) ? string.Format("type: <span style='font-weight:bold;'>{0}</span>", type) : ""
         , !string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(type) ? ", " : "");
@@ -546,7 +560,7 @@ public partial class _element : tl_page {
     string fs = level > 1 ? "" : "", style = (is_style(el_style) ? string.Join(""
       , get_styles(el_style).Select(s => s == text_styles.bold ? "font-weight:bold;"
         : (s == text_styles.underline ? "font-style:italic;" : ""))) : "") + fs;
-    sb.AppendFormat("<p element_id='{4}' class='lead' style='{2}padding:0px;{1}'>{3}{0}</p>"
+    sb.AppendFormat("<p element_id='{4}' class='lead' style='{2}padding:0px;style='overflow-wrap:break-word;{1}'>{3}{0}</p>"
       , content, style != "" ? style : "", !in_list ? "margin-bottom:10px;" : "margin-bottom:0px;"
       , !string.IsNullOrEmpty(e.title) ? "<span class='h5' style='margin-right:10px;'>" + e.title + "</span>" : "", e.id);
   }

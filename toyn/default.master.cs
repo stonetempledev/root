@@ -19,6 +19,10 @@ public partial class _default : tl_master {
   protected void Page_Init (object sender, EventArgs e) {
 
     try {
+      // base
+      bool mb = is_mobile();
+      this.head.Controls.Add(new Literal() { Text = @"<link href=""" + (mb ? "base-mobile.css" : "base.css") + @""" type=""text/css"" rel=""stylesheet"" />" });
+      
       // check user
       string u_name = ""; int u_id = -1;
       FormsIdentity id = (FormsIdentity)tlp.User.Identity;

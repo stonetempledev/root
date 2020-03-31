@@ -32,3 +32,5 @@ function set_param(par, val, href) {
 }
 
 function get_page() { return [location.protocol, '//', location.host, location.pathname].join(''); }
+
+function is_mobile() { return navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/) != null; }

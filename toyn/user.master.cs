@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-public partial class master_user : System.Web.UI.MasterPage
+public partial class master_user : tl_master
 {
     protected void Page_Load(object sender, EventArgs e)
     {

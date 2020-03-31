@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using mlib.tools;
 
 public class tl_master : System.Web.UI.MasterPage {
 
-  public tl_master () {
+  public tl_master() {
+  }
+
+  protected override void OnInit(EventArgs e) {
+    base.OnInit(e);
   }
 
   public string cmd { get; set; }
@@ -23,6 +28,10 @@ public class tl_master : System.Web.UI.MasterPage {
 
   public void elab_cmd(string cmd) { Response.Redirect(url_cmd(cmd, config.get_var("vars.router-page").value)); }
 
+  public bool is_mobile() {
+    return strings.contains_any(Request.ServerVariables["HTTP_USER_AGENT"], new[] { "iPhone", "iPod", "iPad", "Android", "BlackBerry" });
+  }
+  
   public void status_txt(string txt) {
     tlp.ClientScript.RegisterStartupScript(tlp.GetType(), "__status_txt"
       , "status_txt_ms(\"" + txt.Replace("\"", "'") + "\");", true);

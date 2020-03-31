@@ -49,9 +49,50 @@ ul.no-bullet
 
 li.bullet
 {
-  background: url('images/circle-8.png') no-repeat 0px 10px;
+  background: url('images/circle-8.png') no-repeat 0px 12px;
   padding-left: 12px;
-  /*padding-bottom: 4px; */
+  margin:0px;
+}
+
+li.bullet-2
+{
+  background: url('images/circle-8-2.png') no-repeat 0px 12px;
+  padding-left: 12px;
+  margin:0px;
+}
+
+li.bullet-3
+{
+  background: url('images/circle-8-3.png') no-repeat 0px 12px;
+  padding-left: 12px;
+  margin:0px;
+}
+
+ul.no-bullet-mobile
+{
+  list-style-type: none;
+  padding-left: 6px;
+  margin:0px;
+}
+
+li.bullet-mobile
+{
+  background: url('images/circle-8.png') no-repeat 0px 6px;
+  padding-left: 9px;
+  margin:0px;
+}
+
+li.bullet-2-mobile
+{
+  background: url('images/circle-8-2.png') no-repeat 0px 6px;
+  padding-left: 9px;
+  margin:0px;
+}
+
+li.bullet-3-mobile
+{
+  background: url('images/circle-8-3.png') no-repeat 0px 6px;
+  padding-left: 9px;
   margin:0px;
 }
 
@@ -59,7 +100,16 @@ li.nobullet
 {
 }
 
+li.nobullet-mobile
+{
+}
+
 div.childs-element
 {
   padding-left: 7px;
+}
+
+div.childs-element-mobile
+{
+  padding-left: 0px;
 }

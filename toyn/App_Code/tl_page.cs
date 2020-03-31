@@ -23,6 +23,7 @@ public class tl_page : System.Web.UI.Page {
   protected db_provider _db = null;
   protected user _user = null;
   protected bool _db_connected = false;
+  protected bool _is_mobile = false;
 
   protected string _base_path = null;
   public string base_path { get { if (_base_path == null) _base_path = System.Web.HttpContext.Current.Server.MapPath("~"); return _base_path; } }
@@ -34,6 +35,13 @@ public class tl_page : System.Web.UI.Page {
   }
   public string abs_path { get { return HttpContext.Current.Request.Url.AbsolutePath; } }
   public string page_name { get { return (new FileInfo(abs_path)).Name; } }
+
+  protected override void OnInit(EventArgs e) {
+    base.OnInit(e);
+
+    // base
+    _is_mobile = this.master.is_mobile();
+  }
 
   protected override void OnPreInit(EventArgs e) {
 

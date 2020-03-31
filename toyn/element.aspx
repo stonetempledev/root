@@ -57,7 +57,7 @@
     };
 
     $(document).ready(function () {
-
+      
       // view
       if ($("#contents_doc").length) {
 
@@ -86,9 +86,9 @@
               "' '": completeIfInTag,
               "'='": completeIfInTag,
               "Ctrl-Space": "autocomplete",
-              "Shift-Tab": format_doc,
+              "Alt-F": format_doc,
               "Ctrl-S": save_doc,
-              "Ctrl-B": torna_vista,
+              "Alt-V": torna_vista,
               "Alt-S": save_doc_vista
             }
           });

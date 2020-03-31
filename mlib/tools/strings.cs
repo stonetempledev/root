@@ -89,7 +89,16 @@ namespace mlib.tools {
         return result;
       return result + _rnd.Next(16).ToString("X");
     }
+
+    public static bool contains_any(string haystack, params string[] needles) {
+      foreach (string needle in needles) {
+        if (haystack.Contains(needle))
+          return true;
+      }
+      return false;
+    }
   }
+
 }
 
 
