@@ -39,7 +39,7 @@
         attrs: { title: null, style: ["underline", "bold"] },
         children: null
       }, list: {
-        attrs: { title: null },
+        attrs: { title: null, style: ["inline"] },
         children: ["element", "title", "text", "link", "account", "value", "list", "attivita"]
       }, account: {
         attrs: { title: null, email: null, user: null, password: null, notes: null },
@@ -51,7 +51,7 @@
         attrs: { title: null, ref: null },
         children: null
       }, attivita: {
-        attrs: { title: null, priorita: ["bassa", "normale", "alta"], stato: ["da iniziare", "in corso", "sospesa", "fatta"] },
+        attrs: { title: null, priorita: ["bassa", "normale", "alta"], stato: ["la prossima", "da iniziare", "in corso", "sospesa", "fatta"] },
         children: ["element", "title", "text", "link", "account", "value", "list", "attivita"]
       }
     };

@@ -82,7 +82,7 @@ union select h.parent_id, h.elements_contents_id, h.livello + 1 as livello, h.in
     </query>
     <query name="update-element">
       <![CDATA[update [elements] set element_type = {@txtqry='type'}, element_title = {@txtqry='title'}, deleted = NULL, dt_upd = getdate()
-        where element_id = {@field='id_element'} and (element_type <> {@txtqry='type'} or element_title <> {@txtqry='title'} or deleted is not null)]]>
+        where element_id = {@field='id_element'} and (element_type <> {@txtqry='type'} or isnull(element_title, '') <> isnull({@txtqry='title'}, '') or deleted is not null)]]>
     </query>
     <query name="undelete-childs">
       <![CDATA[update e set e.deleted = null

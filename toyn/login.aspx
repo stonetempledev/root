@@ -13,7 +13,7 @@
   <!-- navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <a class="navbar-brand" href="#">
-      <img src="images/toyn-50-b.png" class="d-inline-block align-middle" alt="">
+      <img src="images/toyn-40-b.png" class="d-inline-block align-middle" alt="">
     </a>
    
     <button class="navbar-toggler" style='float:right;' type="button" data-toggle="collapse" data-target="#coll_nav" aria-controls="coll_nav" aria-expanded="false" aria-label="Toggle navigation">

@@ -28,8 +28,10 @@
         <row group="backups" action="view" object="backups" page="backups.aspx" des="visualizza la lista dei backups generati" type="admin"/>
         <row group="backups" action="restore" object="backup" page="backups.aspx" des="ripristino backup del database" type="admin"/>
         <!-- elements -->
-        <row group="elements" action="view" object="element" subobjs="[id:'id element']" page="element.aspx" des="visualizza l'elemento"/>
-        <row group="elements" action="xml" object="element" subobjs="[id:'id element']" page="element.aspx" des="edit e salvataggio dell'elemento"/>
+        <row group="elements" action="view" object="elements" page="element.aspx" des="visualizza gli elementi radice"/>
+        <row group="elements" action="view" object="element" subobjs="id:'id element'" page="element.aspx" des="visualizza l'elemento specifico"/>
+        <row group="elements" action="xml" object="elements" page="element.aspx" des="edit e salvataggio degli elementi radice"/>
+        <row group="elements" action="xml" object="element" subobjs="id:'id element'" page="element.aspx" des="edit e salvataggio dell'elemento"/>
       </rows>
     </table>
   </tables>

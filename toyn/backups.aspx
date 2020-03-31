@@ -62,7 +62,7 @@
   </script>
 </asp:Content>
 <asp:Content ContentPlaceHolderID="contents" runat="Server">
-  <div class="container-fluid">
+  <div class="container-fluid" style='margin-top: 20px;'>
     <div id='gen_backups' runat='server' class="row">
       <div class='col-12'>
         <h2 style='margin-bottom: 45px;'>
