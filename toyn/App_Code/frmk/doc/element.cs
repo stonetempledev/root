@@ -20,7 +20,7 @@ using mlib.tiles;
 namespace toyn {
   public class element {
 
-    public enum type_element { element, text, title, list, link, account, value, attivita }
+    public enum type_element { element, text, title, list, link, account, value, attivita, code }
 
     protected List<element> _childs;
     protected List<attribute> _attributes;
@@ -41,10 +41,12 @@ namespace toyn {
     public int order { get; set; }
     public bool is_root { get; set; }
     public type_element type { get; set; }
-    public string title { get; set; }
+    public string title { get { return get_attribute_string("title"); } set { set_attribute_string("title", value); } }
     public bool has_title { get { return !string.IsNullOrEmpty(this.title); } }
+    public string des { get; set; }
     public string content { get { return get_attribute_string("content"); } }
     public bool has_content { get { return !string.IsNullOrEmpty(this.content); } }
+    public bool can_have_childs { get; set; }
     public bool added { get; set; }
     public bool undeleted { get; set; }
     public bool in_list { get; set; }
@@ -61,6 +63,9 @@ namespace toyn {
     }
     public attribute get_attribute(string code) { return _attributes.FirstOrDefault(a => a.code == code); }
     public string get_attribute_string(string code) { attribute a = _attributes.FirstOrDefault(x => x.code == code); return a != null ? a.get_str : ""; }
+    public bool get_attribute_bool(string code) { attribute a = _attributes.FirstOrDefault(x => x.code == code); 
+      return a != null ? a.get_bool : false; }
+    public void set_attribute_flag(string code, bool value) { set_attribute(code, attribute.attribute_type.flag, value); }
     public void set_attribute_real(string code, double value) { set_attribute(code, attribute.attribute_type.real, value); }
     public void set_attribute_int(string code, int value) { set_attribute(code, attribute.attribute_type.integer, value); }
     public void set_attribute_datetime(string code, DateTime value) { set_attribute(code, attribute.attribute_type.datetime, value); }
@@ -81,7 +86,7 @@ namespace toyn {
       if (string.IsNullOrEmpty(value)) return;
       attribute a = _attributes.FirstOrDefault(x => x.code == code);
       if (a == null) {
-        attribute at = attrs.FirstOrDefault(x => x.e_type == this.type && x.code == code);
+        attribute at = attrs.FirstOrDefault(x => x.code == code);
         if (at == null)
           throw new Exception("non è stato trovato l'attributo '" + code + "' per l'elemento '" + this.type.ToString() + "' fra quelli configurati!");
         a = new attribute(code, at.type, value, at.content_txt_xml);
@@ -90,7 +95,7 @@ namespace toyn {
     }
 
     public element(core c, type_element type, string title, int level = 0, long id = 0, long parent_id = 0, long content_id = 0
-      , bool has_childs = false, bool has_child_elements = false, bool in_list = false
+      , bool has_childs = false, bool has_child_elements = false, bool in_list = false, string des = ""
       , DateTime? dt_ins = null, DateTime? dt_upd = null, int order_xml = 0, int order = 0, bool sham = false) {
       _childs = new List<element>();
       _attributes = new List<attribute>();
@@ -98,6 +103,7 @@ namespace toyn {
       this.core = c;
       this.back_element_id = null;
       this.level = level;
+      this.des = des;
       this.parent_id = parent_id;
       this.content_id = content_id;
       this.type = type;
@@ -176,6 +182,12 @@ namespace toyn {
 
     public int c_childs { get { return _childs.Count; } }
 
+    public void reset_ids() {
+      this.id = 0;
+      foreach (element c in _childs)
+        c.reset_ids();
+    }
+
     #endregion
 
     #region xml
@@ -195,7 +207,7 @@ namespace toyn {
       // attributi
       bool set_text = false;
       foreach (attribute a in this.attributes.Where(x => x.value != null)) {
-        if (!a.content_txt_xml) nd.set_attr(a.code, a.value.ToString());
+        if (!a.content_txt_xml) nd.set_attr(a.code, a.type == attribute.attribute_type.flag ? a.value.ToString().ToLower() : a.value.ToString());
         else { nd.text = a.value.ToString(); set_text = true; }
       }
       if (!set_text) nd.text = " ";
@@ -212,18 +224,32 @@ namespace toyn {
       }
     }
 
-    public static List<element> load_xml(core c, List<attribute> attrs, string xml, int? back_element_id = null) {
+    public static List<element> load_xml(core c, List<element> types, string xml, int? back_element_id = null) {
 
       xml_doc d = new xml_doc() { xml = "<elements>" + xml + "</elements>" };
       List<element> res = new List<element>(); int order = 0;
       foreach (xml_node ne in d.nodes("/elements/*")) {
         element e = new element(c) { level = 0, order_xml = order };
         e.back_element_id = back_element_id;
-        e.load_node(ne, attrs);
+
+        // element type
+        element el_type = types.FirstOrDefault(et => et.type.ToString() == ne.name);
+        if (el_type == null)
+          throw new Exception("attenzione l'elemento '" + ne.name + "' non è configurato correttamente nel database o non esiste!");
+
+        e.load_node(ne, el_type);
         int order_child = 0;
         foreach (xml_node nd in ne.childs()) {
           if (!nd.is_element) continue;
-          e.add_child_elements(nd, attrs, order_child);
+
+          // element type
+          el_type = types.FirstOrDefault(et => et.type.ToString() == nd.name);
+          if (el_type == null)
+            throw new Exception("attenzione l'elemento '" + nd.name + "' non è configurato correttamente nel database o non esiste!");
+          if (!el_type.can_have_childs)
+            throw new Exception("attenzione l'elemento '" + nd.name + "' non può contenere elementi al suo interno!");
+
+          e.add_child_elements(nd, types, order_child);
           order_child++;
         }
         res.Add(e); order++;
@@ -231,27 +257,43 @@ namespace toyn {
       return res;
     }
 
-    protected element add_child_elements(xml_node nd, List<attribute> attrs, int order) {
+    protected element add_child_elements(xml_node nd, List<element> types, int order) {
+
+      // element type
+      element el_type = types.FirstOrDefault(et => et.type.ToString() == nd.name);
+      if (el_type == null)
+        throw new Exception("attenzione l'elemento '" + nd.name + "' non è configurato correttamente nel database o non esiste!");
 
       element el = new element(this.core) { level = this.level + 1, order_xml = order };
-      el.load_node(nd, attrs);
+      el.load_node(nd, el_type);
       this.add_child(el);
 
       int order_child = 0;
       foreach (xml_node ndc in nd.childs()) {
         if (!ndc.is_element) continue;
-        el.add_child_elements(ndc, attrs, order_child);
+
+        // element type
+        el_type = types.FirstOrDefault(et => et.type.ToString() == ndc.name);
+        if (el_type == null)
+          throw new Exception("attenzione l'elemento '" + ndc.name + "' non è configurato correttamente nel database o non esiste!");
+        if (!el_type.can_have_childs)
+          throw new Exception("attenzione l'elemento '" + ndc.name + "' non può contenere elementi al suo interno!");
+
+        el.add_child_elements(ndc, types, order_child);
         order_child++;
       }
 
       return el;
     }
 
-    public void load_node(xml_node nd, List<attribute> attrs) {
+    public void load_node(xml_node nd, element el_type) {
       this.type = (type_element)Enum.Parse(typeof(type_element), nd.name);
-
-      attribute ca = attrs.FirstOrDefault(x => x.content_txt_xml);
-      if (ca != null) set_attribute(ca.code, nd.text, attrs);
+      
+      // content
+      string txt = nd.text;
+      attribute ca = el_type.attributes.FirstOrDefault(x => x.content_txt_xml);
+      if (ca != null) set_attribute(ca.code, txt, el_type.attributes);
+      else if (ca == null && txt != "") throw new Exception("attenzione c'è un nodo con il contenuto non ammesso!");
 
       // attributes
       foreach (string attr in nd.attrs()) {
@@ -265,11 +307,13 @@ namespace toyn {
           this.from_id = val != "" ? (val.Contains(":") ? int.Parse(val.Split(new char[] { ':' })[0]) : int.Parse(val)) : 0;
           continue;
         } else if (attr == "title") {
+          if (el_type.attributes.FirstOrDefault(x => x.code == attr) == null)
+            throw new Exception("non è stato trovato l'attributo '" + attr + "' per l'elemento '" + this.type.ToString() + "' fra quelli configurati!");
           this.title = nd.get_attr(attr); continue;
         } else if (attr == "sham") {
           this.sham = nd.get_bool(attr); continue;
         }
-        set_attribute(attr, nd.get_attr(attr), attrs);
+        set_attribute(attr, nd.get_attr(attr), el_type.attributes);
       }
     }
 

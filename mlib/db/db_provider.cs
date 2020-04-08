@@ -92,7 +92,7 @@ namespace mlib.db {
       return res;
     }
 
-    static public string str_val (object fld) { return fld == null || fld == DBNull.Value ? "" : fld.ToString(); }
+    static public string str_val (object fld, string def = "") { return fld == null || fld == DBNull.Value ? def : fld.ToString(); }
 
     static public int int_val (object fld, int def = 0) { return fld == null || fld == DBNull.Value ? def : Convert.ToInt32(fld); }
 

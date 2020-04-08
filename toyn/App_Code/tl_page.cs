@@ -11,6 +11,7 @@ using System.Net.Mail;
 using System.Net.Configuration;
 using System.Configuration;
 using System.IO;
+using System.Data;
 using mlib;
 using mlib.tools;
 using mlib.db;
@@ -54,10 +55,11 @@ public class tl_page : System.Web.UI.Page {
         core cr = new core(base_path, base_url);
         reload_cfg = true;
         Cache["core_obj"] = cr;
-      }
+      } 
 
       // configs
       _core = (core)Cache["core_obj"];
+      _core.base_url = this.base_url;
       foreach (string key in _core.config_keys) if (Cache[key] == null) { reload_cfg = true; break; }
       reload_cfg = true;
       if (reload_cfg) {
@@ -207,6 +209,51 @@ public class tl_page : System.Web.UI.Page {
   }
 
   protected string get_url_cmd(string ref_url) { return _core.config.var_value_par("vars.router-cmd", System.Web.HttpUtility.UrlEncode(ref_url)); }
+
+  #endregion
+
+  #region queries
+
+  protected bool set_cache_var(string var_name, string var_value) {
+    return string.IsNullOrEmpty(var_value) ? reset_cache_var(var_name)
+      : set_cache_var2(var_name, var_value);
+  }
+
+  private bool set_cache_var2(string var_name, string var_value) { 
+    if(!is_user) return false;
+    int id_utente = _user.id;
+    db_conn.exec(core.parse(config.get_query("base.set-cache-var").text
+      , new Dictionary<string, object>() { { "id_utente", id_utente }, { "var_name", var_name }, { "var_value", var_value } }));
+    return true;
+  }
+
+  protected bool reset_cache_var(string var_name) { 
+    if(!is_user) return false;
+    int id_utente = _user.id;
+    db_conn.exec(core.parse(config.get_query("base.reset-cache-var").text
+      , new Dictionary<string, object>() { { "id_utente", id_utente }, { "var_name", var_name } }));
+    return true;
+  }
+
+  protected string get_cache_var(string var_name, string def = "") {
+    if (!is_user) return def;
+    int id_utente = _user.id;
+    DataRow dr = db_conn.first_row(core.parse(config.get_query("base.get-cache-var").text
+      , new Dictionary<string, object>() { { "id_utente", id_utente }, { "list_vars", "'" + var_name + "'" } }));
+    return dr != null ? db_provider.str_val(dr["var_value"], def) : def;
+  }
+
+  protected Dictionary<string, string> get_cache_vars(string var_names) {
+    if (!is_user) return null;
+    int id_utente = _user.id;
+    Dictionary<string, string> res = new Dictionary<string, string>();
+    foreach (DataRow dr in db_conn.dt_table(core.parse(config.get_query("base.get-cache-var").text
+      , new Dictionary<string, object>() { { "id_utente", id_utente }
+        , { "list_vars", string.Join(", ", var_names.Split(new char[]{','}, StringSplitOptions.RemoveEmptyEntries).Select(s => "'" + s + "'")) } })).Rows) {
+          res.Add(db_provider.str_val(dr["var_name"]), db_provider.str_val(dr["var_value"]));
+    }
+    return res;
+  }
 
   #endregion
 }

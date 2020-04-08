@@ -5,7 +5,7 @@ using System.Web;
 
 namespace toyn {
   public class attribute {
-    public enum attribute_type { text, varchar, link, datetime, integer, real }
+    public enum attribute_type { text, varchar, link, datetime, integer, real, flag }
 
     public int id { get; set; }
     public element.type_element e_type { get; set; }
@@ -13,6 +13,7 @@ namespace toyn {
     public string code { get; set; }
     public object value { get; set; }
     public bool content_txt_xml { get; set; }
+    public bool get_bool { get { return this.value != null ? Convert.ToBoolean(this.value) : false; } set { this.value = value; } }
     public double get_real { get { return this.value != null ? Convert.ToDouble(this.value) : 0; } set { this.value = value; } }
     public int get_int { get { return this.value != null ? Convert.ToInt32(this.value) : 0; } set { this.value = value; } }
     public string get_str { get { return this.value != null ? Convert.ToString(this.value) : ""; } set { this.value = value; } }

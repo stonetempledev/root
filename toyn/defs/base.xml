@@ -1,0 +1,19 @@
+﻿<config>
+  <queries>
+    <query name="set-cache-var">
+      <![CDATA[if not exists (select top 1 1 from utenti_cache where id_utente = {@field='id_utente'} and var_name = '{@field='var_name'}')
+        insert into utenti_cache (id_utente, var_name, var_value)
+          values ({@field='id_utente'}, '{@field='var_name'}', {@txtqry='var_value'})
+        else update utenti_cache set var_value = substring({@txtqry='var_value'}, 1, 500), dt_upd = getdate()
+          where id_utente = {@field='id_utente'} and var_name = '{@field='var_name'}']]>
+    </query>
+    <query name="get-cache-var">
+      <![CDATA[select var_name, var_value 
+          from utenti_cache where id_utente = {@field='id_utente'} and var_name in ({@field='list_vars'})]]>
+    </query>
+    <query name="reset-cache-var">
+      <![CDATA[delete from utenti_cache where id_utente = {@field='id_utente'} and var_name = '{@field='var_name'}']]>
+    </query>
+  </queries>
+</config>
+

@@ -16,13 +16,13 @@ public partial class _default : tl_master {
 
   protected Dictionary<string, string> _qvals = null;
 
-  protected void Page_Init (object sender, EventArgs e) {
+  protected void Page_Init(object sender, EventArgs e) {
 
     try {
       // base
       bool mb = is_mobile();
       this.head.Controls.Add(new Literal() { Text = @"<link href=""" + (mb ? "base-mobile.css" : "base.css") + @""" type=""text/css"" rel=""stylesheet"" />" });
-      
+
       // check user
       string u_name = ""; int u_id = -1;
       FormsIdentity id = (FormsIdentity)tlp.User.Identity;
@@ -49,33 +49,38 @@ public partial class _default : tl_master {
 
       // parameters
       _qvals = new Dictionary<string, string>();
-      foreach (string qs in Request.QueryString.AllKeys.Where(x => x != "cmd")) 
+      foreach (string qs in Request.QueryString.AllKeys.Where(x => x != "cmd"))
         _qvals.Add(qs, tlp.qry_val(qs));
 
     } catch { }
   }
 
-  protected void Page_Load (object sender, EventArgs e) {
+  protected void Page_Load(object sender, EventArgs e) {
+    // navbar admin
+    if (tlp.user.type == user.type_user.admin) {
+      string cl = navbar.Attributes["class"];
+      navbar.Attributes["class"] = cl.Replace("bg-primary", "bg-warning");
+    }
   }
 
-  protected void Cmd_Click (object sender, EventArgs e) { elab_cmd(config.get_var("vars.router-page").value); }
+  protected void Cmd_Click(object sender, EventArgs e) { elab_cmd(config.get_var("vars.router-page").value); }
 
   public void elab_cmd(string page, string cmd = "") { Response.Redirect(url_cmd(cmd != "" ? cmd : txt_cmd.Value, page)); }
 
-  public override void redirect_to (string page) {
+  public override void redirect_to(string page) {
     string url = page + "?cmd=" + HttpUtility.UrlEncode(txt_cmd.Value);
     foreach (string qs in _qvals.Keys)
       url += "&" + qs + "=" + HttpUtility.UrlEncode(_qvals[qs]);
-    Response.Redirect(url); 
+    Response.Redirect(url);
   }
 
-  public override string get_val (string id) {
+  public override string get_val(string id) {
     Control ctrl = FindControl(id); return ctrl != null ? (ctrl is HtmlInputText ? ((HtmlInputText)ctrl).Value
       : (ctrl is HtmlInputHidden ? ((HtmlInputHidden)ctrl).Value : "")) : "";
   }
 
-  public override void set_val (string id, string val) {
-    Control ctrl = FindControl(id); 
+  public override void set_val(string id, string val) {
+    Control ctrl = FindControl(id);
     if (ctrl != null && ctrl is HtmlInputText) ((HtmlInputText)ctrl).Value = val;
     else if (ctrl != null && ctrl is HtmlInputHidden) ((HtmlInputHidden)ctrl).Value = val;
   }

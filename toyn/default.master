@@ -17,7 +17,7 @@
   <style>
     body
     {
-      padding-top: 61px;
+      padding-top: 50px;
     }
   </style>
   <script language="javascript">
@@ -129,7 +129,7 @@
     </div>
   </div>
   <!-- navbar -->
-  <nav id='navbar' class="navbar navbar-expand navbar-dark bg-primary fixed-top" style='padding-bottom:0px;padding-top:0px;'>   
+  <nav id='navbar' class="navbar navbar-expand navbar-dark bg-primary fixed-top" style='padding-bottom:0px;padding-top:0px;' runat="server">   
     <a class="navbar-brand" href="./">
       <img src="images/toyn-40-b.png" class="d-inline-block align-middle" alt="">
     </a>

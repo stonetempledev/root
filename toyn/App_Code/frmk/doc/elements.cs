@@ -25,6 +25,21 @@ namespace toyn {
       return attrs;
     }
 
+    public List<element> load_types_attributes() {
+      List<element> els = new List<element>();
+      foreach (DataRow dr in db_conn.dt_table(core.parse(config.get_query("elements.types-attributes").text)).Rows) {
+        string des = db_provider.str_val(dr["element_des"]);
+        element.type_element et = (element.type_element)Enum.Parse(typeof(element.type_element), db_provider.str_val(dr["element_type"]));
+        bool can_have_childs = db_provider.int_val(dr["can_have_childs"]) == 1;
+        element e = els.FirstOrDefault(x => x.type == et);
+        if (els.FirstOrDefault(x => x.type == et) == null) {
+          e = new element(this.core) { type = et, des = des, can_have_childs = can_have_childs };
+        }
+        e.attributes.Add(create_attribute(dr));
+      }
+      return els;
+    }
+
     public attribute create_attribute(DataRow dr) {
       string etype = db_provider.str_val(dr["element_type"]), acode = db_provider.str_val(dr["attribute_code"])
         , atype = db_provider.str_val(dr["attribute_type"]);
@@ -52,9 +67,9 @@ namespace toyn {
       return load_elements(out max_lvl_els, out max_lvl, element_id, also_deleted: also_deleted, only_childs: true);
     }
 
-    public element load_element(long element_id) {
+    public element load_element(long element_id, bool childs = false) {
       int max_lvl_els = 0, max_lvl = 0;
-      List<element> els = load_elements(out max_lvl_els, out max_lvl, element_id, childs: false);
+      List<element> els = load_elements(out max_lvl_els, out max_lvl, element_id, childs: childs);
       return els.Count > 0 ? els[0] : null;
     }
 
@@ -76,7 +91,8 @@ namespace toyn {
         long parent_id = db_provider.long_val(re["parent_id"]), contents_id = db_provider.long_val(re["elements_contents_id"])
           , id = db_provider.long_val(re["element_id"]);
         int livello = db_provider.int_val(re["livello"]), order = db_provider.int_val(re["order"]);
-        string element_type = db_provider.str_val(re["element_type"]), title = db_provider.str_val(re["element_title"]);
+        string element_type = db_provider.str_val(re["element_type"]), title = db_provider.str_val(re["element_title"])
+          , des = db_provider.str_val(re["element_des"]);
         bool has_childs = db_provider.int_val(re["has_childs"]) == 1, in_list = db_provider.int_val(re["in_list"]) == 1
           , has_child_elements = db_provider.int_val(re["has_child_elements"]) == 1;
         DateTime? dt_ins = db_provider.dt_val(re["dt_ins"]), dt_upd = db_provider.dt_val(re["dt_upd"]);
@@ -87,7 +103,7 @@ namespace toyn {
         element e = els.FirstOrDefault(x => x.id == id);
         if (e == null) {
           e = new element(this.core, (element.type_element)Enum.Parse(typeof(element.type_element), element_type), title, livello
-            , id, parent_id, contents_id, has_childs, has_child_elements, in_list, dt_ins, dt_upd, order: order
+            , id, parent_id, contents_id, has_childs, has_child_elements, in_list, des, dt_ins, dt_upd, order: order
             , sham: max_level.HasValue ? livello == max_level + 1 && has_childs && !in_list : false);
           e.key_page = key_page;
           if (livello == 0 && element_id.HasValue) e.back_element_id = parent_id != 0 ? parent_id : (long?)null;
@@ -116,8 +132,22 @@ namespace toyn {
       return res;
     }
 
+    public List<long> get_child_elements_ids(long element_id) {
+      return db_conn.dt_table(core.parse(config.get_query("elements.open-elements").text
+        , new Dictionary<string, object>() { { "id_element", element_id }
+        , { "filter_head", "and 1 = 0" }, { "filter_childs", "" }, { "filter_level", "1 = 1" }
+        , { "id_utente", this.user_id }, { "filter_deleted", "isnull(h.deleted, 0) = 0" } })).Rows
+          .Cast<DataRow>().Select(r => db_provider.long_val(r["element_id"])).ToList();
+    }
+
+    public List<long> get_parent_elements_ids(long element_id) {
+      return db_conn.dt_table(core.parse(config.get_query("elements.parent-elements").text
+        , new Dictionary<string, object>() { { "id_element", element_id }, { "id_utente", this.user_id } })).Rows
+          .Cast<DataRow>().Select(r => db_provider.long_val(r["parent_id"])).ToList();
+    }
+
     public List<element> load_xml(string xml, int? back_element_id = null) {
-      return element.load_xml(this.core, load_attributes(), xml, back_element_id);
+      return element.load_xml(this.core, load_types_attributes(), xml, back_element_id);
     }
 
 
@@ -179,6 +209,12 @@ namespace toyn {
       }
     }
 
+    public List<long> check_exists_elements(List<long> ids) { 
+      return db_conn.dt_table(core.parse(config.get_query("elements.check-exists-elements").text
+        , new Dictionary<string, object>() { { "ids_elements", string.Join(",", ids) }, { "id_utente", user_id } }))
+        .Rows.Cast<DataRow>().Select(r => db_provider.long_val(r["element_id"])).ToList();
+    }
+
     public long save_element(element e, string key_page = "") {
 
       // from_id
@@ -216,7 +252,7 @@ namespace toyn {
         } else {
           if (!e.added) db_conn.exec(core.parse(config.get_query("elements.delete-attributes").text
             , new Dictionary<string, object>() { { "id_element", e.id }, { "attr_type", a.type.ToString() }
-            , { "element_type", e.type.ToString() } }));
+            , { "attr_code", a.code } }));
         }
       }
 
@@ -238,6 +274,31 @@ namespace toyn {
       }
 
       return e.id;
+    }
+
+    public void refresh_order_element(long element_id, db_provider conn = null) {
+      (conn != null ? conn : this.db_conn).exec(
+        core.parse(config.get_query("elements.refresh-orders-element").text
+          , new Dictionary<string, object>() { { "element_id", element_id } }));
+    }
+
+    public void refresh_order_child(long child_id, db_provider conn = null) {
+      (conn != null ? conn : this.db_conn).exec(
+        core.parse(config.get_query("elements.refresh-orders-child").text
+         , new Dictionary<string, object>() { { "child_id", child_id } }));
+    }
+
+    public List<long> next_elements_to(long id, List<element.type_element> t_end) {
+      List<long> ids = new List<long>();
+      foreach (DataRow r in db_conn.dt_table(core.parse(config.get_query("elements.next-elements").text
+        , new Dictionary<string, object>() { { "id_element", id } })).Rows) {
+        long idc = db_provider.long_val(r["child_element_id"]);
+        element.type_element type = (element.type_element)Enum.Parse(typeof(element.type_element), db_provider.str_val(r["element_type"]));
+        if (idc == id) { ids.Add(idc); continue; }
+        if (t_end.Contains(type)) break;
+        ids.Add(idc);
+      }
+      return ids;
     }
   }
 }

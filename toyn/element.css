@@ -25,7 +25,7 @@ a.anchor
   position: relative;
   top: 0;
   height: calc(100vh - 50px);
-  padding-top: 12px;
+  padding-top: 8px;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -44,56 +44,98 @@ ul.no-bullet
 {
   list-style-type: none;
   padding-left: 15px;
-  margin:0px;
+  margin: 0px;
 }
 
 li.bullet
 {
   background: url('images/circle-8.png') no-repeat 0px 12px;
   padding-left: 12px;
-  margin:0px;
+  margin: 0px;
 }
 
 li.bullet-2
 {
   background: url('images/circle-8-2.png') no-repeat 0px 12px;
   padding-left: 12px;
-  margin:0px;
+  margin: 0px;
 }
 
 li.bullet-3
 {
   background: url('images/circle-8-3.png') no-repeat 0px 12px;
   padding-left: 12px;
-  margin:0px;
+  margin: 0px;
+}
+
+li.square
+{
+  background: url('images/square-12.png') no-repeat 0px 8px;
+  padding-left: 12px;
+  margin: 0px;
+}
+
+li.square-2
+{
+  background: url('images/square-12-2.png') no-repeat 0px 8px;
+  padding-left: 12px;
+  margin: 0px;
+}
+
+li.square-3
+{
+  background: url('images/square-12-3.png') no-repeat 0px 8px;
+  padding-left: 12px;
+  margin: 0px;
 }
 
 ul.no-bullet-mobile
 {
   list-style-type: none;
   padding-left: 6px;
-  margin:0px;
+  margin: 0px;
 }
 
 li.bullet-mobile
 {
   background: url('images/circle-8.png') no-repeat 0px 6px;
-  padding-left: 9px;
-  margin:0px;
+  padding-left: 10px;
+  margin: 0px;
 }
 
 li.bullet-2-mobile
 {
   background: url('images/circle-8-2.png') no-repeat 0px 6px;
-  padding-left: 9px;
-  margin:0px;
+  padding-left: 10px;
+  margin: 0px;
 }
 
 li.bullet-3-mobile
 {
   background: url('images/circle-8-3.png') no-repeat 0px 6px;
-  padding-left: 9px;
-  margin:0px;
+  padding-left: 10px;
+  margin: 0px;
+}
+
+li.square-mobile
+{
+  background: url('images/square-12.png') no-repeat 0px 4px;
+  padding-left: 12px;
+  margin-right: 0px;
+}
+
+li.square-2-mobile
+{
+  background: url('images/square-12-2.png') no-repeat 0px 4px;
+  padding-left: 12px;
+  margin-right: 0px;
+}
+
+li.square-3-mobile
+{
+  background: url('images/square-12-3.png') no-repeat 0px 4px;
+  padding-left: 12px;
+  margin-right: 0px;
 }
 
 li.nobullet
@@ -112,4 +154,33 @@ div.childs-element
 div.childs-element-mobile
 {
   padding-left: 0px;
+}
+
+
+/* submenu */
+
+span.dropdown-item
+{
+  cursor: pointer;
+}
+
+.dropdown-submenu
+{
+  position: relative;
+}
+
+.dropdown-submenu a::after
+{
+  transform: rotate(-90deg);
+  position: absolute;
+  right: 6px;
+  top: .8em;
+}
+
+.dropdown-submenu .dropdown-menu
+{
+  top: 0;
+  left: 100%;
+  margin-left: .1rem;
+  margin-right: .1rem;
 }

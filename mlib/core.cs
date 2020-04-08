@@ -16,7 +16,7 @@ namespace mlib {
     public string base_path { get { return _base_path; } }
 
     protected string _base_url = "";
-    public string base_url { get { return _base_url; } }
+    public string base_url { get { return _base_url; } set { _base_url = value; } }
 
     protected config _config = null;
     public config config { get { return _config; } }
