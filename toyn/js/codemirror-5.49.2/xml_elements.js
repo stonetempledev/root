@@ -24,7 +24,7 @@
 
   CodeMirror.defineMode("xml", function (editorConf, config_) {
     var indentUnit = editorConf.indentUnit
-    var config = {}
+    var config = { alignCDATA: true }
     var defaults = xmlConfig
     for (var prop in defaults) config[prop] = defaults[prop]
     for (var prop in config_) config[prop] = config_[prop]

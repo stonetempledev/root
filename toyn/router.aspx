@@ -11,6 +11,7 @@
   <script language="javascript">
     $(document).ready(function () {
     });
+    function compile(txt) { set_cmd(txt); }
   </script>
 </asp:Content>
 <asp:Content ContentPlaceHolderID="contents" runat="Server">

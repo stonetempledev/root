@@ -105,7 +105,10 @@ namespace mlib.tools {
       public table_row find_row (Dictionary<string, string> keys) {
         foreach (table_row r in _rows) if (is_row(r, keys)) return r; return null;
       }
-      protected bool is_row (table_row tr, Dictionary<string, string> keys) {
+      public List<table_row> find_rows(Dictionary<string, string> keys) {
+        return _rows.Where(r => is_row(r, keys)).ToList();
+      }
+      protected bool is_row(table_row tr, Dictionary<string, string> keys) {
         foreach (KeyValuePair<string, string> kv in keys)
           if (tr.field(kv.Key) != kv.Value) return false;
         return true;
@@ -117,6 +120,9 @@ namespace mlib.tools {
       public table_row (table tbl, List<string> vals) { _tbl = tbl; _fields = new List<string>(vals); }
       public string field (string col) { return _fields[_tbl.i_col(col)]; }
       public string this[string col] { get { return field(col); } }
+      public bool fld_bool(string col) { string val = _fields[_tbl.i_col(col)];
+      return val != "" ? bool.Parse(val) : false;
+      }
     }
 
     // html-block
@@ -124,7 +130,7 @@ namespace mlib.tools {
       string _name, _content;
       public string name { get { return _name; } }
       public string content { get { return _content; } }
-      public html_block (string doc_key, string name, string content, bool for_pg = false) : base(doc_key, for_pg) { _name = name; _content = content; }
+      public html_block(string doc_key, string name, string content, bool for_pg = false) : base(doc_key, for_pg) { _name = name; _content = content; }
     }
 
     // level
@@ -187,7 +193,7 @@ namespace mlib.tools {
         _tables.Add(name, new table(doc_key, name, tbl, for_pg));
       }
 
-      foreach (xml_node tbl in doc.nodes("/config//blocks/*")) {
+      foreach (xml_node tbl in doc.nodes("/config/blocks/*")) {
         string name = var_key + tbl.name;
         _blocks.Add(name, new html_block(doc_key, name, tbl.text, for_pg));
       }
@@ -252,8 +258,8 @@ namespace mlib.tools {
     public folder get_folder(string name) { if (!_folders.ContainsKey(name)) throw new Exception("il folder '" + name + "' non esiste!"); return _folders[name]; }
     public conn get_conn (string name) { if (!_conns.ContainsKey(name)) throw new Exception("la connessione '" + name + "' non esiste!"); return _conns[name]; }
     public table get_table (string name) { if (!_tables.ContainsKey(name)) throw new Exception("la tabella '" + name + "' non esiste!"); return _tables[name]; }
-    public html_block get_block (string name) { if (!_blocks.ContainsKey(name)) throw new Exception("il blocco html '" + name + "' non esiste!"); return _blocks[name]; }
-    public query get_query (string name) { if (!_queries.ContainsKey(name)) throw new Exception("la query '" + name + "' non esiste!"); return _queries[name]; }
+    public html_block get_block(string name) { if (!_blocks.ContainsKey(name)) throw new Exception("il blocco html '" + name + "' non esiste!"); return _blocks[name]; }
+    public query get_query(string name) { if (!_queries.ContainsKey(name)) throw new Exception("la query '" + name + "' non esiste!"); return _queries[name]; }
     public level get_level (int index) { if (!_levels.ContainsKey(index.ToString())) throw new Exception("il livello " + index.ToString() + " non esiste!"); return _levels[index.ToString()]; }
     protected int max_level () {
       int max = -1;

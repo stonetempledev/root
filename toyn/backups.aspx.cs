@@ -129,6 +129,7 @@ public partial class _backups : tl_page {
           val_type.Value = _core.config.get_var("vars.bck.type").value;
           prefix_filename.Value = _core.config.get_var("vars.bck.prefix-filename").value;
           val_file_format.Value = _core.config.get_var("vars.bck.file-format").value;
+          val_libs_folders.Value = _core.config.get_var("vars.bck.libs-folders").value;
           val_net_user.Value = _core.config.get_var("vars.bck.net-user").value;
           val_net_pwd.Value = _core.config.get_var("vars.bck.net-pwd").value;
           val_net_folder.Value = _core.config.get_var("vars.bck.net-folder").value;
@@ -189,19 +190,27 @@ public partial class _backups : tl_page {
           }
 
           // lista
-          blocks blk = new blocks();
-          nano_node list = blk.add("list");
+          StringBuilder sb = new StringBuilder();
+          sb.Append("<div class='list-group'>");
           foreach (file f in files) {
             DataRow[] rn = dt.Select("name_file = '" + f.file_name + "'");
             string notes = rn.Count() > 0 ? db_provider.str_val(rn[0]["notes"]) : "";
-            list.add_xml(string.Format(@"<l-row-btn-2 title=""{0}"" href=""{2}"" row-data='" + f.file_name + @"'
-              style-btn='danger' title-btn='Cancella' on-click-btn=""del_backup('" + f.file_name + @"');""
-              style-btn-2='primary' title-btn-2='Scarica' on-click-btn-2=""down_backup('" + f.file_name + @"');"">{1}</l-row-btn-2>"
-              , f.file_name, "data: " + f.lw.ToString("yyyy/MM/dd") + ", size: " + ((int)(f.size / 1024)).ToString("N0", new System.Globalization.CultureInfo("it-IT")) + " Kb"
-              + (notes != "" ? ", notes: " + notes : ""), master.url_cmd("restore backup '" + f.file_name + "'")));
+            sb.AppendFormat(@"<a class='list-group-item list-group-item-action flex-column align-items-start' href=""{3}"" row-data=""{4}"">
+              <div class='d-flex w-90 justify-content-between'>
+                <span class='h5 mb-1'>{0}</span></div>
+                <h4><small class='mb-1'>{2}</small></h4>
+                <p class='lead mb-1' style='margin-top:20px;'>{1}</p>
+              <span class='float-right' style='margin-left:5px;'>
+                <button type='button' class='btn btn-danger' onclick=""del_backup('{4}'); return false;"">Cancella</button>
+              </span><span class='float-right'>
+                <button type='button' class='btn btn-primary' onclick=""down_backup('{4}');  return false;"">Scarica</button>
+              </span></a>", "Backup effettuato " + f.lw.ToString("dddd dd MMMM yyyy")
+              , "file: " + f.file_name + ", size: " + ((int)(f.size / 1024)).ToString("N0", new System.Globalization.CultureInfo("it-IT")) + " Kb"
+                , (notes != "" ? "dettagli: " + notes : ""), master.url_cmd("restore backup '" + f.file_name + "'"), f.file_name);
           }
+          sb.Append("</div>");
 
-          res_view.InnerHtml = blk.parse_blocks(_core);
+          res_view.InnerHtml = sb.ToString();
         } else throw new Exception("il backup di tipo '" + tp + "' non è gestito!");
 
       } catch (Exception ex) {
@@ -226,7 +235,8 @@ public partial class _backups : tl_page {
       // fs
       if (val_type.Value == "fs") {
 
-        string tmp_folder = _core.config.get_var("vars.tmp-folder").value;
+        string tmp_folder = _core.config.get_var("vars.tmp-folder").value
+          , libs_folders = val_libs_folders.Value;
         string f_bck_name = prefix_filename.Value + DateTime.Now.ToString(val_file_format.Value) + ".bak"
           , f_zip_name = prefix_filename.Value + DateTime.Now.ToString(val_file_format.Value) + ".zip";
 
@@ -243,8 +253,21 @@ public partial class _backups : tl_page {
         tmp_zip_file = Path.Combine(tmp_folder, f_zip_name);
 
         using (ZipFile zf = new ZipFile(tmp_zip_file)) {
-          zf.AddFile(tmp_bck_file, "__backup");
+          zf.AddFile(tmp_bck_file, "__db");
           zf.AddDirectory(_base_path, "__site");
+          if (libs_folders != "") {
+            List<string> fnames = new List<string>();
+            foreach (string lf in libs_folders.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)) {
+              string name = Path.GetFileName(lf);
+              int i = 2; string name2 = name;
+              while (fnames.Contains(name2)) {
+                name2 = name + "_" + i.ToString();
+                i++;
+              }
+              zf.AddDirectory(lf, "__libs\\" + name2);
+              fnames.Add(name2);
+            }
+          }
           zf.RemoveSelectedEntries("__site/tmp/*");
           zf.RemoveSelectedEntries("__site/_log/*");
           zf.Save();

@@ -79,23 +79,32 @@
       atSol = true;
       ++lines;
     }
-
+    
     for (var i = 0; i < text.length; ++i) {
-      var stream = new CodeMirror.StringStream(text[i], tabSize);
+      var stream = new CodeMirror.StringStream(text[i], tabSize), pre_cur = null, pre_style = null;
       while (!stream.eol()) {
         var inner = CodeMirror.innerMode(outer, state);
+        var context = inner.mode.xmlCurrentContext ? inner.mode.xmlCurrentContext(inner.state) : []
         var style = outer.token(stream, state), cur = stream.current();
         stream.start = stream.pos;
-        if (!atSol || /\S/.test(cur)) {
-          out += cur;
+
+        //alert("context: " + context + ", cur: " + cur + ", state: " + JSON.stringify(inner.state));
+
+        if (!atSol || /\S/.test(cur)) 
+        {
+          //out += cur;
+          if(pre_style == null && style == "atom") out += (pre_cur ? pre_cur : "") + cur;
+          else out += cur;
           atSol = false;
-        }
+        } 
         if (!atSol && inner.mode.newlineAfterToken &&
             inner.mode.newlineAfterToken(style, cur, stream.string.slice(stream.pos) || text[i + 1] || "", inner.state))
           newline();
+
+        pre_cur = cur; pre_style = style;
       }
       if (!stream.pos && outer.blankLine) outer.blankLine(state);
-      if (!atSol) newline();
+      if (!atSol) newline(); 
     }
 
     cm.operation(function () {

@@ -50,9 +50,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="tools\blocks.cs" />
     <Compile Include="tiles\cmd.cs" />
     <Compile Include="tiles\user.cs" />
+    <Compile Include="tools\blocks.cs" />
     <Compile Include="tools\config.cs" />
     <Compile Include="core.cs" />
     <Compile Include="db\db_access.cs" />

@@ -1,4 +1,15 @@
-﻿<config>
+﻿<!-- COMANDI TOYN
+
+group: gruppo d'appartenenza dell'azione
+action: azione principale obbligatoria
+object, subobj: oggetto e sotto-oggetto dell'azione principale
+
+SINTASSI DICHIARAZIONE object, subobj
+ keyword - parola chiave che rappresenta un oggetto o un'azione particolare
+ {par_value} - valore variabile dell'object o del subobj
+ name_parameter:{par_value} - valore variabile accompagnato al nome del parametro associato all'object o al subobj
+-->
+<config>
 
   <tables>
     <table name="cmds-groups" cols="name,title,des">
@@ -9,29 +20,31 @@
         <row name="backups" title="Gestione Backups database" des="comandi per la gestione dei backups del database"/>
       </rows>
     </table>
-    <table name="base-cmds" cols="group,action,object,subobjs,des,page,type">
+    <table name="base-cmds" cols="group,action,object,subobj,des,page,type,call,compile">
       <rows>
         <!-- base -->
-        <row group="base" action="view" object="user" des="visualizza i dettagli sull'utente loggato"/>
-        <row group="base" action="exit" des="effettua il log out dall'ambiente"/>
+        <row group="base" action="view" object="user" des="visualizza i dettagli sull'utente loggato" call="true"/>
+        <row group="base" action="exit" des="effettua il log out dall'ambiente" call="true"/>
         <!-- sys -->
-        <row group="sys" action="view" object="cmds" des="visualizza tutti i comandi disponibili per l'utente loggato"/>
-        <row group="sys" action="view" object="vars" des="visualizza le variabile di configurazione e di sistema" type="admin"/>
-        <row group="sys" action="view" object="logs" des="visualizza la lista completa dei logs disponibili" type="admin"/>
-        <row group="sys" action="view" object="log-today" des="visualizza il log di oggi" type="admin"/>
-        <row group="sys" action="view" object="log" subobjs="{file}" des="visualizza il log specifico" type="admin"/>
-        <row group="sys" action="crypt" object="{phrase}" subobjs="{password}" des="cripta la frase specificata in SHA1 oppure nel sistema interno più sofisticato con password" type="admin"/>
-        <row group="sys" action="open" object="test" page="test.aspx" des="apre la pagina di test" type="admin"/>
-        <row group="sys" action="check" object="conn" des="verifica connessione al database" type="admin"/>
+        <row group="sys" action="view" object="cmds" des="visualizza tutti i comandi disponibili per l'utente loggato" call="true"/>
+        <row group="sys" action="view" object="vars" des="visualizza le variabile di configurazione e di sistema" type="admin" call="true"/>
+        <row group="sys" action="view" object="logs" des="visualizza la lista completa dei logs disponibili" type="admin" call="true"/>
+        <row group="sys" action="view" object="log-today" des="visualizza il log di oggi" type="admin" call="true"/>
+        <row group="sys" action="view" object="log" subobj="{file}" des="visualizza il log specifico" type="admin"/>
+        <row group="sys" action="crypt" object="{phrase}" des="cripta la frase specificata in SHA1" type="admin" compile="true"/>
+        <row group="sys" action="crypt" object="{phrase}" subobj="{password}" des="cripta la frase specificata nel sistema interno con password" type="admin" compile="true"/>
+        <row group="sys" action="decrypt" object="{phrase}" subobj="{password}" des="decripta la frase generata dal sistema interno con password" type="admin" compile="true"/>
+        <row group="sys" action="open" object="test" page="test.aspx" des="apre la pagina di test" type="admin" call="true"/>
+        <row group="sys" action="check" object="conn" des="verifica connessione al database" type="admin" call="true"/>
         <!-- backups -->
-        <row group="backups" action="gen" object="backup" page="backups.aspx" des="genera backup del database" type="admin"/>
-        <row group="backups" action="view" object="backups" page="backups.aspx" des="visualizza la lista dei backups generati" type="admin"/>
-        <row group="backups" action="restore" object="backup" page="backups.aspx" des="ripristino backup del database" type="admin"/>
+        <row group="backups" action="gen" object="backup" page="backups.aspx" des="genera backup del database" type="admin" call="true"/>
+        <row group="backups" action="view" object="backups" page="backups.aspx" des="visualizza la lista dei backups generati" type="admin" call="true"/>
+        <row group="backups" action="restore" object="backup" subobj="{nome file}" page="backups.aspx" des="ripristino backup del database" type="admin"/>
         <!-- elements -->
-        <row group="elements" action="view" object="elements" page="element.aspx" des="visualizza gli elementi radice"/>
-        <row group="elements" action="view" object="element" subobjs="id:'id element'" page="element.aspx" des="visualizza l'elemento specifico"/>
-        <row group="elements" action="xml" object="elements" page="element.aspx" des="edit e salvataggio degli elementi radice"/>
-        <row group="elements" action="xml" object="element" subobjs="id:'id element'" page="element.aspx" des="edit e salvataggio dell'elemento"/>
+        <row group="elements" action="view" object="elements" page="element.aspx" des="visualizza gli elementi radice" call="true"/>
+        <row group="elements" action="view" object="element" subobj="id:{id element}" page="element.aspx" des="visualizza l'elemento specifico"/>
+        <row group="elements" action="xml" object="elements" page="element.aspx" des="edit e salvataggio degli elementi radice" call="true"/>
+        <row group="elements" action="xml" object="element" subobj="id:{id element}" page="element.aspx" des="edit e salvataggio dell'elemento"/>
       </rows>
     </table>
   </tables>

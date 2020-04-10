@@ -79,6 +79,6 @@ public partial class login : tl_page {
   protected void New_Click (object sender, EventArgs e) { Response.Redirect("~/new.aspx"); }
 
   protected void err_login (string txt) {
-    lbl_alert.Visible = true; lbl_alert.InnerHtml = string.Format("<strong>{0}</strong>", txt);
+    lbl_alert.Visible = true; lbl_alert.InnerHtml = string.Format("<strong>Ops...c'è qualcosa che non va!</strong><br/><br/>{0}", txt);
   }
 }

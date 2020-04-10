@@ -28,7 +28,7 @@
       "!top": ["element"],
       "!attrs": {},
       element: {
-        attrs: { title: null, code: null, ref: null, closed: "true" },
+        attrs: { title: null, code: null, ref: null },
         children: ["element", "title", "text", "account", "value", "link", "list", "attivita"]
       },
       title: {
@@ -39,7 +39,7 @@
         attrs: { title: null, style: ["underline", "bold"] },
         children: null
       }, list: {
-        attrs: { title: null, style: ["inline"] },
+        attrs: { title: null, style: ["inline"], closed: ["true"] },
         children: ["element", "title", "text", "link", "account", "value", "list", "attivita"]
       }, account: {
         attrs: { title: null, email: null, user: null, password: null, notes: null },
@@ -53,6 +53,9 @@
       }, attivita: {
         attrs: { title: null, priorita: ["bassa", "normale", "alta"], stato: ["la prossima", "da iniziare", "in corso", "sospesa", "fatta"] },
         children: ["element", "title", "text", "link", "account", "value", "list", "attivita"]
+      }, code: {
+        attrs: { title: null, notes: null },
+        children: null
       }
     };
 
@@ -73,7 +76,6 @@
 
         // context menu
         init_context();
-
       }
 
       // xml
@@ -101,10 +103,7 @@
           });
 
           window.setTimeout(function () {
-            var totalLines = _editor.lineCount();
-            _editor.autoFormatRange({ line: 0, ch: 0 }, { line: totalLines });
-            _editor.focus();
-            _editor.setCursor(0);
+            format_editor(null, 0, true);
             end_status_to();
           }, 100);
 
@@ -325,6 +324,11 @@
     }
 
     function remove_element(id) {
+      show_alert_yn("Attenzione!", "Sei sicuro di voler eliminare l'elemento?"
+        , function () { remove_element2(id) });
+    }
+
+    function remove_element2(id) {
       try {
         var result = post_data({ "action": "remove_element", "id": id });
         if (result) {
@@ -384,11 +388,12 @@
       format_editor(spos, pos_cursor);
     }
 
-    function format_editor(spos, pos_cursor) {
+    function format_editor(spos, pos_cursor, focus) {
       var tot_lines = _editor.lineCount();
       _editor.autoFormatRange({ line: 0, ch: 0 }, { line: tot_lines });
-      if (spos) _editor.scrollIntoView(spos);
-      if (pos_cursor) _editor.setCursor(pos_cursor);
+      if (spos != null) _editor.scrollIntoView(spos);
+      if (pos_cursor != null) _editor.setCursor(pos_cursor);
+      if (focus) _editor.focus();
     }
 
     function check_paste_xml(text_xml) {
@@ -471,6 +476,37 @@
       $("[childs_element_id=" + id + "]").show();
       $("[element_id=" + id + "]").css('color', '');
       $("[open_id=" + id + "]").hide();
+    }
+
+    var _code = null;
+    function focus_code(id) {
+      _code = $("[code_id=" + id + "]").val();
+    }
+
+    function blur_code(id) {
+      var code_2 = $("[code_id=" + id + "]").val();
+      if (_code != code_2) { _code = code_2; save_code(id, _code); }
+    }
+
+    function save_code(id, txt) {
+      try {
+        $("[code_id=" + id + "]").css("border-color", "lightgreen").css("box-shadow", "0 0 2px lightgreen");
+
+        window.setTimeout(function () {
+
+          var result = post_data({ "action": "save_code", "code": txt, "id": id });
+          if (result) {
+            if (result.des_result == "ok")
+              $("[code_id=" + id + "]").css("border-color", "").css("box-shadow", "");
+            else {
+              $("[code_id=" + id + "]").css("border-color", "tomato").css("box-shadow", "0 0 2px tomato");
+              show_alert("Attenzione!", "cè stato un problema nel salvataggio del codice sorgente!"
+                + (result.message ? ": " + result.message : "") + "!");
+            }
+          }
+        }, 200);
+
+      } catch (e) { show_alert("Attenzione!", e.message); }
     }
 
   </script>

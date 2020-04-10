@@ -91,7 +91,7 @@ public partial class _element : tl_page {
               }
 
               // xml
-              res.doc_xml = element.get_doc(els).xml;
+              res.doc_xml = element.get_doc(els, _e.load_types_attributes()).xml;
               res.vars.Add("first_order", els.Count > 0 ? els[0].order.ToString() : "");
               res.vars.Add("last_order", els.Count > 0 ? els[els.Count - 1].order.ToString() : "");
 
@@ -100,7 +100,13 @@ public partial class _element : tl_page {
               parse_menu(element_id, els, sb, true, max_level);
               res.menu_html = sb.ToString();
 
-            } // remove_element
+            } // save_code
+            else if (act == "save_code") {
+              element etype = _e.load_type_attributes(element.type_element.code);
+              etype.id = long.Parse(jo["id"].ToString());
+              _e.set_attribute(etype, etype.get_attribute("content"), db_provider.str_qry(jo["code"].ToString()));
+            }
+              // remove_element
             else if (act == "remove_element") {
               long id = long.Parse(jo["id"].ToString());
 
@@ -213,47 +219,33 @@ public partial class _element : tl_page {
               // move_up
             else if (act == "move_up") {
               long id = long.Parse(jo["id"].ToString());
-              DataTable dt = db_conn.dt_table(string.Format(@"select top 2 ec.* from elements_contents ec 
-               join [elements] e on e.element_id = ec.child_element_id and isnull(e.deleted, 0) = 0
-               where ec.child_element_id = {0} 
-                or (ec.element_id = (select top 1 element_id from elements_contents where child_element_id = {0})
-                  and [order] < (select top 1 ec2.[order] from elements_contents ec2 
-                    join [elements] e2 on e2.element_id = ec2.child_element_id and isnull(e2.deleted, 0) = 0
-                    where ec2.child_element_id = {0}))
-               order by [order] desc", id));
+              DataTable dt = db_conn.dt_table(core.parse(config.get_query("elements.move-up").text
+                , new Dictionary<string, object>() { { "element_id", id } }));
               if (dt.Rows.Count == 2) {
                 long id_1 = db_provider.long_val(dt.Rows[0]["elements_contents_id"])
                   , id_2 = db_provider.long_val(dt.Rows[1]["elements_contents_id"]);
                 int order_1 = db_provider.int_val(dt.Rows[0]["order"])
                   , order_2 = db_provider.int_val(dt.Rows[1]["order"]);
-                db_conn.exec(string.Format(@"update elements_contents set [order] = {1} where elements_contents_id = {0};
-                  update elements_contents set [order] = {3} where elements_contents_id = {2};"
-                  , id_1, order_2, id_2, order_1));
+                db_conn.exec(core.parse(config.get_query("elements.after-move-up").text
+                  , new Dictionary<string, object>() { { "id_1", id_1 }, { "order_1", order_1 } 
+                    , { "id_2", id_2 }, { "order_2", order_2 }}));
                 res.contents = "1";
               }
             }
               // move_end
             else if (act == "move_end") {
               long id = long.Parse(jo["id"].ToString());
-              DataTable dt = db_conn.dt_table(string.Format(@"select top 2 ec.* from elements_contents ec 
-               join [elements] e on e.element_id = ec.child_element_id and isnull(e.deleted, 0) = 0
-               where ec.child_element_id = {0}
-                or (ec.element_id = (select top 1 element_id from elements_contents where child_element_id = {0})
-                  and [order] = (select max(ec2.[order]) 
-					          from elements_contents ec2 
-					          join [elements] e2 on e2.element_id = ec2.child_element_id and isnull(e2.deleted, 0) = 0
-					          where ec2.element_id = ec.element_id))
-               order by [order]", id));
+              DataTable dt = db_conn.dt_table(core.parse(config.get_query("elements.move-end").text
+                , new Dictionary<string, object>() { { "element_id", id } }));
               if (dt.Rows.Count == 2) {
                 long element_id = db_provider.long_val(dt.Rows[0]["element_id"])
                   , id_1 = db_provider.long_val(dt.Rows[0]["elements_contents_id"])
                   , id_2 = db_provider.long_val(dt.Rows[1]["elements_contents_id"]);
                 int order_1 = db_provider.int_val(dt.Rows[0]["order"])
                   , order_2 = db_provider.int_val(dt.Rows[1]["order"]);
-                db_conn.exec(string.Format(@"update elements_contents set [order] = [order] - 1 
-                    where element_id = {0} and [order] > {1};
-                  update elements_contents set [order] = {2} where elements_contents_id = {3};"
-                  , element_id, order_1, order_2, id_1));
+                db_conn.exec(core.parse(config.get_query("elements.after-move-end").text
+                  , new Dictionary<string, object>() { { "element_id", element_id }, { "order_1", order_1 } 
+                    , { "id_1", id_1 }, { "order_2", order_2 }}));
                 res.contents = "1";
               }
             }
@@ -272,37 +264,21 @@ public partial class _element : tl_page {
                   if (tp == "cp") {
                     element elc = _e.load_element(id, true);
                     elc.reset_ids();
-                    _e.save_element(elc);
+                    _e.save_element(elc, _e.load_types_attributes());
                     id = elc.id;
                   }
 
                   // cut e copy position
                   if (act == "paste_after") {
-                    db_conn.exec(string.Format(@"update elements_contents set [order] = [order] + 1
-                        where element_id = (select top 1 element_id from elements_contents where child_element_id = {0})
-                          and [order] > (select top 1 [order] from elements_contents where child_element_id = {0});
-                      delete from elements_contents where child_element_id = {1};
-                      insert into elements_contents (element_id, child_element_id, [order])
-                       select top 1 element_id, {1} as child_element_id, [order] + 1 as [order]
-                        from elements_contents where child_element_id = {0};", idref, id));
+                    db_conn.exec(core.parse(config.get_query("elements.paste-after").text
+                      , new Dictionary<string, object>() { { "ref_id", idref }, { "element_id", id } }));
                     idref = id;
                   } else if (act == "paste_before") {
-                    db_conn.exec(string.Format(@"update elements_contents set [order] = [order] + 1
-                        where element_id = (select top 1 element_id from elements_contents where child_element_id = {0})
-                          and [order] >= (select top 1 [order] from elements_contents where child_element_id = {0});
-                      delete from elements_contents where child_element_id = {1};
-                      insert into elements_contents (element_id, child_element_id, [order])
-                       select top 1 element_id, {1} as child_element_id, [order] - 1 as [order]
-                        from elements_contents where child_element_id = {0};", idref, id));
+                    db_conn.exec(core.parse(config.get_query("elements.paste-before").text
+                      , new Dictionary<string, object>() { { "ref_id", idref }, { "element_id", id } }));
                   } else if (act == "paste_inside") {
-                    db_conn.exec(string.Format(@"delete from elements_contents where child_element_id = {1};
-                      insert into elements_contents (element_id, child_element_id, [order])
-                       select t.element_id, {1} as child_element_id, t.new_order
-                        from (select {0} as element_id, isnull(max(ec.[order]) + 1, 0) as new_order 
-                         from elements_contents ec 
-                         where ec.element_id = {0}
-                           and not exists (select top 1 1 from elements 
-                            where element_id = ec.child_element_id and isnull(deleted, 0) > 0)) t", idref, id));
+                    db_conn.exec(core.parse(config.get_query("elements.paste-inside").text
+                      , new Dictionary<string, object>() { { "ref_id", idref }, { "element_id", id } }));
                   }
                 }
 
@@ -382,18 +358,27 @@ public partial class _element : tl_page {
         // xml document
         contents_xml.Visible = true;
         contents.Visible = false;
-        doc_xml.Value = doc_xml_bck.Value = element.get_doc(els).root_node.inner_xml;
+        doc_xml.Value = doc_xml_bck.Value = element.get_doc(els, _e.load_types_attributes()).root_node.inner_xml;
 
         // menu
         StringBuilder sb = new StringBuilder();
         parse_menu(element_id, els, sb, true, max_level_els);
         menu.InnerHtml = sb.ToString();
+
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
     } catch (Exception ex) {
       log.log_err(ex);
       if (!_post) master.err_txt(ex.Message);
     }
+  }
+
+  protected override void OnLoad(EventArgs e) {
+    base.OnLoad(e);
+
+    if (_cmd.action == "xml")
+      this.master.set_status_txt("caricamento dati...");
+
   }
 
   protected override void OnLoadComplete(EventArgs e) {
@@ -435,7 +420,7 @@ public partial class _element : tl_page {
     if (root) sb.AppendFormat("<ul menu_childs_id='" + e.id.ToString() + "' class='nav flex-column' style='padding:0px;margin-top:0px;' >\n");
 
     string reference = get_ref(e.get_attribute_string("ref"))
-      , title = e.type == element.type_element.title && e.has_content ? e.content 
+      , title = e.type == element.type_element.title && e.has_content ? e.content
         : (e.has_title ? e.title : (reference != "" ? reference : "[senza titolo]"));
     if (title != "") {
       parse_title_menu(e, title, sb
@@ -487,7 +472,7 @@ public partial class _element : tl_page {
   }
 
   protected void parse_element(element e, StringBuilder sb, bool in_list = false) {
-    
+
     if ((e.has_title || e.get_attribute_string("ref") != "") && e.type == element.type_element.element)
       parse_type_element(e, sb, in_list);
 
@@ -529,12 +514,15 @@ public partial class _element : tl_page {
     else if (e.type == element.type_element.value) parse_type_value(e, sb, in_list);
     else if (e.type == element.type_element.link) parse_type_link(e, sb, in_list);
     else if (e.type == element.type_element.attivita) parse_type_attivita(e, sb, in_list);
+    else if (e.type == element.type_element.code) parse_type_code(e, sb, in_list);
+    else
+      sb.AppendFormat("<h5 style='color:tomato'>nota bene: elemento '" + e.type + "' non gestito!</h5>");
   }
 
 
 
   protected void parse_type_list(element e, StringBuilder sb, bool in_list = false) {
-    if (e.type != element.type_element.list) throw new Exception("elemento di tipo errato!");
+    if (e.type != element.type_element.list) throw new Exception("elemento " + e.type + " di tipo errato!");
 
     string ref_id = "ele_" + e.id.ToString(), a = string.Format("<a id='{0}' class='anchor'></a>", ref_id);
     bool closed = e.get_attribute_bool("closed");
@@ -552,8 +540,8 @@ public partial class _element : tl_page {
 
       string sym = e.level < 1 ? "<img src='images/sq-16.png' style='margin-right:3px;'></img>"
         : (e.level <= 2 ? "<img src='images/sq-14.png' style='margin-right:3px;'></img>"
-          : "<img src='images/sq-12.png' style='margin-right:3px;'></img>"); 
-      
+          : "<img src='images/sq-12.png' style='margin-right:3px;'></img>");
+
       if (!in_list) sb.AppendFormat(@"<{3} element_id='{1}' type_element='list' title_element=""{8}"" style='{4}'>{2}{7}{0}{5}{6}</{3}>"
         , e.title, e.id, a, tag, style, tr, html_notes, sym, e.des);
       else sb.AppendFormat(@"<li class='square{5}' contenitor_id='{1}' style='overflow-wrap:break-word;'><{3} element_id='{1}' type_element='list' title_element=""{8}"" style='{4}'>{2}{0}{6}{7}</{3}></li>"
@@ -592,7 +580,7 @@ public partial class _element : tl_page {
   }
 
   protected void parse_type_attivita(element e, StringBuilder sb, bool in_list = false) {
-    if (e.type != element.type_element.attivita) throw new Exception("elemento di tipo errato!");
+    if (e.type != element.type_element.attivita) throw new Exception("elemento " + e.type + " di tipo errato!");
 
     // head
     string title = e.has_title ? e.title : "[senza titolo]"
@@ -600,8 +588,8 @@ public partial class _element : tl_page {
       , dt_upd = e.dt_upd.HasValue ? " - " + e.dt_upd.Value.ToString("dddd dd MMMM yyyy") : ""
       , dt_ins = e.dt_ins.HasValue ? " - " + e.dt_ins.Value.ToString("dddd dd MMMM yyyy") : "";
 
-    string cl = stato == "la prossima" ? "dark" : (stato == "fatta" ? "success" : (stato == "sospesa" ? "secondary"
-      : (stato == "in corso" ? "warning" : (priorita == "alta" ? "danger" : (priorita == "bassa" ? "light" : "primary")))));
+    string cl = stato == "la prossima" ? (priorita == "alta" ? "danger" : "primary") : (stato == "fatta" ? "success" : (stato == "sospesa" ? "secondary"
+      : (stato == "in corso" ? "warning" : (priorita == "alta" ? "danger" : (priorita == "bassa" ? "info" : "primary")))));
 
     sb.AppendFormat("<div element_id='{3}' type_element='attivita' title_element=\"{9}\" stato='{6}' priorita='{7}' in_list='{8}' style='margin-top:3px;margin-bottom:3px;'>{4}"
      + "<h4 style=\"background: url('{0}') no-repeat 2px 6px;padding-left:22px;display:inline-block;margin:0px;cursor:pointer;\">"
@@ -636,7 +624,7 @@ public partial class _element : tl_page {
   protected string image_bullet(element e) { return "images/circle-8" + bullet_i(e) + ".png"; }
 
   protected void parse_type_account(element e, StringBuilder sb, bool in_list = false) {
-    if (e.type != element.type_element.account) throw new Exception("elemento di tipo errato!");
+    if (e.type != element.type_element.account) throw new Exception("elemento " + e.type + " di tipo errato!");
 
     string title = e.has_title ? e.title : "account", user = e.get_attribute_string("user")
       , pass = e.get_attribute_string("password"), notes = e.get_attribute_string("notes")
@@ -649,7 +637,7 @@ public partial class _element : tl_page {
   }
 
   protected void parse_type_value(element e, StringBuilder sb, bool in_list = false) {
-    if (e.type != element.type_element.value) throw new Exception("elemento di tipo errato!");
+    if (e.type != element.type_element.value) throw new Exception("elemento " + e.type + " di tipo errato!");
 
     string title = e.title, content = e.get_attribute_string("content"), notes = e.get_attribute_string("notes");
 
@@ -659,8 +647,29 @@ public partial class _element : tl_page {
       , !in_list ? "<img src='" + image_bullet(e) + "' style='padding-left:3px;padding-right:3px;'></img>" : "", e.id, e.des);
   }
 
+  protected void parse_type_code(element e, StringBuilder sb, bool in_list = false) {
+    if (e.type != element.type_element.code) throw new Exception("elemento " + e.type + " di tipo errato!");
+
+    string title = e.title, notes = e.get_attribute_string("notes")
+      , tag = e.level <= 1 ? "h4" : "h5";
+    int height = e.get_attribute_int("height");
+
+    // content
+    //  & => &amp;
+    //  > => &gt;
+    //  < => &lt;
+    string content = e.get_attribute_string("content").Replace("&", "&amp;").Replace(">", "&gt;").Replace("<", "&lt;");
+
+    sb.AppendFormat(@"<div element_id='{4}' type_element='code' title_element=""{5}"">{3}{0}{2}
+        <textarea code_id='{4}' style='color:green;{6}width:100%;font-family:courier new;' spellcheck='false' onfocus='focus_code({4})' onblur='blur_code({4})' wrap='off'>{1}</textarea></div>"
+      , !string.IsNullOrEmpty(title) ? string.Format("<{0}>{1}</{0}>", tag, title) : ""
+      , content, notes != "" ? "<p class='lead'>" + notes + "</p>" : ""
+      , "", e.id, e.des
+      , height <= 0 ? "height:200px;" : "height:" + height + "px;");
+  }
+
   protected void parse_type_link(element e, StringBuilder sb, bool in_list = false) {
-    if (e.type != element.type_element.link) throw new Exception("elemento di tipo errato!");
+    if (e.type != element.type_element.link) throw new Exception("elemento " + e.type + " di tipo errato!");
 
     string title = e.title, reference = get_ref(e.get_attribute_string("ref")), notes = e.get_attribute_string("notes");
     bool title_ref_cmd = reference_cmd(e.get_attribute_string("ref"));
@@ -672,7 +681,7 @@ public partial class _element : tl_page {
   }
 
   protected void parse_type_title(element e, StringBuilder sb, bool in_list = false) {
-    if (e.type != element.type_element.title) throw new Exception("elemento di tipo errato!");
+    if (e.type != element.type_element.title) throw new Exception("elemento " + e.type + " di tipo errato!");
 
     int level = !in_list ? e.level : 5;
     string ref_id = "ele_" + e.id.ToString(), title = e.has_content ? e.content : "<titolo>"
@@ -698,7 +707,7 @@ public partial class _element : tl_page {
   }
 
   protected void parse_type_element(element e, StringBuilder sb, bool in_list = false) {
-    if (e.type != element.type_element.element) throw new Exception("elemento di tipo errato!");
+    if (e.type != element.type_element.element) throw new Exception("elemento " + e.type + " di tipo errato!");
 
     int level = !in_list ? e.level : 5;
     string code = e.get_attribute_string("code"), type = e.get_attribute_string("type")
@@ -747,7 +756,7 @@ public partial class _element : tl_page {
   public bool is_style(string styles) { return !string.IsNullOrEmpty(styles); }
 
   protected void parse_type_text(element e, StringBuilder sb, bool in_list = false) {
-    if (e.type != element.type_element.text) throw new Exception("elemento di tipo errato!");
+    if (e.type != element.type_element.text) throw new Exception("elemento " + e.type + " di tipo errato!");
 
     int level = e.level;
     string content = e.get_attribute_string("content"), el_style = e.get_attribute_string("style");
@@ -755,7 +764,7 @@ public partial class _element : tl_page {
     string fs = level > 1 ? "" : "", style = (is_style(el_style) ? string.Join(""
       , get_styles(el_style).Select(s => s == text_styles.bold ? "font-weight:bold;"
         : (s == text_styles.underline ? "font-style:italic;" : ""))) : "") + fs;
-    sb.AppendFormat("<p element_id='{4}' type_element='text' title_element=\"{5}\" class='lead' style='{2}padding:0px;style='overflow-wrap:break-word;{1}'>{3}{0}</p>"
+    sb.AppendFormat("<p element_id='{4}' type_element='text' title_element=\"{5}\" class='lead' style='{2}padding:0px;overflow-wrap:break-word;{1}'>{3}{0}</p>"
       , content, style != "" ? style : "", !in_list ? "margin-bottom:10px;" : "margin-bottom:0px;"
       , !string.IsNullOrEmpty(e.title) ? "<span class='h5' style='margin-right:10px;'>" + e.title + "</span>" : "", e.id, e.des);
   }

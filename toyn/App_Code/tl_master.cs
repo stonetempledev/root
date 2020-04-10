@@ -26,6 +26,8 @@ public class tl_master : System.Web.UI.MasterPage {
 
   public string url_cmd (string cmd, string page = "") { return (page == "" ? config.get_var("vars.router-page").value : page) + "?cmd=" + HttpUtility.UrlEncode(cmd); }
 
+  public virtual void set_status_txt(string text) { }
+
   public void elab_cmd(string cmd) { Response.Redirect(url_cmd(cmd, config.get_var("vars.router-page").value)); }
 
   public bool is_mobile() {

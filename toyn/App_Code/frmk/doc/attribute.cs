@@ -13,6 +13,7 @@ namespace toyn {
     public string code { get; set; }
     public object value { get; set; }
     public bool content_txt_xml { get; set; }
+    public bool data_content { get; set; }
     public bool get_bool { get { return this.value != null ? Convert.ToBoolean(this.value) : false; } set { this.value = value; } }
     public double get_real { get { return this.value != null ? Convert.ToDouble(this.value) : 0; } set { this.value = value; } }
     public int get_int { get { return this.value != null ? Convert.ToInt32(this.value) : 0; } set { this.value = value; } }
@@ -23,8 +24,9 @@ namespace toyn {
       this.code = code; this.type = type; this.value = value; this.content_txt_xml = content_txt_xml;
     }
 
-    public attribute(element.type_element et, int id, string code, attribute_type type, bool content_txt_xml) {
-      this.e_type = et; this.id = id; this.code = code; this.type = type; this.content_txt_xml = content_txt_xml;
+    public attribute(element.type_element et, int id, string code, attribute_type type, bool content_txt_xml, bool data_content) {
+      this.e_type = et; this.id = id; this.code = code; this.type = type;
+      this.content_txt_xml = content_txt_xml; this.data_content = data_content;
     }
   }
 }

@@ -74,16 +74,6 @@ public class tl_page : System.Web.UI.Page {
           if (Cache[doc_key] == null) Cache.Insert(doc_key, true, new System.Web.Caching.CacheDependency(f));
         });
 
-        // base html blocks
-        foreach (string f in _core.config.get_var("vars.base-blocks").value.Split(new char[] { ';' })) {
-          string doc_key = strings.rel_path(base_path, f);
-          log.log_info("load config doc: " + doc_key + " - " + f);
-          xml_doc doc = Path.GetExtension(f) != _core.app_setting("enc-ext-xml") ? new xml_doc(f)
-            : new xml_doc(cry.xml_decrypt(f, _core.app_setting("pwdcr-xml")));
-          _core.load_config(doc, doc_key);
-          if (Cache[doc_key] == null) Cache.Insert(doc_key, true, new System.Web.Caching.CacheDependency(f));
-        }
-
         Cache["core_obj"] = _core;
       }
     } catch (Exception ex) { throw ex; }

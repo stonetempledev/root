@@ -29,6 +29,18 @@
       $('#alert_ok').modal('show');
     }
 
+    var _fnc_yes = null;
+    function show_alert_yn(title, body, fnc_yes) {
+      $("#alert_yn_title").text(title);
+      $("#alert_yn_body").html(body);
+      $('#alert_yn').modal('show');
+      _fnc_yes = fnc_yes;
+    }
+
+    function yes_alert() { $('#alert_yn').modal('hide'); try { _fnc_yes(); } catch (e) { } }
+
+    function set_cmd(txt) { $("#txt_cmd").val(txt); $("#txt_cmd").focus(); }
+
     function post_data(doc) {
       try {
         var result = null;
@@ -69,7 +81,7 @@
       $("#grp_err").hide();
       if (ms) end_status_to(ms);
     }
-    function end_status_to(ms) {window.setTimeout(function () { end_status(); }, ms ? ms : 500); }
+    function end_status_to(ms) { window.setTimeout(function () { end_status(); }, ms ? ms : 500); }
     function end_status() {
       if (!_err) {
         $("#navbar").removeClass("bg-success bg-danger").addClass("bg-primary");
@@ -114,7 +126,7 @@
   <div id='alert_ok' class="modal" tabindex="-1" role="dialog" data-backdrop="static">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header alert-primary">
+        <div class="modal-header alert-danger">
           <h5 id='alert_ok_title' class="modal-title">
           </h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -128,22 +140,47 @@
       </div>
     </div>
   </div>
+  <!-- yes no -->
+  <div id='alert_yn' class="modal" tabindex="-1" role="dialog" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header alert-warning">
+          <h5 id='alert_yn_title' class="modal-title">
+          </h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id='alert_yn_body'>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" style='width:75px' data-dismiss="modal">
+            Annulla</button>
+          <button type="button" class="btn btn-primary" style='width:75px' onclick="yes_alert()">
+            Si</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- navbar -->
-  <nav id='navbar' class="navbar navbar-expand navbar-dark bg-primary fixed-top" style='padding-bottom:0px;padding-top:0px;' runat="server">   
+  <nav id='navbar' class="navbar navbar-expand navbar-dark bg-primary fixed-top" style='padding-bottom: 0px;
+    padding-top: 0px;' runat="server">   
     <a class="navbar-brand" href="./">
       <img src="images/toyn-40-b.png" class="d-inline-block align-middle" alt="">
     </a>
 
-    <div id='grp_vai' class="input-group">
+    <div id='grp_vai' class="input-group" runat="server">
       <input id="txt_cmd" runat="server" type="text" class="form-control" onfocus='sel_onfocus(this)' placeholder="ESEGUI AZIONE" aria-label="ESEGUI AZIONE"/>
       <div class="input-group-append">
         <asp:Button id="btn_cmd" runat="server" class="btn btn-outline-dark" OnClick="Cmd_Click" Text="VAI"/>
       </div>
     </div>
 
-    <span id='lbl_status' class='lead' style='color:white;display:none;'>...</span>
+    <span id='lbl_status' class='lead' style='color:white;display:none;' runat="server">...</span>
 
-    <div id='grp_err' style='display:none;' class="input-group">
+    <div id='grp_err' style='display:none;' class="input-group" runat="server">
       <input id="txt_err" readonly type="text" style='color:tomato;' class="form-control"/>
       <div class="input-group-append">
         <button class="btn btn-outline-dark" onclick="return err_click()">OK</button>

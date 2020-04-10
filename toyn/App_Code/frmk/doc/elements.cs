@@ -36,18 +36,34 @@ namespace toyn {
           e = new element(this.core) { type = et, des = des, can_have_childs = can_have_childs };
         }
         e.attributes.Add(create_attribute(dr));
+        els.Add(e);
       }
       return els;
+    }
+
+    public element load_type_attributes(element.type_element et) {
+      element etype = null;
+      foreach (DataRow dr in db_conn.dt_table(core.parse(config.get_query("elements.type-attributes").text
+        , new Dictionary<string,object>(){{"type", et.ToString()}})).Rows) {
+        string des = db_provider.str_val(dr["element_des"]);
+        bool can_have_childs = db_provider.int_val(dr["can_have_childs"]) == 1;
+        if (etype == null) {
+          etype = new element(this.core) { type = et, des = des, can_have_childs = can_have_childs };
+        }
+        etype.attributes.Add(create_attribute(dr));
+      }
+      return etype;
     }
 
     public attribute create_attribute(DataRow dr) {
       string etype = db_provider.str_val(dr["element_type"]), acode = db_provider.str_val(dr["attribute_code"])
         , atype = db_provider.str_val(dr["attribute_type"]);
       int aid = db_provider.int_val(dr["attribute_id"]);
-      bool content_txt_xml = db_provider.int_val(dr["content_txt_xml"]) == 1;
+      bool content_txt_xml = db_provider.int_val(dr["content_txt_xml"]) == 1
+        , data_content = db_provider.int_val(dr["data_content"]) == 1;
 
       return new attribute((element.type_element)Enum.Parse(typeof(element.type_element), etype), aid, acode
-        , (attribute.attribute_type)Enum.Parse(typeof(attribute.attribute_type), atype), content_txt_xml);
+        , (attribute.attribute_type)Enum.Parse(typeof(attribute.attribute_type), atype), content_txt_xml, data_content);
     }
 
     public void set_attribute(element e, attribute a, string qry_val) {
@@ -189,6 +205,8 @@ namespace toyn {
 
     public void save_elements(List<element> els, string key_page = "", int parent_id = 0, int? first_order = null, int? last_order = null) {
 
+      List<element> el_types = load_types_attributes();
+
       // correggo l'order
       if (first_order.HasValue && last_order.HasValue) {
         int diff = els.Count - ((last_order.Value - first_order.Value) + 1);
@@ -201,7 +219,7 @@ namespace toyn {
 
       // salvataggio elementi
       foreach (element el in els) {
-        save_element(el, key_page);
+        save_element(el, el_types, key_page);
         el.order = el.order_xml + (first_order.HasValue ? first_order.Value : 0);
         db_conn.exec(core.parse(config.get_query("elements.save-child").text
           , new Dictionary<string, object>() { { "id_parent", parent_id > 0 ? parent_id.ToString() : "-1" }
@@ -209,13 +227,17 @@ namespace toyn {
       }
     }
 
-    public List<long> check_exists_elements(List<long> ids) { 
+    public List<long> check_exists_elements(List<long> ids) {
       return db_conn.dt_table(core.parse(config.get_query("elements.check-exists-elements").text
         , new Dictionary<string, object>() { { "ids_elements", string.Join(",", ids) }, { "id_utente", user_id } }))
         .Rows.Cast<DataRow>().Select(r => db_provider.long_val(r["element_id"])).ToList();
     }
 
-    public long save_element(element e, string key_page = "") {
+    public long save_element(element e, List<element> el_types, string key_page = "") {
+
+      // type
+      element etype = el_types.FirstOrDefault(x => x.type == e.type);
+      if (etype == null) throw new Exception("elemento '" + e.type + "' non configurato correttamente!");
 
       // from_id
       e.undeleted = false;
@@ -240,20 +262,34 @@ namespace toyn {
       foreach (attribute a in e.attributes) {
         object val = e.attribute_value(a.code); string qry_val = null;
         if (val != null) {
-          if (a.type == attribute.attribute_type.datetime)
-            qry_val = db_provider.dt_qry(Convert.ToDateTime(val));
-          else if (a.type == attribute.attribute_type.integer)
-            qry_val = Convert.ToInt32(val).ToString();
-          else if (a.type == attribute.attribute_type.real)
-            qry_val = Convert.ToDouble(val).ToString();
-          else qry_val = db_provider.str_qry(val.ToString());
-
+          try {
+            if (a.type == attribute.attribute_type.datetime)
+              qry_val = db_provider.dt_qry(Convert.ToDateTime(val));
+            else if (a.type == attribute.attribute_type.integer)
+              qry_val = Convert.ToInt32(val).ToString();
+            else if (a.type == attribute.attribute_type.real)
+              qry_val = Convert.ToDouble(val).ToString();
+            else qry_val = db_provider.str_qry(val.ToString());
+          } catch {
+            throw new Exception(string.Format("il valore {0} dev'essere di tipo {3} e non è corretto. elemento '{1}' id: {2}"
+              , val.ToString(), e.type.ToString(), e.id, a.type.ToString()));
+          }
           set_attribute(e, a, qry_val);
         } else {
-          if (!e.added) db_conn.exec(core.parse(config.get_query("elements.delete-attributes").text
+          if (!e.added) db_conn.exec(core.parse(config.get_query("elements.delete-attribute").text
             , new Dictionary<string, object>() { { "id_element", e.id }, { "attr_type", a.type.ToString() }
             , { "attr_code", a.code } }));
         }
+      }
+
+      // delete attributes
+      if (!e.added) {
+        etype.attributes.ForEach(at => { 
+          if(e.attributes.FirstOrDefault(x => x.code == at.code) == null)
+            db_conn.exec(core.parse(config.get_query("elements.delete-attribute").text
+            , new Dictionary<string, object>() { { "id_element", e.id }, { "attr_type", at.type.ToString() }
+            , { "attr_code", at.code } }));
+        });
       }
 
       // childs
@@ -262,7 +298,7 @@ namespace toyn {
          , new Dictionary<string, object>() { { "id_element", e.id } }));
 
         foreach (element ec in e.childs) {
-          save_element(ec, key_page);
+          save_element(ec, el_types, key_page);
           db_conn.exec(core.parse(config.get_query("elements.save-child-content").text
             , new Dictionary<string, object>() { { "id_element", e.id }, { "id_child", ec.id }, { "order", ec.order_xml } }));
         }

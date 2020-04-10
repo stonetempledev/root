@@ -25,6 +25,11 @@
     });
 
     function del_backup(fn) {
+      show_alert_yn("Attenzione!", "Sei sicuro di voler cancellare il backup '" + fn + "'?"
+      , function () { window.setTimeout(function () { del_backup2(fn); }, 500); });
+    }
+
+    function del_backup2(fn) {
       try {
         status_txt("eliminazione backup in corso...")
         window.setTimeout(function () {
@@ -46,7 +51,7 @@
           var result = post_data({ "action": "down_backup", "fn": fn });
           if (result) {
             if (result.des_result == "ok") {
-              
+
               var link = document.createElement("a");
               link.download = result.url_name;
               link.href = result.url_file;
@@ -81,6 +86,10 @@
       <div class='col-9 var-value'>
         <input id="val_file_format" type='text' runat="server" /></div>
       <div class='col-3 var-name'>
+        libs folders</div>
+      <div class='col-9 var-value'>
+        <input id="val_libs_folders" type='text' runat="server" /></div>
+      <div class='col-3 var-name'>
         net-user</div>
       <div class='col-9 var-value'>
         <input id="val_net_user" type='text' runat="server" /></div>
@@ -95,13 +104,14 @@
       <div class='col-3 var-name'>
         notes</div>
       <div class='col-9 var-value'>
-        <textarea id="notes_txt" style='width:100%;' rows='5' maxlength="500" runat="server"></textarea></div>
+        <textarea id="notes_txt" style='width: 100%;' rows='5' maxlength="500" runat="server"></textarea></div>
       <div class='col-3 var-name'>
         sql-command</div>
       <div class='col-9 var-value'>
-        <textarea id="sql_command" style='width:100%;' rows='5' runat="server"></textarea></div>
-      <div class='col-12' style='margin-top:20px;margin-bottom:50px;'>
-        <asp:Button class='btn btn-primary float-right' runat='server' OnClick='gen_backup' Text='GENERA BACKUP'></asp:Button>
+        <textarea id="sql_command" style='width: 100%;' rows='5' runat="server"></textarea></div>
+      <div class='col-12' style='margin-top: 20px; margin-bottom: 50px;'>
+        <asp:Button class='btn btn-primary float-right' runat='server' OnClick='gen_backup'
+          Text='GENERA BACKUP'></asp:Button>
       </div>
     </div>
     <div id='res_backups' runat='server' class="row">
@@ -128,15 +138,17 @@
       <div class='col-3 var-name'>
         sql-command</div>
       <div class='col-9 var-value'>
-        <textarea id="res_sql_command" style='width:100%;' rows='5' runat="server"></textarea></div>
-      <div class='col-12' style='margin-top:20px;'>
-        <asp:Button class='btn btn-primary float-right' runat='server' OnClick='res_backup' Text='RIPRISTINA BACKUP'></asp:Button>
+        <textarea id="res_sql_command" style='width: 100%;' rows='5' runat="server"></textarea></div>
+      <div class='col-12' style='margin-top: 20px;'>
+        <asp:Button class='btn btn-primary float-right' runat='server' OnClick='res_backup'
+          Text='RIPRISTINA BACKUP'></asp:Button>
       </div>
     </div>
     <div id='view_backups' runat='server' class="row">
-      <div class='col-12'>
-        <h2 style='margin-bottom: 45px;'>
-          Elenco Backups</h2>
+      <div class='col-12' style='margin-bottom: 45px;'>
+        <h2>
+          Elenco Backups<small>  clicca su un backup per effettarne il
+            ripristino</small></h2>
       </div>
       <div id='res_view' runat='server' class='col-12'>
       </div>

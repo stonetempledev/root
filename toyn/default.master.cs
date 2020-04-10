@@ -63,6 +63,14 @@ public partial class _default : tl_master {
     }
   }
 
+  public override void set_status_txt(string text) {
+    string cl = navbar.Attributes["class"];
+    navbar.Attributes["class"] = cl.Replace("bg-primary", "bg-success");
+    grp_vai.Style.Add(HtmlTextWriterStyle.Display, "none");
+    lbl_status.Style[HtmlTextWriterStyle.Display] = "";
+    lbl_status.InnerText = text;
+  }
+
   protected void Cmd_Click(object sender, EventArgs e) { elab_cmd(config.get_var("vars.router-page").value); }
 
   public void elab_cmd(string page, string cmd = "") { Response.Redirect(url_cmd(cmd != "" ? cmd : txt_cmd.Value, page)); }
