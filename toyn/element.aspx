@@ -22,14 +22,18 @@
     }
   </style>
   <script language="javascript" charset="UTF-8">
-    var _editor = null, _sc = null, _back_cmd = null;
+    var _editor = null, _sc = null, _back_cmd = null, _vs = null;
 
     var tags = {
       "!top": ["element"],
       "!attrs": {},
       element: {
         attrs: { title: null, code: null, ref: null },
-        children: ["element", "title", "text", "account", "value", "link", "list", "attivita"]
+        children: ["element", "title", "text", "account", "value", "link", "list", "attivita", "par"]
+      },
+      par: {
+        attrs: { title: null },
+        children: ["title", "text"]
       },
       title: {
         attrs: { ref: null },
@@ -40,7 +44,7 @@
         children: null
       }, list: {
         attrs: { title: null, style: ["inline"], closed: ["true"] },
-        children: ["element", "title", "text", "link", "account", "value", "list", "attivita"]
+        children: ["element", "title", "text", "link", "account", "value", "list", "attivita", "par"]
       }, account: {
         attrs: { title: null, email: null, user: null, password: null, notes: null },
         children: null
@@ -52,9 +56,9 @@
         children: null
       }, attivita: {
         attrs: { title: null, priorita: ["bassa", "normale", "alta"], stato: ["la prossima", "da iniziare", "in corso", "sospesa", "fatta"] },
-        children: ["element", "title", "text", "link", "account", "value", "list", "attivita"]
+        children: ["element", "title", "text", "link", "account", "value", "list", "attivita", "par"]
       }, code: {
-        attrs: { title: null, notes: null },
+        attrs: { title: null, notes: null, height: null },
         children: null
       }
     };
@@ -70,6 +74,8 @@
 
       // view
       if ($("#contents_doc").length) {
+
+        _vs = get_param("vs"); 
 
         // sc
         if ($("#scroll_pos").val()) window.setTimeout(function () { $(window).scrollTop(parseInt($("#scroll_pos").val())); }, 500);
@@ -145,21 +151,27 @@
       // doc
       else {
         // sub commands
-        set_sub_cmds([{ fnc: "mod_xml()", title: "Modifica XML..."}]);
+        var cmds = [];
+        cmds.push({ fnc: "mod_xml()", title: "Modifica XML..." });
+        if ($("#there_stored").val() == "1") {
+          if (_vs == "1") cmds.push({ fnc: "view_stored(false)", title: "Nascondi storicizzati..." });
+          else cmds.push({ fnc: "view_stored()", title: "Vedi elementi storicizzati..." });
+        }
+        set_sub_cmds(cmds);
       }
     });
 
-    function init_context(id) {
+    function init_context() {
 
       // tutti gli elementi
-      var sel = id ? "[element_id=" + id + "][type_element!='attivita']" : "*[element_id][type_element!='attivita']";
+      var sel = "*[element_id][type_element!='attivita']:not([init_context])";
       if (!is_mobile()) {
         $(sel).contextmenu('#vw_menu', menu_base, pre_menu_base);
       } else { $(sel).dblclick(function ($e) { show_context($e, "#vw_menu", menu_base, pre_menu_base, 5); }); }
+      $(sel).attr("init_context", "true");
 
       // attivita
-      var sel = id ? "[element_id=" + id + "][type_element='attivita']" : "*[element_id][type_element='attivita']"
-        , sel_click = sel + " [clickable=true]";
+      var sel = "*[element_id][type_element='attivita']:not([init_context])", sel_click = sel + " [clickable=true]";
       if (!is_mobile()) {
         $(sel_click).click(function () {
           var e = $(this).closest('[element_id]');
@@ -169,19 +181,16 @@
       } else {
         $(sel).dblclick(function ($e) { show_context($e, "#vw_menu_attivita", menu_attivita, pre_menu_attivita, 5); });
       }
+      $(sel).attr("init_context", "true");
 
-      if (is_mobile()) {
-        $(document).click(function () {
-          $("[menu=true],[sub_menu=true]").hide();
-        });
-      }
+      if (is_mobile()) { $(document).click(function () { $("[menu=true],[sub_menu=true]").hide(); }); }
 
     }
 
     function check_menu_cut(el, menu) {
       var ids = $("#cache_ids").val(), type = el.closest('[element_id]').attr("type_element");
       if (ids) {
-        menu.find("[value='azzera']").text("togli " + ids.split(',').length + " oggetti copiati...");
+        menu.find("[value='azzera']").text("togli dalla copia i " + ids.split(',').length + " oggetti...");
         if (type != "element" && type != "list" && type != "attivita")
           menu.find("[value='incolla_dentro']").hide();
       }
@@ -200,11 +209,14 @@
               $("#cache_ids").val(result.contents);
             } else show_alert("Attenzione!", result.message);
           }
-        } else if (tp == "sposta_su" || tp == "sposta_fondo") {
-          var result = post_data({ "action": tp == "sposta_su" ? "move_up" : "move_end", "id": id });
+        } else if (tp == "sposta_su" || tp == "sposta_fondo" || tp == "sposta_alto") {
+          var result = post_data({ "action": tp == "sposta_alto" ? "move_first" : (tp == "sposta_su" ? "move_up" : "move_end"), "id": id });
           if (result) {
             if (result.des_result == "ok") {
-              if (result.contents == "1") window.location.reload();
+              if (result.contents == "1") {
+                reload_contents(result.html_element);
+                reload_menu(result.menu_html);
+              }
             } else show_alert("Attenzione!", result.message);
           }
         } else if (tp == "copia_fine" || tp == "taglia_fine") {
@@ -233,7 +245,8 @@
           if (result) {
             if (result.des_result == "ok") {
               $("#cache_ids").val(result.contents);
-              window.location.reload();
+              reload_contents(result.html_element);
+              reload_menu(result.menu_html);
             } else show_alert("Attenzione!", result.message);
           }
         }
@@ -247,12 +260,32 @@
         remove_element(id);
         window.setTimeout(function () { $(window).scrollTop(sc); }, 200);
         return;
+      } if (tp == "storicizza") {
+        store_element(id, true); return;
+      } if (tp == "destoricizza") {
+        store_element(id, false); return;
       } else if (tp == "modifica") {
-        window.location.href = set_param("back_cmd", get_param("cmd")
-            , set_param("sc", $(window).scrollTop(), $("#url_xml_clean").val() + "+id%3a" + id));
+        window.location.href = set_param("vs", get_param("vs"), set_param("back_cmd", get_param("cmd")
+            , set_param("sc", $(window).scrollTop(), $("#url_xml_clean").val() + "+id%3a" + id)));
         return;
       }
       menu_cut(clicked, selected);
+    }
+
+    function check_menu_storicizza(el, menu) {
+      var stored = el.closest('[element_id]').attr("stored")
+        , parent_stored = el.closest('[element_id]').attr("parent_stored");
+
+      if (parent_stored == "true") {
+        menu.find("[value='storicizza'],[value='destoricizza']").hide();
+        return;
+      }
+      else menu.find("[value='storicizza'],[value='destoricizza']").show();
+
+      // storicizza
+      if (stored == "true") menu.find("[value='storicizza']").attr("value", "destoricizza").text("riprendi");
+      else menu.find("[value='destoricizza']").attr("value", "storicizza").text("storicizza");
+
     }
 
     function pre_menu_base(el, menu) {
@@ -262,6 +295,9 @@
       // title
       if (title) menu.find("[title_row=true]").text(title.toUpperCase());
       else menu.find("[title_row=true]").text("Menù");
+
+      // storicizza
+      check_menu_storicizza(el, menu);
 
       // copia e incolla
       check_menu_cut(el, menu);
@@ -277,6 +313,9 @@
       // stato, priorita
       menu.find("[value='set,stato," + stato + "']").hide();
       menu.find("[value='set,priorita," + priorita + "']").hide();
+
+      // storicizza
+      check_menu_storicizza(el, menu);
 
       // copia e incolla
       check_menu_cut(el, menu);
@@ -333,16 +372,42 @@
         var result = post_data({ "action": "remove_element", "id": id });
         if (result) {
           if (result.des_result == "ok") {
-            $("[menu_id=" + id + "]").remove();
-            $("[menu_childs_id=" + id + "]").remove();
-            $("[element_id=" + id + "]").remove();
-            $("[childs_element_id=" + id + "]").remove();
-            $("[contenitor_id=" + id + "]").remove();
+            delete_element(id);
             $("#cache_ids").val(result.vars["cache_ids"]);
           } else show_alert("Attenzione!", "si è verificato un problema" + (result.message ? ": " + result.message : "") + "!");
         }
       } catch (e) { show_alert("Attenzione!", e.message); }
     }
+
+    function delete_element(id) {
+      $("[menu_id=" + id + "]").remove();
+      $("[menu_childs_id=" + id + "]").remove();
+      $("[element_id=" + id + "]").remove();
+      $("[childs_element_id=" + id + "]").remove();
+      $("[contenitor_id=" + id + "]").remove();
+    }
+
+    function store_element(id, store) {
+      try {
+        var e = $("[element_id=" + id + "]");
+        var result = post_data({ "action": store ? "store_element" : "unstore_element", "id": id, "in_list": e.attr("in_list") == "true"
+          , "parent_stored": e.attr("parent_stored") == "true", "no_opacity": e.attr("no_opacity") == "true"
+        });
+        if (result) {
+          if (result.des_result == "ok") {
+            var p = $("[element_id=" + id + "]").prev(), c = $("[contenitor_id=" + id + "]").prev();
+            delete_element(id);
+            if (c.length) c.after(result.html_element); else p.after(result.html_element);
+            init_context();
+            reload_menu(result.menu_html);
+          } else show_alert("Attenzione!", "si è verificato un problema" + (result.message ? ": " + result.message : "") + "!");
+        }
+      } catch (e) { show_alert("Attenzione!", e.message); }
+    }
+
+    function reload_contents(html) { $("#contents_doc").html(html); window.setTimeout(function () { init_context(); }, 500); }
+
+    function reload_menu(html_menu) { $("#menu").html(html_menu); }
 
     function change_stato_attivita(id, stato_now, in_list, stato_new) {
       try {
@@ -354,7 +419,7 @@
             var p = $("[element_id=" + id + "]").prev();
             $("[element_id=" + id + "]").remove();
             p.after(result.html_element);
-            init_context(id);
+            init_context();
           } else show_alert("Attenzione!", "si è verificato un problema" + (result.message ? ": " + result.message : "") + "!");
         }
       } catch (e) { show_alert("Attenzione!", e.message); }
@@ -370,7 +435,7 @@
             var p = $("[element_id=" + id + "]").prev();
             $("[element_id=" + id + "]").remove();
             p.after(result.html_element);
-            init_context(id);
+            init_context();
           } else show_alert("Attenzione!", "si è verificato un problema" + (result.message ? ": " + result.message : "") + "!");
         }
       } catch (e) { show_alert("Attenzione!", e.message); }
@@ -409,11 +474,11 @@
       return null;
     }
 
-    function got_to_id(id) {
+    function go_to_id(id) {
       try {
         var tot = _editor.lineCount();
         for (var i = 0; i < tot; i++) {
-          var f = _editor.getLine(i).search(" id=\"" + id + ":");
+          var f = _editor.getLine(i).search(" _id=\"" + id + ":");
           if (f >= 0) {
             _editor.focus();
             _editor.setCursor(i);
@@ -423,11 +488,18 @@
       catch (e) { }
     }
 
-    function mod_xml() { window.location.href = $("#url_xml").val(); return false; }
+    function mod_xml() { window.location.href = set_param("vs", get_param("vs"), $("#url_xml").val()); return false; }
+
+    function view_stored(sh) {
+      var url_page = window.location.href;
+      if (_sc) url_page = set_param("sc", _sc, url_page);
+      url_page = set_param("vs", sh == null || sh ? "1" : "", url_page);
+      window.location.href = url_page;
+    }
 
     function url_view() {
       var url_page = _back_cmd ? set_param("cmd", _back_cmd, get_page()) : $("#url_view").val();
-      window.location.href = _sc ? set_param("sc", _sc, url_page) : url_page;
+      window.location.href = set_param("vs", get_param("vs"), (_sc ? set_param("sc", _sc, url_page) : url_page));
     }
 
     function save_element(to_doc) {
@@ -523,6 +595,7 @@
   <input id='key_page' type='hidden' runat='server' />
   <input id='cache_ids' type='hidden' runat='server' />
   <input id='scroll_pos' type='hidden' runat='server' />
+  <input id='there_stored' type='hidden' runat='server' />
   <div class="container-fluid">
     <div class="row">
       <!-- menu -->
@@ -551,6 +624,7 @@
         Menù</h4>
     </li>
     <li><span class="dropdown-item" value='elimina'>elimina</span></li>
+    <li><span class="dropdown-item" value='storicizza'>storicizza</span></li>
     <li><span class="dropdown-item" value='modifica'>modifica XML...</span></li>
     <li>
       <div class="dropdown-divider">
@@ -561,8 +635,9 @@
       font-weight: bold;' href="#">Copia Incolla Sposta</a>
       <ul class="dropdown-menu" sub_menu='true'>
         <li><span class="dropdown-item" value='sposta_su'>sposta su...</span></li>
+        <li><span class="dropdown-item" value='sposta_alto'>sposta in alto...</span></li>
         <li><span class="dropdown-item" value='sposta_fondo'>sposta in fondo...</span></li>
-        <li><span class="dropdown-item" value='azzera'>togli 5 oggetti copiati...</span></li>
+        <li><span class="dropdown-item" value='azzera'>togli dalla copia i 5 oggetti copiati...</span></li>
         <li><span class="dropdown-item" value='taglia'>taglia...</span></li>
         <li><span class="dropdown-item" value='taglia_fine'>taglia fino alla fine...</span></li>
         <li><span class="dropdown-item" value='copia'>copia...</span></li>
@@ -580,6 +655,7 @@
         ATTIVITÀ</h4>
     </li>
     <li><span class="dropdown-item" value='elimina'>elimina</span></li>
+    <li><span class="dropdown-item" value='storicizza'>storicizza</span></li>
     <li><span class="dropdown-item" value='modifica'>modifica XML...</span></li>
     <li>
       <div class="dropdown-divider">
@@ -590,6 +666,7 @@
       font-weight: bold;' href="#">Copia Incolla Sposta</a>
       <ul class="dropdown-menu" sub_menu='true'>
         <li><span class="dropdown-item" value='sposta_su'>sposta su...</span></li>
+        <li><span class="dropdown-item" value='sposta_alto'>sposta in alto...</span></li>
         <li><span class="dropdown-item" value='sposta_fondo'>sposta in fondo...</span></li>
         <li><span class="dropdown-item" value='azzera'>togli 5 oggetti copiati...</span></li>
         <li><span class="dropdown-item" value='taglia'>taglia...</span></li>

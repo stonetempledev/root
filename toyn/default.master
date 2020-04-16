@@ -46,7 +46,8 @@
         var result = null;
         $.ajax({
           type: "POST",
-          url: location.protocol + '//' + location.host + location.pathname,
+          //url: location.protocol + '//' + location.host + location.pathname,
+          url: location,
           data: JSON.stringify(doc),
           contentType: "application/json; charset=utf-8",
           headers: { "toyn-post": "true" },

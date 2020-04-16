@@ -7,13 +7,13 @@
  order by a.element_type, a.attribute_code]]>
     </query>
     <query name="types-attributes">
-      <![CDATA[select ta.element_type, ta.element_des, ta.can_have_childs
+      <![CDATA[select ta.element_type, ta.element_des, ta.childs_types
       , ta.attribute_id, ta.attribute_code, ta.attribute_type, ta.content_txt_xml, ta.data_content
  from vw_types_attributes ta
  order by ta.element_type, ta.attribute_code]]>
     </query>
     <query name="type-attributes">
-      <![CDATA[select ta.element_type, ta.element_des, ta.can_have_childs
+      <![CDATA[select ta.element_type, ta.element_des, ta.childs_types
       , ta.attribute_id, ta.attribute_code, ta.attribute_type, ta.content_txt_xml, ta.data_content
  from vw_types_attributes ta
  where ta.element_type = '{@field='type'}'
@@ -29,7 +29,7 @@
       <![CDATA[select h.parent_id, h.elements_contents_id, h.livello, h.in_list, h.element_id, h.element_type, et.element_des, h.element_title
   , (select top 1 1 from elements_contents where element_id = h.element_id) as has_childs
   , (select top 1 1 from elements_contents ec join elements e on e.element_id = ec.child_element_id and e.element_type = 'element' where ec.element_id = h.element_id) as has_child_elements
-  , h.[order], isnull(a.dt_ins, h.dt_ins) as dt_ins, a.dt_upd
+  , h.[order], isnull(a.dt_ins, h.dt_ins) as dt_ins, h.dt_stored, a.dt_upd
   , a.attribute_code, a.attribute_type, a.content_txt_xml, a.data_content, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar, a.val_flag
  from vw_elements_h h
  join elements_types et on et.element_type = h.element_type
@@ -42,7 +42,7 @@
 from (
 select h.parent_id, h.elements_contents_id, 0 as livello, h.in_list, h.element_id, h.element_type, et.element_des, h.element_title
   , null as has_childs, null as has_child_elements, h.[order]
-  , isnull(a.dt_ins, h.dt_ins) as dt_ins, a.dt_upd, a.attribute_code, a.attribute_type, a.content_txt_xml, a.data_content, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar, a.val_flag
+  , isnull(a.dt_ins, h.dt_ins) as dt_ins, a.dt_upd, h.dt_stored, a.attribute_code, a.attribute_type, a.content_txt_xml, a.data_content, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar, a.val_flag
  from vw_elements_p h
  join elements_types et on et.element_type = h.element_type
  left join vw_elements_attrs a on a.element_id = h.element_id 
@@ -51,15 +51,27 @@ union select h.parent_id, h.elements_contents_id, h.livello + 1 as livello, h.in
   , (select top 1 1 from elements_contents where element_id = h.element_id) as has_childs
   , (select top 1 1 from elements_contents ec join elements e on e.element_id = ec.child_element_id and e.element_type = 'element'
       where ec.element_id = h.element_id) as has_child_elements, h.[order]
-  , a.dt_ins, a.dt_upd, a.attribute_code, a.attribute_type, a.content_txt_xml, a.data_content, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar, a.val_flag
+  , a.dt_ins, a.dt_upd, h.dt_stored, a.attribute_code, a.attribute_type, a.content_txt_xml, a.data_content, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar, a.val_flag
  from vw_elements_h h
  join elements_types et on et.element_type = h.element_type
  left join vw_elements_attrs a on a.element_id = h.element_id 
  where {@field='filter_deleted'} and h.id_utente = {@field='id_utente'} and h.ref_element_id = {@field='id_element'} and {@field='filter_level'} {@field='filter_childs'} ) t
  order by t.livello, t.[order], t.element_id]]>
     </query>
+    <query name="open-parents-elements">
+      <![CDATA[select h.parent_id, h.elements_contents_id, h.livello, null as in_list, h.element_id, h.element_type, et.element_des, h.element_title
+  , (select top 1 1 from elements_contents where element_id = h.element_id) as has_childs
+  , (select top 1 1 from elements_contents ec join elements e on e.element_id = ec.child_element_id and e.element_type = 'element' where ec.element_id = h.element_id) as has_child_elements
+  , h.[order], h.dt_ins, h.dt_stored, a.dt_upd
+  , a.attribute_code, a.attribute_type, a.content_txt_xml, a.data_content, a.val_datetime, a.val_integer, a.val_link, a.val_real, a.val_text, a.val_varchar, a.val_flag
+ from vw_elements_c h
+ join elements_types et on et.element_type = h.element_type
+ left join vw_elements_attrs a on a.element_id = h.element_id 
+ where h.id_utente = {@field='id_utente'} and h.ref_element_id = {@field='element_id'}
+ order by h.livello, h.element_id]]>
+    </query>
     <query name="parent-elements">
-      <![CDATA[select parent_id from vw_elements_c where ref_element_id = {@field='id_element'} and parent_id > 0]]>
+      <![CDATA[select parent_id from vw_elements_c where dt_del is null and ref_element_id = {@field='id_element'} and parent_id > 0]]>
     </query>
     <query name="check-exists-elements">
       <![CDATA[select element_id from [elements]
@@ -128,6 +140,14 @@ union select h.parent_id, h.elements_contents_id, h.livello + 1 as livello, h.in
       <![CDATA[update [elements] set element_type = {@txtqry='type'}, element_title = {@txtqry='title'}, deleted = NULL, dt_upd = getdate()
         where element_id = {@field='id_element'} and (element_type <> {@txtqry='type'} or isnull(element_title, '') <> isnull({@txtqry='title'}, '') or deleted is not null)]]>
     </query>
+    <query name="store-element">
+      <![CDATA[update [elements] set dt_stored = getdate()
+        where element_id = {@field='id_element'}]]>
+    </query>
+    <query name="unstore-element">
+      <![CDATA[update [elements] set dt_stored = null
+        where element_id = {@field='id_element'}]]>
+    </query>
     <query name="undelete-childs">
       <![CDATA[update e set e.deleted = null
          from [elements] e
@@ -174,66 +194,84 @@ union select h.parent_id, h.elements_contents_id, h.livello + 1 as livello, h.in
     </query>
     <query name="next-elements">
       <![CDATA[select ec.child_element_id, e.element_type  from elements_contents ec
-               join [elements] e on e.element_id = ec.child_element_id and isnull(e.deleted, 0) = 0
-               where ec.element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='id_element'})
-                and ec.[order] >= (select top 1 [order] from elements_contents where child_element_id = {@field='id_element'})
-               order by ec.[order]]]>
+        join [elements] e on e.element_id = ec.child_element_id and isnull(e.deleted, 0) = 0
+         where ec.element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='id_element'})
+          and ec.[order] >= (select top 1 [order] from elements_contents where child_element_id = {@field='id_element'})
+        order by ec.[order]]]>
     </query>
     <query name="move-up">
       <![CDATA[select top 2 ec.* from elements_contents ec 
-               join [elements] e on e.element_id = ec.child_element_id and isnull(e.deleted, 0) = 0
-               where ec.child_element_id = {@field='element_id'}
-                or (ec.element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='element_id'})
-                  and [order] < (select top 1 ec2.[order] from elements_contents ec2 
-                    join [elements] e2 on e2.element_id = ec2.child_element_id and isnull(e2.deleted, 0) = 0
-                    where ec2.child_element_id = {@field='element_id'}))
-               order by [order] desc]]>
+        join [elements] e on e.element_id = ec.child_element_id 
+         and isnull(e.deleted, 0) = 0 {@field='filter_stored_1'} 
+        where ec.child_element_id = {@field='element_id'}
+        or (ec.element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='element_id'})
+          and [order] < (select top 1 ec2.[order] from elements_contents ec2 
+            join [elements] e2 on e2.element_id = ec2.child_element_id 
+             and isnull(e2.deleted, 0) = 0 {@field='filter_stored_2'} 
+            where ec2.child_element_id = {@field='element_id'}))
+        order by [order] desc]]>
     </query>
     <query name="after-move-up">
       <![CDATA[update elements_contents set [order] = {@field='order_2'} where elements_contents_id = {@field='id_1'};
-                  update elements_contents set [order] = {@field='order_1'} where elements_contents_id = {@field='id_2'}]]>
+        update elements_contents set [order] = {@field='order_1'} where elements_contents_id = {@field='id_2'}]]>
     </query>
     <query name="move-end">
       <![CDATA[select top 2 ec.* from elements_contents ec 
-               join [elements] e on e.element_id = ec.child_element_id and isnull(e.deleted, 0) = 0
-               where ec.child_element_id = {@field='element_id'}
-                or (ec.element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='element_id'})
-                  and [order] = (select max(ec2.[order]) 
-					          from elements_contents ec2 
-					          join [elements] e2 on e2.element_id = ec2.child_element_id and isnull(e2.deleted, 0) = 0
-					          where ec2.element_id = ec.element_id))
-               order by [order]]]>
+        join [elements] e on e.element_id = ec.child_element_id and isnull(e.deleted, 0) = 0
+        where ec.child_element_id = {@field='element_id'}
+        or (ec.element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='element_id'})
+          and [order] = (select max(ec2.[order]) 
+					  from elements_contents ec2 
+					  join [elements] e2 on e2.element_id = ec2.child_element_id and isnull(e2.deleted, 0) = 0
+					  where ec2.element_id = ec.element_id))
+        order by [order]]]>
     </query>
     <query name="after-move-end">
       <![CDATA[update elements_contents set [order] = [order] - 1 
           where element_id = {@field='element_id'} and [order] > {@field='order_1'};
         update elements_contents set [order] = {@field='order_2'} where elements_contents_id = {@field='id_1'}]]>
     </query>
+    <query name="move-first">
+      <![CDATA[select top 2 ec.* from elements_contents ec 
+        join [elements] e on e.element_id = ec.child_element_id and isnull(e.deleted, 0) = 0
+        where ec.child_element_id = {@field='element_id'}
+        or (ec.element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='element_id'})
+          and [order] = (select min(ec2.[order]) 
+					  from elements_contents ec2 
+					  join [elements] e2 on e2.element_id = ec2.child_element_id and isnull(e2.deleted, 0) = 0
+					  where ec2.element_id = ec.element_id))
+        order by [order]]]>
+    </query>
+    <query name="after-move-first">
+      <![CDATA[update elements_contents set [order] = [order] + 1 
+          where element_id = {@field='element_id'} and [order] < {@field='order_2'};
+      update elements_contents set [order] = {@field='order_1'} where elements_contents_id = {@field='id_2'};]]>
+    </query>
     <query name="paste-after">
       <![CDATA[update elements_contents set [order] = [order] + 1
-                        where element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='ref_id'})
-                          and [order] > (select top 1 [order] from elements_contents where child_element_id = {@field='ref_id'});
-                      delete from elements_contents where child_element_id = {@field='element_id'};
-                      insert into elements_contents (element_id, child_element_id, [order])
-                       select top 1 element_id, {@field='element_id'} as child_element_id, [order] + 1 as [order]
-                        from elements_contents where child_element_id = {@field='ref_id'}]]></query>
+          where element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='ref_id'})
+            and [order] > (select top 1 [order] from elements_contents where child_element_id = {@field='ref_id'});
+        delete from elements_contents where child_element_id = {@field='element_id'};
+        insert into elements_contents (element_id, child_element_id, [order])
+          select top 1 element_id, {@field='element_id'} as child_element_id, [order] + 1 as [order]
+          from elements_contents where child_element_id = {@field='ref_id'}]]></query>
     <query name="paste-before">
       <![CDATA[update elements_contents set [order] = [order] + 1
-                        where element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='ref_id'})
-                          and [order] >= (select top 1 [order] from elements_contents where child_element_id = {@field='ref_id'});
-                      delete from elements_contents where child_element_id = {@field='element_id'};
-                      insert into elements_contents (element_id, child_element_id, [order])
-                       select top 1 element_id, {@field='element_id'} as child_element_id, [order] - 1 as [order]
-                        from elements_contents where child_element_id = {@field='ref_id'}]]></query>
+        where element_id = (select top 1 element_id from elements_contents where child_element_id = {@field='ref_id'})
+          and [order] >= (select top 1 [order] from elements_contents where child_element_id = {@field='ref_id'});
+      delete from elements_contents where child_element_id = {@field='element_id'};
+      insert into elements_contents (element_id, child_element_id, [order])
+        select top 1 element_id, {@field='element_id'} as child_element_id, [order] - 1 as [order]
+        from elements_contents where child_element_id = {@field='ref_id'}]]></query>
     <query name="paste-inside">
       <![CDATA[delete from elements_contents where child_element_id = {@field='element_id'};
-                      insert into elements_contents (element_id, child_element_id, [order])
-                       select t.element_id, {@field='element_id'} as child_element_id, t.new_order
-                        from (select {@field='ref_id'} as element_id, isnull(max(ec.[order]) + 1, 0) as new_order 
-                         from elements_contents ec 
-                         where ec.element_id = {@field='ref_id'}
-                           and not exists (select top 1 1 from elements 
-                            where element_id = ec.child_element_id and isnull(deleted, 0) > 0)) t]]></query>
+        insert into elements_contents (element_id, child_element_id, [order])
+          select t.element_id, {@field='element_id'} as child_element_id, t.new_order
+          from (select {@field='ref_id'} as element_id, isnull(max(ec.[order]) + 1, 0) as new_order 
+            from elements_contents ec 
+            where ec.element_id = {@field='ref_id'}
+              and not exists (select top 1 1 from elements 
+              where element_id = ec.child_element_id and isnull(deleted, 0) > 0)) t]]></query>
   </queries>
 </config>
 

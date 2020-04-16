@@ -9,6 +9,21 @@ a.anchor
   visibility: hidden;
 }
 
+/* paragraph */
+
+.bordered
+{
+  border-top: 2px solid whitesmoke;
+  border-left: 4px solid whitesmoke;
+  padding-left: 2px;
+}
+
+.bordered-small
+{
+  border-left: 2px solid whitesmoke;
+  padding-left: 2px;
+}
+
 /* sidebar */
 
 .sidebar
@@ -47,45 +62,52 @@ ul.no-bullet
   margin: 0px;
 }
 
+ul.no-bullet-stored
+{
+  list-style-type: none;
+  padding-left: 25px;
+  margin: 0px;
+}
+
 li.bullet
 {
   background: url('images/circle-8.png') no-repeat 0px 12px;
-  padding-left: 12px;
-  margin: 0px;
+  padding-left: 13px;
+  margin: 2px;
 }
 
 li.bullet-2
 {
   background: url('images/circle-8-2.png') no-repeat 0px 12px;
-  padding-left: 12px;
-  margin: 0px;
+  padding-left: 13px;
+  margin: 2px;
 }
 
 li.bullet-3
 {
   background: url('images/circle-8-3.png') no-repeat 0px 12px;
-  padding-left: 12px;
-  margin: 0px;
+  padding-left: 13px;
+  margin: 2px;
 }
 
 li.square
 {
   background: url('images/square-12.png') no-repeat 0px 8px;
-  padding-left: 13px;
+  padding-left: 14px;
   margin: 0px;
 }
 
 li.square-2
 {
   background: url('images/square-12-2.png') no-repeat 0px 8px;
-  padding-left: 13px;
+  padding-left: 14px;
   margin: 0px;
 }
 
 li.square-3
 {
   background: url('images/square-12-3.png') no-repeat 0px 8px;
-  padding-left: 13px;
+  padding-left: 14px;
   margin: 0px;
 }
 
@@ -96,45 +118,52 @@ ul.no-bullet-mobile
   margin: 0px;
 }
 
+ul.no-bullet-mobile-stored
+{
+  list-style-type: none;
+  padding-left: 16px;
+  margin: 0px;
+}
+
 li.bullet-mobile
 {
   background: url('images/circle-8.png') no-repeat 0px 6px;
   padding-left: 10px;
-  margin: 0px;
+  margin: 2px;
 }
 
 li.bullet-2-mobile
 {
   background: url('images/circle-8-2.png') no-repeat 0px 6px;
   padding-left: 10px;
-  margin: 0px;
+  margin: 2px;
 }
 
 li.bullet-3-mobile
 {
   background: url('images/circle-8-3.png') no-repeat 0px 6px;
   padding-left: 10px;
-  margin: 0px;
+  margin: 2px;
 }
 
 li.square-mobile
 {
   background: url('images/square-12.png') no-repeat 0px 4px;
-  padding-left: 12px;
+  padding-left: 14px;
   margin-right: 0px;
 }
 
 li.square-2-mobile
 {
   background: url('images/square-12-2.png') no-repeat 0px 4px;
-  padding-left: 12px;
+  padding-left: 14px;
   margin-right: 0px;
 }
 
 li.square-3-mobile
 {
   background: url('images/square-12-3.png') no-repeat 0px 4px;
-  padding-left: 12px;
+  padding-left: 14px;
   margin-right: 0px;
 }
 
@@ -156,6 +185,15 @@ div.childs-element-mobile
   padding-left: 0px;
 }
 
+div.childs-element-stored
+{
+  padding-left: 17px;
+}
+
+div.childs-element-mobile-stored
+{
+  padding-left: 10px;
+}
 
 /* submenu */
 

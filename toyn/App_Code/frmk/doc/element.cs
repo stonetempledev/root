@@ -20,7 +20,7 @@ using mlib.tiles;
 namespace toyn {
   public class element {
 
-    public enum type_element { element, text, title, list, link, account, value, attivita, code }
+    public enum type_element { element, text, title, list, link, account, value, attivita, code, par }
 
     protected List<element> _childs;
     protected List<attribute> _attributes;
@@ -46,7 +46,20 @@ namespace toyn {
     public string des { get; set; }
     public string content { get { return get_attribute_string("content"); } }
     public bool has_content { get { return !string.IsNullOrEmpty(this.content); } }
-    public bool can_have_childs { get; set; }
+    public string childs_types { get; set; }
+    public bool can_have_childs { get { return !string.IsNullOrEmpty(this.childs_types); } }
+    public bool all_childs { get { return !string.IsNullOrEmpty(this.childs_types) && this.childs_types == "{all}" ? true : false; } }
+    public List<string> list_childs_types {
+      get {
+        return !string.IsNullOrEmpty(this.childs_types) && this.childs_types != "{all}" ?
+          this.childs_types.Split(new char[] { ',' }).ToList() : null;
+      }
+    }
+    public bool can_content_type(string element_type) {
+      if (!string.IsNullOrEmpty(this.childs_types) &&
+        (this.childs_types == "{all}" || this.childs_types.Split(new char[] { ',' }).Contains(element_type))) return true;
+      return false;
+    }
     public bool added { get; set; }
     public bool undeleted { get; set; }
     public bool in_list { get; set; }
@@ -54,6 +67,8 @@ namespace toyn {
     public string key_page { get; set; }
     public DateTime? dt_ins { get; set; }
     public DateTime? dt_upd { get; set; }
+    public DateTime? dt_stored { get; set; }
+    public bool stored { get { return this.dt_stored.HasValue; } }
 
     // attributes
     public List<attribute> attributes { get { return _attributes; } }
@@ -102,7 +117,7 @@ namespace toyn {
 
     public element(core c, type_element type, string title, int level = 0, long id = 0, long parent_id = 0, long content_id = 0
       , bool has_childs = false, bool has_child_elements = false, bool in_list = false, string des = ""
-      , DateTime? dt_ins = null, DateTime? dt_upd = null, int order_xml = 0, int order = 0, bool sham = false) {
+      , DateTime? dt_ins = null, DateTime? dt_upd = null, DateTime? dt_stored = null, int order_xml = 0, int order = 0, bool sham = false) {
       _childs = new List<element>();
       _attributes = new List<attribute>();
       this.id = id;
@@ -119,6 +134,7 @@ namespace toyn {
       this.in_list = in_list;
       this.dt_ins = dt_ins;
       this.dt_upd = dt_upd;
+      this.dt_stored = dt_stored;
       this.order_xml = order_xml;
       this.order = order;
       this.sham = sham;
@@ -133,15 +149,7 @@ namespace toyn {
 
     #region tools
 
-    public static element find_element(int id, List<element> els) {
-      foreach (element e in els) {
-        element res = e.find_element(id);
-        if (res != null) return res;
-      }
-      return null;
-    }
-
-    protected element find_element(int id) {
+    public element find_element(long id) {
       if (this.id == id) return this;
       foreach (element ec in this.childs) {
         element res = ec.find_element(id);
@@ -178,6 +186,22 @@ namespace toyn {
         ec.find_element(res, level);
     }
 
+    public static bool find_stored(List<element> els) {
+      List<element> res = new List<element>();
+      foreach (element e in els) {
+        if (e.find_stored()) return true;
+      }
+      return false;
+    }
+
+    protected bool find_stored() {
+      if (this.dt_stored.HasValue) return true;
+      foreach (element ec in this.childs) {
+        if (ec.find_stored()) return true;
+      }
+      return false;
+    }
+
     #endregion
 
     #region childs
@@ -200,7 +224,7 @@ namespace toyn {
 
     public static xml_doc get_doc(List<element> els, List<element> etypes) {
       xml_doc doc = new xml_doc() { xml = "<elements/>" };
-      foreach (element el in els)
+      foreach (element el in els) 
         el.set_xml_node(doc.root_node.add_node(el.type.ToString()), etypes);
       return doc;
     }
@@ -230,14 +254,13 @@ namespace toyn {
       }
       if (!set_text) nd.text = " ";
 
-      // id
-      nd.set_attr("id", this.id.ToString() + (this.key_page != null ? ":" + this.key_page : ":"));
-
-      // sham
-      if (this.sham) nd.set_attr("sham", "true");
+      // sys attributes
+      nd.set_attr("_id", this.id.ToString() + (this.key_page != null ? ":" + this.key_page : ":"));
+      if (this.sham) nd.set_attr("_sham", "true");
+      if (this.dt_stored.HasValue) nd.set_attr("_stored", "true");
 
       if (!this.sham) {
-        foreach (element ec in this.childs)
+        foreach (element ec in this.childs) 
           ec.set_xml_node(nd.add_node(ec.type.ToString()), etypes);
       }
     }
@@ -262,6 +285,9 @@ namespace toyn {
 
           if (!el_type.can_have_childs)
             throw new Exception("attenzione l'elemento '" + el_type.type + "' non può contenere elementi al suo interno!");
+
+          if (!el_type.can_content_type(nd.name))
+            throw new Exception("attenzione l'elemento '" + el_type.type + "' non può contenere l'elemento '" + nd.name + "' al suo interno!");
 
           // element type
           element elc_type = types.FirstOrDefault(et => et.type.ToString() == nd.name);
@@ -294,6 +320,9 @@ namespace toyn {
         if (!el_type.can_have_childs)
           throw new Exception("attenzione l'elemento '" + el_type.type + "' non può contenere elementi al suo interno!");
 
+        if (!el_type.can_content_type(ndc.name))
+          throw new Exception("attenzione l'elemento '" + el_type.type + "' non può contenere l'elemento '" + ndc.name + "' al suo interno!");
+
         // element type
         element elc_type = types.FirstOrDefault(et => et.type.ToString() == ndc.name);
         if (elc_type == null)
@@ -317,7 +346,7 @@ namespace toyn {
 
       // attributes
       foreach (string attr in nd.attrs()) {
-        if (attr == "id") {
+        if (attr == "_id") {
           string val = nd.get_val(attr);
           this.id = val != "" ? int.Parse(val.Split(new char[] { ':' })[0]) : 0;
           this.key_page = val != "" ? val.Split(new char[] { ':' })[1] : "";
@@ -330,8 +359,10 @@ namespace toyn {
           if (el_type.attributes.FirstOrDefault(x => x.code == attr) == null)
             throw new Exception("non è stato trovato l'attributo '" + attr + "' per l'elemento '" + this.type.ToString() + "' fra quelli configurati!");
           this.title = nd.get_attr(attr); continue;
-        } else if (attr == "sham") {
+        } else if (attr == "_sham") {
           this.sham = nd.get_bool(attr); continue;
+        } else if (attr == "_stored") {
+          this.dt_stored = nd.get_bool(attr) ? DateTime.MinValue : (DateTime?)null; continue;
         }
         set_attribute(attr, nd.get_attr(attr), el_type.attributes);
       }
