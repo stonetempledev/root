@@ -1,1 +1,0 @@
-sqlmetal.exe Repository.sdf /namespace:"TagExtract.Repository" /code:RepositoryDataContext.cs /context:RepositoryDataContext

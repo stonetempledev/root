@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<config>
-
-  <vars>
-    <var name="err">{@basepath}\pages\err.html</var>
-    <var name="sptfy-home">{@basepath}\pages\sptfy-home.html</var>
-  </vars>
-
-</config>
