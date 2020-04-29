@@ -133,6 +133,12 @@ namespace mlib.db {
 
     #region base functions
 
+    public bool check_begin_trans(bool open_key = false) {
+      if (this.is_opened()) return false;
+      this.begin_trans(open_key);
+      return true;
+    }
+
     public void begin_trans (bool open_key = false) {
       try {
         if (!is_opened()) throw new Exception("begin trans - la connessione non è aperta");

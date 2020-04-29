@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using mlib.tools;
+using mlib.tiles;
 
 public class tl_master : System.Web.UI.MasterPage {
 
@@ -29,6 +30,7 @@ public class tl_master : System.Web.UI.MasterPage {
   public virtual void set_status_txt(string text) { }
 
   public void elab_cmd(string cmd) { Response.Redirect(url_cmd(cmd, config.get_var("vars.router-page").value)); }
+  public virtual cmd check_cmd(string cmd) { return null; }
 
   public bool is_mobile() {
     return strings.contains_any(Request.ServerVariables["HTTP_USER_AGENT"], new[] { "iPhone", "iPod", "iPad", "Android", "BlackBerry" });

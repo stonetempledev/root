@@ -18,6 +18,7 @@ namespace mlib.tiles {
     public string name { get { return _user; } set { _user = value; } }
     public string email { get { return _email; } set { _email = value; } }
     public int id { get { return _id_user; } set { _id_user = value; } }
+    public string id_str { get { return _id_user.ToString(); } }
     public type_user type { get { return _tp_user; } set { _tp_user = value; } }
   }
 }

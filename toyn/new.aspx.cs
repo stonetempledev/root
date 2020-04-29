@@ -42,7 +42,7 @@ public partial class login : tl_page {
           , user_name.Value, user_mail.Value, cry.encode_tobase64(user_pass.Value), tkey, cry.rnd_str(32)), true));
 
         // salvo il documento di benvenuto
-        elements el = new elements(this.db_conn, this.core, this.config, id_utente);
+        elements el = new elements();
         List<element> els = el.load_xml(@"<element title=""Benvenuto ##user##!""> 
          <text style=""bold"">Ciao ##user##, benvenuto nel toyn!</text>
          <text>Ci sono un sacco di funzionalità utili per salvare i tuoi appunti, prendere note, seguire le tue attività.</text>

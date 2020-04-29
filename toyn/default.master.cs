@@ -43,6 +43,7 @@ public partial class _default : tl_master {
       }
 
       tlp.set_user(u_id, u_name, u_email, u_tp);
+      __utype.Value = u_tp.ToString();
 
       // command
       txt_cmd.Value = this.cmd = tlp.qry_val("cmd");
@@ -71,6 +72,67 @@ public partial class _default : tl_master {
     lbl_status.InnerText = text;
   }
 
+  public override string get_val(string id) {
+    Control ctrl = FindControl(id); return ctrl != null ? (ctrl is HtmlInputText ? ((HtmlInputText)ctrl).Value
+      : (ctrl is HtmlInputHidden ? ((HtmlInputHidden)ctrl).Value : "")) : "";
+  }
+
+  public override void set_val(string id, string val) {
+    Control ctrl = FindControl(id);
+    if (ctrl != null && ctrl is HtmlInputText) ((HtmlInputText)ctrl).Value = val;
+    else if (ctrl != null && ctrl is HtmlInputHidden) ((HtmlInputHidden)ctrl).Value = val;
+  }
+
+  #region cmds
+
+  public override cmd check_cmd(string cmd) {
+    cmd c = new cmd(cmd), c2 = new cmd("[action] " + cmd);
+    config.table_row tr = null;
+    foreach (config.table_row r in config.get_table("cmds.base-cmds").rows) {
+      string action = r.field("action"), obj = r.field("object"), synobj = r.field("syn-object"), subobj = r.field("subobj");
+      bool action_opt = r.fld_bool("action-opt");
+      if (is_like_cmd(action, c.action) && is_like_cmd(obj, c.obj, synobj) && is_like_cmd(subobj, c.sub_obj())) { tr = r; c.obj = obj; break; }
+      if (action_opt) {
+        if (is_like_cmd(obj, c2.obj, synobj) && is_like_cmd(subobj, c2.sub_obj())) { tr = r; c2.action = action; c2.obj = obj; c = c2; break; }
+      }
+    }
+    if (tr == null) return null;
+    c.type = tr.field("type");
+    c.page = tr.field("page");
+    return c;
+  }
+
+  // SINTASSI DICHIARAZIONE object, subobj
+  //  keyword - parola chiave che rappresenta un oggetto o un'azione particolare
+  //  {par_value} - valore variabile dell'object o del subobj
+  //  name_parameter:{par_value} - valore variabile accompagnato al nome del parametro associato all'object o al subobj
+  protected bool is_like_cmd(string syntax, string txt, string sinonimi) {
+    bool res = false;
+    List<string> stxs = new List<string>() { syntax };
+    stxs.AddRange(sinonimi.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
+    foreach (string s in stxs) {
+      if (is_like_cmd(s, txt)) { res = true; break; }
+    }
+    return res;
+  }
+  protected bool is_like_cmd(string syntax, string txt) {
+    bool res = false;
+    if (string.IsNullOrEmpty(syntax) && string.IsNullOrEmpty(txt)) res = true;
+    else if (!string.IsNullOrEmpty(syntax) && !string.IsNullOrEmpty(txt)) {
+      if (syntax.Contains('{')) {
+        int pos = syntax.IndexOf('{');
+        if (pos == 0) res = true;
+        else {
+          string name_par = syntax.Substring(0, pos);
+          if (txt.Length >= name_par.Length && txt.Substring(0, pos) == name_par) res = true;
+        }
+      } else {
+        if (txt == syntax) res = true;
+      }
+    }
+    return res;
+  }
+
   protected void Cmd_Click(object sender, EventArgs e) { elab_cmd(config.get_var("vars.router-page").value); }
 
   public void elab_cmd(string page, string cmd = "") { Response.Redirect(url_cmd(cmd != "" ? cmd : txt_cmd.Value, page)); }
@@ -82,14 +144,5 @@ public partial class _default : tl_master {
     Response.Redirect(url);
   }
 
-  public override string get_val(string id) {
-    Control ctrl = FindControl(id); return ctrl != null ? (ctrl is HtmlInputText ? ((HtmlInputText)ctrl).Value
-      : (ctrl is HtmlInputHidden ? ((HtmlInputHidden)ctrl).Value : "")) : "";
-  }
-
-  public override void set_val(string id, string val) {
-    Control ctrl = FindControl(id);
-    if (ctrl != null && ctrl is HtmlInputText) ((HtmlInputText)ctrl).Value = val;
-    else if (ctrl != null && ctrl is HtmlInputHidden) ((HtmlInputHidden)ctrl).Value = val;
-  }
+  #endregion
 }

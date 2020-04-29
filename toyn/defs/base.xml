@@ -1,5 +1,6 @@
 ﻿<config>
   <queries>
+    <!-- cache vars -->
     <query name="set-cache-var">
       <![CDATA[if not exists (select top 1 1 from utenti_cache where id_utente = {@field='id_utente'} and var_name = '{@field='var_name'}')
         insert into utenti_cache (id_utente, var_name, var_value)
@@ -14,6 +15,23 @@
     <query name="reset-cache-var">
       <![CDATA[delete from utenti_cache where id_utente = {@field='id_utente'} and var_name = '{@field='var_name'}']]>
     </query>
+    <!-- user settings -->
+    <query name="set-setting">
+      <![CDATA[if({@txtvoid='value'} = '')
+      delete from utenti_settings where setting_name = {@txtqry='setting'} and id_utente = {@field='id_utente'};
+      else
+      begin      
+        if not exists (select top 1 1 from utenti_settings where id_utente = {@field='id_utente'} and setting_name = {@txtqry='setting'})
+         insert into utenti_settings (setting_name, setting_var, id_utente)
+          values ({@txtqry='setting'}, {@txtqry='value'}, {@field='id_utente'});
+        else 
+         update utenti_settings set setting_var = {@txtqry='value'}, dt_upd = getdate()
+          where setting_name = {@txtqry='setting'} and id_utente = {@field='id_utente'};
+        end ]]>
+    </query>
+    <!-- emphasis -->
+    <query name="emphasies">
+      <![CDATA[select style, title, [order] from emphasis order by [order]]]>
+    </query>
   </queries>
 </config>
-

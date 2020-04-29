@@ -130,6 +130,15 @@ public class tl_page : System.Web.UI.Page {
   }
   public tl_master master { get { return (tl_master)Master; } }
 
+  protected void write_response(json_result res) {
+    Response.Clear();
+    Response.ContentType = "application/json";
+    Response.Write(Newtonsoft.Json.JsonConvert.SerializeObject(res));
+    Response.Flush();
+    Response.SuppressContent = true;
+    HttpContext.Current.ApplicationInstance.CompleteRequest();
+  }
+
   #region data
 
   public string val_str(object val, string def = "") { return val != null && val != DBNull.Value ? val.ToString() : def; }

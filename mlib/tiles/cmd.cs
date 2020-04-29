@@ -11,8 +11,8 @@ namespace mlib.tiles {
     public string txt { get { return _cmd; } }
     public string type { get { return _type; } set { _type = value; } }
     public string page { get { return _page; } set { _page = value; } }
-    public string action { get { return _keys.Count > 0 ? _keys[0] : null; } }
-    public string obj { get { return _keys.Count > 1 ? _keys[1] : null; } }
+    public string action { get { return _keys.Count > 0 ? _keys[0] : null; } set { if(_keys.Count > 0) _keys[0] = value; } }
+    public string obj { get { return _keys.Count > 1 ? _keys[1] : null; } set { if (_keys.Count > 1) _keys[1] = value; } }
     public string sub_obj (int i = 0) {
       string res = _keys.Count > 2 && 2 + i < _keys.Count ? _keys[2 + i] : "";
       return is_subcmd(res) ? "" : res;

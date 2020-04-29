@@ -31,7 +31,7 @@ namespace mlib {
       try {
         if (!_cfg_keys.Keys.Contains(doc_key)) _cfg_keys.Add(doc_key, "doc_path");
         _config.load_doc(doc_key, vars_key, doc, page);
-      } catch (Exception ex) { _cfg_keys.Clear(); throw ex; }
+      } catch (Exception ex) { _cfg_keys.Clear(); throw new Exception("caricamento documento '" + doc.path + "': " + ex.Message); }
     }
 
     public void load_page_config(xml_doc doc, string doc_key) { load_config(doc, doc_key, page: true); }
@@ -47,11 +47,40 @@ namespace mlib {
         System.Configuration.ConfigurationManager.AppSettings[name].ToString() : "");
     }
 
+    public string parse_query(string key) { return parse(_config.get_query(key).text); }
+
+    public string parse_query(string key, string[,] flds) {
+      Dictionary<string, object> dict = new Dictionary<string, object>();
+      for (int i = 0; i < flds.GetLength(0); i++)
+        dict.Add(flds[i, 0], flds[i, 1]);
+      config.query q = _config.get_query(key);
+      return parse(q.text, dict, conds: q.filters);
+    }
+
+    public string parse_query(string key, Dictionary<string, object> flds) {
+      config.query q = _config.get_query(key);
+      return parse(q.text, flds, conds: q.filters);
+    }
+
+    public string parse_html_block(string key) { return parse(_config.get_html_block(key).content); }
+
+    public string parse_html_block(string key, string[,] flds) {
+      Dictionary<string, object> dict = new Dictionary<string, object>();
+      for (int i = 0; i < flds.GetLength(0); i++)
+        dict.Add(flds[i, 0], flds[i, 1]);
+      return parse(_config.get_html_block(key).content, dict);
+    }
+
+    public string parse_html_block(string key, Dictionary<string, object> flds) {
+      return parse(_config.get_html_block(key).content, flds);
+    }
+
     #endregion
 
     #region parse
 
-    public string parse(string text, Dictionary<string, object> flds = null, DataRow dr = null) {
+    public string parse(string text, Dictionary<string, object> flds = null, DataRow dr = null
+      , Dictionary<string, string> conds = null) {
 
       try {
 
@@ -79,9 +108,30 @@ namespace mlib {
           else if (nuguale > 0) {
             string cmd = cnt.Substring(0, nuguale), par = cnt.Substring(nuguale + 2, cnt.Length - nuguale - 3), value = "";
             switch (cmd) {
-              // {@field='<FIELD NAME>'}
+              // {@field='<FIELD NAME>'}, {@field='<FIELD NAME>','<DEF. VALUE>'}
               case "field": {
-                  value = get_val(par, flds, dr);
+                  if (par.Contains(',')) {
+                    string par21 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[0]
+                      , par22 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[1];
+                    value = get_val(par21, flds, dr, par22);
+                  } else value = get_val(par, flds, dr);
+                  break;
+                }
+              // {@field_cond='<FIELD NAME>','<COND NAME>'}
+              case "field_cond": {
+                  string par21 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[0]
+                    , par22 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[1]
+                    , val = get_val(par21, flds, dr);
+                  if (val == "") {
+                    value = "";
+                  } else {
+                    if (conds == null)
+                      throw new Exception("non sono stati specificate le condizioni per l'istruzione '{@" + cmd + "='" + par + "'}'");
+                    if (!conds.ContainsKey(par22))
+                      throw new Exception("la condizione '" + par22 + "' non è specificata per l'istruzione '{@" + cmd + "='" + par + "'}'");
+                    value = parse(conds[par22], flds, dr);
+                  }
+
                   break;
                 }
               // {@null='<FIELD NAME>'}
@@ -95,25 +145,43 @@ namespace mlib {
                   value = val != "" ? string.Format("'{0}'", val) : "NULL";
                   break;
                 }
+              // {@txtvoid='<FIELD NAME>'}
+              case "txtvoid": {
+                  string val = get_val(par, flds, dr).ToString().Replace("'", "''").Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
+                  value = val != "" ? string.Format("'{0}'", val) : "''";
+                  break;
+                }
               // {@txtqrycr='<FIELD NAME>'}
               case "txtqrycr": {
                   string val = get_val(par, flds, dr).ToString().Replace("'", "''").Replace("\r\n", "' + char(13) + '").Replace("\r", " ").Replace("\n", " ");
                   value = val != "" ? string.Format("'{0}'", val) : "NULL";
                   break;
                 }
-              // {@var='<name key>'}
+              // {@html-block='<NAME KEY>'}
+              case "html-block": value = parse(config.get_html_block(par).content, flds, dr, conds); break;
+                // {@query-text='<NAME QUERY'}
+              case "query-text": value = parse(config.get_query(par).text, flds, dr, conds); break;
+              // {@var='<NAME KEY>'}
               case "var": value = config.get_var(par).value; break;
-              // {@varurl='<name key>','<parameter encoded>'}
+              // {@varurl='<NAME KEY>','<PARAMETER ENCODED>'}
               case "varurl": {
                   string par21 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[0]
                     , par22 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[1];
                   value = config.var_value_par(par21, System.Web.HttpUtility.UrlEncode(par22));
                   break;
                 }
-              // {@setting='<name key>'}
+              // {@setting='<NAME KEY>'}
               case "setting": value = app_setting(par); break;
-              // {@date='<format string>'}
+              // {@date='<FORMAT STRING>'}
               case "date": value = DateTime.Now.ToString(par); break;
+              // {@date_fld='<FIELD NAME>','<FORMAT STRING>'}
+              case "date_fld": {
+                  string par21 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[0]
+                    , par22 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[1];
+                  object val = get_obj(par21, flds, dr);
+                  value = val != null && val is DateTime ? ((DateTime)val).ToString(par22) : "";
+                  break;
+                }
               default: throw new Exception("chiave con parametro '" + cmd + "' inaspettata!");
             }
 
@@ -129,10 +197,42 @@ namespace mlib {
     }
 
     protected static string get_val(string par, Dictionary<string, object> flds = null, DataRow dr = null, string def = "") {
-      if (flds == null && dr == null) throw new Exception("il campo '" + par + "' specificato nella query non è stato impostato!");
-      if (flds != null && flds.ContainsKey(par)) return flds[par] != null ? flds[par].ToString() : def;
-      else if (dr != null && dr.Table.Columns.Contains(par)) return dr[par] != DBNull.Value ? dr[par].ToString() : def;
-      throw new Exception("il campo '" + par + "' specificato nella query non è stato impostato!");
+      object res = get_obj(par, flds, dr);
+      return res != null && res.ToString() != "" ? res.ToString() : def;
+    }
+
+    protected static object get_obj(string par, Dictionary<string, object> flds = null, DataRow dr = null) {
+
+      // non è un oggetto
+      if (!par.Contains('.')) {
+        if (flds == null && dr == null) throw new Exception("il campo '" + par + "' specificato non è stato impostato per assenza di parametri!");
+        if (flds != null && flds.ContainsKey(par)) return flds[par] != null ? flds[par] : null;
+        else if (dr != null && dr.Table.Columns.Contains(par)) return dr[par] != DBNull.Value ? dr[par] : null;
+        throw new Exception("il campo '" + par + "' specificato non è stato impostato!");
+      }
+
+      // è un oggetto
+      string cl = par.Substring(0, par.IndexOf('.')), pr = par.Substring(par.IndexOf('.') + 1);
+      if (flds == null || !flds.ContainsKey(cl)) throw new Exception("l'oggetto '" + cl + "' non è stato trovato!");
+      object o = flds[cl];
+      // funzione
+      if (pr.Contains("(")) {
+        string pars = pr.Substring(pr.IndexOf("(") + 1, pr.Length - pr.IndexOf("(") - 2);
+        string[] values = pars.Split(new char[] { ';' });
+        System.Reflection.MethodInfo mi = o.GetType().GetMethod(pr.Substring(0, pr.IndexOf("(")));
+        List<object> pvals = new List<object>(); int i = 0;
+        foreach (System.Reflection.ParameterInfo pi in mi.GetParameters()) {
+          if (values.Length > i) pvals.Add(Convert.ChangeType(values[i], pi.ParameterType));
+          i++;
+        }
+        object val = mi.Invoke(o, pvals.ToArray());
+        return val != null ? val.ToString() : null;
+      } // attributo
+      else {
+        if (o.GetType().GetProperty(pr) == null)
+          throw new Exception("l'oggetto '" + cl + "' di tipo '" + o.GetType().FullName + "' non contiente la proprietà '" + pr + "'!");
+        return o.GetType().GetProperty(pr).GetValue(o, null);
+      }
     }
 
     public static string machine_name(bool lower = true) {

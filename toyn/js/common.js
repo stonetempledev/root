@@ -34,3 +34,28 @@ function set_param(par, val, href) {
 function get_page() { return [location.protocol, '//', location.host, location.pathname].join(''); }
 
 function is_mobile() { return navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/) != null; }
+
+function check_bool(par, def) { if (typeof (par) == 'undefined') return def ? def : false; return par; }
+
+function check_str(par) { if (typeof (par) == 'undefined') return ""; return par; }
+
+// formatUnicorn
+//  "Hello, {name}, are you feeling {adjective}?".formatUnicorn({name:"Gabriel", adjective: "OK"})
+String.prototype.formatUnicorn = String.prototype.formatUnicorn ||
+function () {
+  "use strict";
+  var str = this.toString();
+  if (arguments.length) {
+    var t = typeof arguments[0];
+    var key;
+    var args = ("string" === t || "number" === t) ?
+            Array.prototype.slice.call(arguments)
+            : arguments[0];
+
+    for (key in args) {
+      str = str.replace(new RegExp("\\{" + key + "\\}", "gi"), args[key]);
+    }
+  }
+
+  return str;
+};

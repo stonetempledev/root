@@ -21,7 +21,7 @@
       margin: 3px;
     }
   </style>
-  <script language="javascript" charset="UTF-8">
+  <script language="javascript">
     var _editor = null, _sc = null, _back_cmd = null, _vs = null;
 
     var tags = {
@@ -52,7 +52,7 @@
         attrs: { title: null, notes: null },
         children: null
       }, link: {
-        attrs: { title: null, ref: null },
+        attrs: { title: null, ref: null, notes: null },
         children: null
       }, attivita: {
         attrs: { title: null, priorita: ["bassa", "normale", "alta"], stato: ["la prossima", "da iniziare", "in corso", "sospesa", "fatta"] },
@@ -75,7 +75,7 @@
       // view
       if ($("#contents_doc").length) {
 
-        _vs = get_param("vs"); 
+        _vs = get_param("vs");
 
         // sc
         if ($("#scroll_pos").val()) window.setTimeout(function () { $(window).scrollTop(parseInt($("#scroll_pos").val())); }, 500);
@@ -189,25 +189,29 @@
 
     function check_menu_cut(el, menu) {
       var ids = $("#cache_ids").val(), type = el.closest('[element_id]').attr("type_element");
+
       if (ids) {
+        menu.find("[tp-menu=div-incolla],[tp-menu=incolla]").show();
         menu.find("[value='azzera']").text("togli dalla copia i " + ids.split(',').length + " oggetti...");
         if (type != "element" && type != "list" && type != "attivita")
           menu.find("[value='incolla_dentro']").hide();
+        else menu.find("[value='incolla_dentro']").show();
       }
-      else menu.find("[value='azzera'],[value='incolla_dopo'],[value='incolla_prima'],[value='incolla_dentro']").hide();
+      else menu.find("[tp-menu=div-incolla],[tp-menu=incolla]").hide();
 
-      if (type != "title") menu.find("[value='copia_fine'],[value='taglia_fine']").hide();
+      if (type != "title") menu.find("[menu-value='copia_fine'],[menu-value='taglia_fine']").hide();
+      else menu.find("[menu-value='copia_fine'],[menu-value='taglia_fine']").show();
     }
 
     function menu_cut(clicked, selected) {
       try {
-        var tp = selected.attr("value"), id = clicked.closest('[element_id]').attr("element_id");
+        var tp = selected_val(selected), id = clicked.closest('[element_id]').attr("element_id");
         if (tp == "copia" || tp == "taglia") {
           var result = post_data({ "action": tp == "copia" ? "copy" : "cut", "id": id });
           if (result) {
             if (result.des_result == "ok") {
               $("#cache_ids").val(result.contents);
-            } else show_alert("Attenzione!", result.message);
+            } else show_danger("Attenzione!", result.message);
           }
         } else if (tp == "sposta_su" || tp == "sposta_fondo" || tp == "sposta_alto") {
           var result = post_data({ "action": tp == "sposta_alto" ? "move_first" : (tp == "sposta_su" ? "move_up" : "move_end"), "id": id });
@@ -217,7 +221,7 @@
                 reload_contents(result.html_element);
                 reload_menu(result.menu_html);
               }
-            } else show_alert("Attenzione!", result.message);
+            } else show_danger("Attenzione!", result.message);
           }
         } else if (tp == "copia_fine" || tp == "taglia_fine") {
           status_txt("copia elementi in corso...")
@@ -226,7 +230,7 @@
             if (result) {
               if (result.des_result == "ok") {
                 $("#cache_ids").val(result.contents);
-              } else show_alert("Attenzione!", result.message);
+              } else show_danger("Attenzione!", result.message);
             }
             end_status_to(300);
           }, 200);
@@ -236,7 +240,7 @@
           if (result) {
             if (result.des_result == "ok") {
               $("#cache_ids").val("");
-            } else show_alert("Attenzione!", result.message);
+            } else show_danger("Attenzione!", result.message);
           }
         } else if (tp == "incolla_dopo" || tp == "incolla_prima" || tp == "incolla_dentro") {
           var result = post_data({ "action": tp == "incolla_dopo" ? "paste_after"
@@ -247,15 +251,19 @@
               $("#cache_ids").val(result.contents);
               reload_contents(result.html_element);
               reload_menu(result.menu_html);
-            } else show_alert("Attenzione!", result.message);
+            } else show_danger("Attenzione!", result.message);
           }
         }
-      } catch (e) { show_alert("Attenzione!", e.message); }
+      } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
     function menu_base(clicked, selected) {
-      var tp = selected.attr("value"), id = clicked.closest('[element_id]').attr("element_id");
-      if (tp == "elimina") {
+
+      var tp = selected_val(selected), id = clicked.closest('[element_id]').attr("element_id");
+      if (tp == "aggiorna") {
+        edit_element(id); return;
+      }
+      else if (tp == "elimina") {
         var sc = $(window).scrollTop();
         remove_element(id);
         window.setTimeout(function () { $(window).scrollTop(sc); }, 200);
@@ -277,14 +285,24 @@
         , parent_stored = el.closest('[element_id]').attr("parent_stored");
 
       if (parent_stored == "true") {
-        menu.find("[value='storicizza'],[value='destoricizza']").hide();
+        menu.find("[menu-value='storicizza'],[menu-value='destoricizza']").hide();
         return;
       }
-      else menu.find("[value='storicizza'],[value='destoricizza']").show();
+      else {
+        menu.find("[menu-value='storicizza'],[menu-value='destoricizza']").show();
+      }
 
       // storicizza
-      if (stored == "true") menu.find("[value='storicizza']").attr("value", "destoricizza").text("riprendi");
-      else menu.find("[value='destoricizza']").attr("value", "storicizza").text("storicizza");
+      if (stored == "true") {
+        var item = menu.find("[menu-value='storicizza']");
+        item.attr("menu-value", "destoricizza").attr("title", "toglilo dallo scatolone");
+        item.find("i").removeClass().addClass("fas fa-box-open");
+      }
+      else {
+        var item = menu.find("[menu-value='destoricizza']");
+        item.attr("menu-value", "storicizza").attr("title", "mettilo nello scatolone");
+        item.find("i").removeClass().addClass("fas fa-archive");
+      }
 
     }
 
@@ -322,7 +340,7 @@
     }
 
     function menu_attivita(clicked, selected) {
-      var tp = selected.attr("value"), id = clicked.closest('[element_id]').attr("element_id")
+      var tp = selected_val(selected), id = clicked.closest('[element_id]').attr("element_id")
           , tps = tp.split(','), stato = clicked.closest('[element_id]').attr("stato")
           , priorita = clicked.closest('[element_id]').attr("priorita")
           , in_list = clicked.closest('[element_id]').attr("in_list");
@@ -362,8 +380,176 @@
       });
     }
 
+    function edit_element(id) {
+      var e = $("[element_id=" + id + "]"), type_element = e.attr("type_element"), des_element = e.attr("title_element");
+
+      if (type_element == "account") {
+        show_dyn_dlg({ title: "Aggiorna " + des_element
+          , rows: [{ id: "title", label: "Titolo", valore: e.find("[tp-val=title]").text() }
+            , { id: "notes", label: "Note Particolari", valore: e.find("[tp-val=notes]").text() }
+            , { id: "user_pass", label: "Utente/Password", valore: e.find("[tp-val=user_pass]").text() }
+            , { id: "email", label: "Email", valore: e.find("[tp-val=email]").text()}]
+          , on_ok: function () { update_account(id, val_dyn("title"), val_dyn("notes"), val_dyn("user_pass"), val_dyn("email")); }
+        });
+      } else if (type_element == "attivita") {
+        show_dyn_dlg({ title: "Aggiorna " + des_element
+          , rows: [{ id: "title", label: "Titolo", valore: e.find("[tp-val=title]:first").text()}]
+          , on_ok: function () { update_attivita(id, val_dyn("title")); }
+        });
+      } else if (type_element == "code") {
+        show_dyn_dlg({ title: "Aggiorna " + des_element
+          , rows: [{ id: "title", label: "Titolo", valore: e.find("[tp-val=title]").text() }
+            , { id: "notes", label: "Note Particolari", valore: e.find("[tp-val=notes]").text()}]
+          , on_ok: function () { update_code(id, val_dyn("title"), val_dyn("notes")); }
+        });
+      } else if (type_element == "element") {
+        show_dyn_dlg({ title: "Aggiorna " + des_element
+          , rows: [{ id: "title", label: "Titolo", valore: e.find("[tp-val=title]:first").text() }
+            , { id: "code", label: "Codice univoco", valore: e.find("[tp-val=code]:first").text() }
+            , { id: "type", label: "Tipo elemento", valore: e.find("[tp-val=type]:first").text() }
+            , { id: "ref", label: "Web Link/Comando", valore: e.find("[tp-val=ref]:first").text() }
+            , { id: "notes", label: "Note Particolari", valore: e.find("[tp-val=notes]:first").text()}]
+          , on_ok: function () { update_element(id, val_dyn("title"), val_dyn("code"), val_dyn("type"), val_dyn("ref"), val_dyn("notes")); }
+        });
+      } else if (type_element == "link") {
+        show_dyn_dlg({ title: "Aggiorna " + des_element
+          , rows: [{ id: "title", label: "Titolo", valore: e.find("[tp-val=title]").text() }
+            , { id: "ref", label: "Web Link/Comando", valore: e.find("[tp-val=ref]").text() }
+            , { id: "notes", label: "Note Particolari", valore: e.find("[tp-val=notes]").text()}]
+          , on_ok: function () { update_link(id, val_dyn("title"), val_dyn("ref"), val_dyn("notes")); }
+        });
+      } else if (type_element == "list") {
+        show_dyn_dlg({ title: "Aggiorna " + des_element
+          , rows: [{ id: "title", label: "Titolo", valore: e.find("[tp-val=title]:first").text() }
+            , { id: "notes", label: "Note Particolari", valore: e.find("[tp-val=notes]:first").text()}]
+          , on_ok: function () { update_list(id, val_dyn("title"), val_dyn("notes")); }
+        });
+      } else if (type_element == "par") {
+        show_dyn_dlg({ title: "Aggiorna " + des_element
+          , rows: [{ id: "title", label: "Titolo", valore: e.find("[tp-val=title]:first").text() }
+            , { id: "ref", label: "Web Link/Comando", valore: e.find("[tp-val=ref]:first").text()}]
+          , on_ok: function () { update_par(id, val_dyn("title"), val_dyn("ref")); }
+        });
+      } else if (type_element == "text") {
+        show_dyn_dlg({ title: "Aggiorna " + des_element, rows: [{ id: "title", label: "Titolo", valore: e.find("[tp-val=title]").text() }
+          , { id: "stile", label: "Stile", valore: e.attr("styles"), type: "select"
+            , values: [{ title: "Nessuno", value: "" }, { title: "Sottolineato", value: "underline" }
+            , { title: "Grassetto", value: "bold" }, { title: "Corsivo", value: "italic"}]
+          }, { id: "content", label: "Testo", valore: e.find("[tp-val=content]").text(), type: "textarea"}]
+          , on_ok: function () { update_text(id, val_dyn("title"), val_dyn("stile"), val_dyn("content")); }
+        });
+      } else if (type_element == "title") {
+        show_dyn_dlg({ title: "Aggiorna " + des_element, rows: [{ id: "title", label: "Titolo", valore: e.find("[tp-val=title]").text() }
+          , { id: "ref", label: "Web Link/Comando", valore: e.find("[tp-val=ref]").text()}]
+          , on_ok: function () { update_title(id, val_dyn("title"), val_dyn("ref")); }
+        });
+      } else if (type_element == "value") {
+        show_dyn_dlg({ title: "Aggiorna " + des_element, rows: [{ id: "title", label: "Titolo", valore: e.find("[tp-val=title]").text() }
+          , { id: "notes", label: "Note Particolari", valore: e.find("[tp-val=notes]").text() }
+          , { id: "content", label: "Valore", valore: e.find("[tp-val=content]").text()}]
+          , on_ok: function () { update_value(id, val_dyn("title"), val_dyn("notes"), val_dyn("content")); }
+        });
+      }
+    }
+
+    function update_account(id, title, notes, up, email) {
+      var e = $("[element_id=" + id + "]");
+      var res = post_action({ "action": "update_account", "id": id, "title": title, "notes": notes, "user_pass": up, "email": email
+        , "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored"), "no_opacity": e.attr("no_opacity")
+      });
+
+      if (res) reload_html_element(id, res.html_element, false, false, false);
+    }
+
+    function update_attivita(id, title) {
+      var e = $("[element_id=" + id + "]");
+      var res = post_action({ "action": "update_attivita", "id": id, "title": title
+        , "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored"), "no_opacity": e.attr("no_opacity")
+      });
+
+      if (res) reload_html_element(id, res.html_element, false, false, false);
+    }
+
+    function update_code(id, title, notes) {
+      var e = $("[element_id=" + id + "]");
+      var res = post_action({ "action": "update_code", "id": id, "title": title, "notes": notes
+        , "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored"), "no_opacity": e.attr("no_opacity")
+      });
+      
+      if (res) reload_html_element(id, res.html_element, false, false, false);
+    }
+
+    function update_element(id, title, code, type, ref, notes) {
+      var e = $("[element_id=" + id + "]"), me = $("[menu_id=" + id + "]")
+        , res = post_action({ "action": "update_element", "id": id, "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored")
+          , "no_opacity": e.attr("no_opacity"), "title": title, "code": code, "type": type, "ref": ref, "notes": notes
+        });
+      if (res) {
+        reload_html_element(id, res.html_element, false, false, false);
+        if (me.length > 0) { p = me.prev(); me.remove(); p.after(res.menu_html); }
+      }
+    }
+
+    function update_link(id, title, ref, notes) {
+      var e = $("[element_id=" + id + "]");
+      var res = post_action({ "action": "update_link", "id": id, "title": title, "ref": ref, "notes": notes
+          , "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored"), "no_opacity": e.attr("no_opacity")
+      });
+      if (res) reload_html_element(id, res.html_element, false, false, false);
+    }
+
+    function update_list(id, title, notes) {
+      var e = $("[element_id=" + id + "]"), me = $("[menu_id=" + id + "]");
+      var res = post_action({ "action": "update_list", "id": id, "title": title, "notes": notes
+          , "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored"), "no_opacity": e.attr("no_opacity")
+      });
+      if (res) {
+        reload_html_element(id, res.html_element, false, false, false);
+        if (me.length > 0) { p = me.prev(); me.remove(); p.after(res.menu_html); }
+      }
+    }
+
+    function update_par(id, title, ref) {
+      var e = $("[element_id=" + id + "]");
+      var res = post_action({ "action": "update_par", "id": id, "title": title, "ref": ref
+          , "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored"), "no_opacity": e.attr("no_opacity")
+      });
+      if (res) {
+        var mep = $("[menu_id=" + id + "]").length > 0 ? $("[menu_id=" + id + "]").prev() : null;
+        reload_html_element(id, res.html_element, true, true, false);
+        if (mep != null) mep.after(res.menu_html);
+      }
+    }
+
+    function update_text(id, title, stile, content) {
+      var e = $("[element_id=" + id + "]");
+      var res = post_action({ "action": "update_text", "id": id, "title": title, "stile": stile, "content": content
+        , "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored"), "no_opacity": e.attr("no_opacity")
+      });
+      if (res) reload_html_element(id, res.html_element, false, false, false);
+    }
+
+    function update_title(id, title, ref) {
+      var e = $("[element_id=" + id + "]"), me = $("[menu_id=" + id + "]");
+      var res = post_action({ "action": "update_title", "id": id, "title": title, "ref": ref
+          , "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored"), "no_opacity": e.attr("no_opacity")
+      });
+      if (res) {
+        reload_html_element(id, res.html_element, false, false, false);
+        if (me.length > 0) { p = me.prev(); me.remove(); p.after(res.menu_html); }
+      }
+    }
+
+    function update_value(id, title, notes, content) {
+      var e = $("[element_id=" + id + "]");
+      var res = post_action({ "action": "update_value", "id": id, "title": title, "notes": notes, "content": content
+          , "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored"), "no_opacity": e.attr("no_opacity")
+      });
+      if (res) reload_html_element(id, res.html_element, false, false, false);
+    }
+
     function remove_element(id) {
-      show_alert_yn("Attenzione!", "Sei sicuro di voler eliminare l'elemento?"
+      show_warning_yn("Attenzione!", "Sei sicuro di voler eliminare l'elemento?"
         , function () { remove_element2(id) });
     }
 
@@ -374,17 +560,20 @@
           if (result.des_result == "ok") {
             delete_element(id);
             $("#cache_ids").val(result.vars["cache_ids"]);
-          } else show_alert("Attenzione!", "si è verificato un problema" + (result.message ? ": " + result.message : "") + "!");
+          } else show_danger("Attenzione!", result.message);
         }
-      } catch (e) { show_alert("Attenzione!", e.message); }
+      } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
-    function delete_element(id) {
-      $("[menu_id=" + id + "]").remove();
-      $("[menu_childs_id=" + id + "]").remove();
+    function delete_element(id, del_childs, del_menu, del_contenitor) {
+      if (check_bool(del_menu, true)) {
+        $("[menu_id=" + id + "]").remove();
+        if (check_bool(del_childs, true)) $("[menu_childs_id=" + id + "]").remove();
+      }
       $("[element_id=" + id + "]").remove();
-      $("[childs_element_id=" + id + "]").remove();
-      $("[contenitor_id=" + id + "]").remove();
+
+      if (check_bool(del_contenitor, true)) $("[contenitor_id=" + id + "]").remove();
+      if (check_bool(del_childs, true)) $("[childs_element_id=" + id + "]").remove();
     }
 
     function store_element(id, store) {
@@ -395,14 +584,27 @@
         });
         if (result) {
           if (result.des_result == "ok") {
-            var p = $("[element_id=" + id + "]").prev(), c = $("[contenitor_id=" + id + "]").prev();
-            delete_element(id);
-            if (c.length) c.after(result.html_element); else p.after(result.html_element);
-            init_context();
+            reload_html_element(id, result.html_element);
             reload_menu(result.menu_html);
-          } else show_alert("Attenzione!", "si è verificato un problema" + (result.message ? ": " + result.message : "") + "!");
+          } else show_danger("Attenzione!", result.message);
         }
-      } catch (e) { show_alert("Attenzione!", e.message); }
+      } catch (e) { show_danger("Attenzione!", e.message); }
+    }
+
+    function reload_html_element(id, html, childs, del_menu, del_contenitor) {
+      var p = $("[element_id=" + id + "]").prev(), c = $("[contenitor_id=" + id + "]").length > 0
+        ? (check_bool(del_contenitor, true) ? $("[contenitor_id=" + id + "]").prev() : $("[contenitor_id=" + id + "]")) : null;
+
+      if (c != null && check_bool(del_contenitor) == false)
+        $("[element_id=" + id + "]").after("<div tmp='" + id + "'></div>");
+
+      delete_element(id, childs, del_menu, del_contenitor);
+      if (c != null) {
+        if (check_bool(del_contenitor) == false) {
+          $("[tmp=" + id + "]").after(html); $("[tmp=" + id + "]").remove();
+        } else c.after(html);
+      } else p.after(html);
+      init_context();
     }
 
     function reload_contents(html) { $("#contents_doc").html(html); window.setTimeout(function () { init_context(); }, 500); }
@@ -420,9 +622,9 @@
             $("[element_id=" + id + "]").remove();
             p.after(result.html_element);
             init_context();
-          } else show_alert("Attenzione!", "si è verificato un problema" + (result.message ? ": " + result.message : "") + "!");
+          } else show_danger("Attenzione!", result.message);
         }
-      } catch (e) { show_alert("Attenzione!", e.message); }
+      } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
     function change_priorita_attivita(id, priorita_now, in_list, priorita_new) {
@@ -436,9 +638,9 @@
             $("[element_id=" + id + "]").remove();
             p.after(result.html_element);
             init_context();
-          } else show_alert("Attenzione!", "si è verificato un problema" + (result.message ? ": " + result.message : "") + "!");
+          } else show_danger("Attenzione!", result.message);
         }
-      } catch (e) { show_alert("Attenzione!", e.message); }
+      } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
     function save_doc_vista() { save_element(true); }
@@ -467,10 +669,10 @@
         if (result) {
           if (result.des_result == "ok") {
             return result.contents;
-          } else show_alert("Attenzione!", "i dati contenuti nell'xml non sono corrretti"
+          } else show_danger("Attenzione!", "i dati contenuti nell'xml non sono corrretti"
              + (result.message ? ": " + result.message : "") + "!");
         }
-      } catch (e) { show_alert("Attenzione!", e.message); }
+      } catch (e) { show_danger("Attenzione!", e.message); }
       return null;
     }
 
@@ -533,15 +735,15 @@
                   end_status_to(2000);
                 }, 100);
               }
-            } else { show_alert("Salvataggio elemento", "Stai più attento, il formato XML non è corretto!<br/><br/>" + result.message); end_status(); }
+            } else { show_warning("Salvataggio elemento", "Stai più attento, il formato XML non è corretto!<br/><br/>" + result.message); end_status(); }
           } else end_status();
         }, 100);
-      } catch (e) { show_alert("Attenzione!", e.message); end_status(); }
+      } catch (e) { show_danger("Attenzione!", e.message); end_status(); }
       return false;
     }
 
     function back_element() {
-      try { url_view(); } catch (e) { show_alert("Attenzione!", e.message); } return false;
+      try { url_view(); } catch (e) { show_danger("Attenzione!", e.message); } return false;
     }
 
     function show_childs(id) {
@@ -572,13 +774,13 @@
               $("[code_id=" + id + "]").css("border-color", "").css("box-shadow", "");
             else {
               $("[code_id=" + id + "]").css("border-color", "tomato").css("box-shadow", "0 0 2px tomato");
-              show_alert("Attenzione!", "cè stato un problema nel salvataggio del codice sorgente!"
+              show_danger("Attenzione!", "cè stato un problema nel salvataggio del codice sorgente!"
                 + (result.message ? ": " + result.message : "") + "!");
             }
           }
         }, 200);
 
-      } catch (e) { show_alert("Attenzione!", e.message); }
+      } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
   </script>
@@ -623,25 +825,32 @@
       <h4 title_row='true' class="dropdown-header" style='color: blue; background-color: whitesmoke;'>
         Menù</h4>
     </li>
-    <li><span class="dropdown-item" value='elimina'>elimina</span></li>
-    <li><span class="dropdown-item" value='storicizza'>storicizza</span></li>
-    <li><span class="dropdown-item" value='modifica'>modifica XML...</span></li>
-    <li>
+    <li class="dropdown-item icon-item"><span class='icon-menu' title='modifica...' menu-value='aggiorna'>
+      <i class="fas fa-pen text-info"></i></span><span class='icon-menu text-danger' title='cancella elemento'
+        menu-value='elimina'><i class="fas fa-trash-alt"></i></span><span class='icon-menu'
+          title='mettilo nello scatolone' menu-value='storicizza'><i class="fas fa-archive">
+          </i></span><span class='icon-menu' title='modifica xml...' menu-value='modifica'><i
+            class="fas fa-file-code"></i></span></li>
+    <li class="dropdown-item icon-item"><span class='icon-menu' title='sposta su' menu-value='sposta_su'>
+      <i class="fas fa-arrow-up"></i></span><span class='icon-menu' title='mettilo in cima'
+        menu-value='sposta_alto'><i class="fas fa-angle-double-up"></i></span><span class='icon-menu'
+          title='mettilo in fondo' menu-value='sposta_fondo'><i class="fas fa-angle-double-down">
+          </i></span></li>
+    <li class="dropdown-item icon-item"><span class='icon-menu' title='copia elemento'
+      menu-value='copia'><i class='fas fa-copy'></i></span><span class='icon-menu text-warning'
+        title='copia fino in fondo' menu-value='copia_fine'><i class='fas fa-copy'></i>
+      </span><span class='icon-menu' title='taglia elemento' menu-value='taglia'><i class='fas fa-cut'>
+      </i></span><span class='icon-menu text-warning' title='taglia fino in fondo' menu-value='taglia_fine'>
+        <i class='fas fa-cut'></i></span></li>
+    <!-- incolla -->
+    <li tp-menu='div-incolla'>
       <div class="dropdown-divider">
       </div>
     </li>
-    <!-- copia incolla -->
-    <li class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" style='color: #17202A;
-      font-weight: bold;' href="#">Copia Incolla Sposta</a>
+    <li tp-menu='incolla' class="dropdown-submenu"><a class="dropdown-item dropdown-toggle"
+      style='color: #17202A; font-weight: bold;' href="#">Incolla</a>
       <ul class="dropdown-menu" sub_menu='true'>
-        <li><span class="dropdown-item" value='sposta_su'>sposta su...</span></li>
-        <li><span class="dropdown-item" value='sposta_alto'>sposta in alto...</span></li>
-        <li><span class="dropdown-item" value='sposta_fondo'>sposta in fondo...</span></li>
         <li><span class="dropdown-item" value='azzera'>togli dalla copia i 5 oggetti copiati...</span></li>
-        <li><span class="dropdown-item" value='taglia'>taglia...</span></li>
-        <li><span class="dropdown-item" value='taglia_fine'>taglia fino alla fine...</span></li>
-        <li><span class="dropdown-item" value='copia'>copia...</span></li>
-        <li><span class="dropdown-item" value='copia_fine'>copia fino alla fine...</span></li>
         <li><span class="dropdown-item" value='incolla_prima'>incolla prima...</span></li>
         <li><span class="dropdown-item" value='incolla_dopo'>incolla dopo...</span></li>
         <li><span class="dropdown-item" value='incolla_dentro'>incolla dentro...</span></li>
@@ -654,23 +863,29 @@
       <h4 class="dropdown-header" style='color: blue; background-color: whitesmoke;'>
         ATTIVITÀ</h4>
     </li>
-    <li><span class="dropdown-item" value='elimina'>elimina</span></li>
-    <li><span class="dropdown-item" value='storicizza'>storicizza</span></li>
-    <li><span class="dropdown-item" value='modifica'>modifica XML...</span></li>
-    <li>
+    <li class="dropdown-item icon-item"><span class='icon-menu' title='modifica...' menu-value='aggiorna'>
+      <i class="fas fa-pen text-info"></i></span><span class='icon-menu text-danger' title='cancella elemento'
+        menu-value='elimina'><i class="fas fa-trash-alt"></i></span><span class='icon-menu'
+          title='mettilo nello scatolone' menu-value='storicizza'><i class="fas fa-archive">
+          </i></span><span class='icon-menu' title='modifica xml...' menu-value='modifica'><i
+            class="fas fa-file-code"></i></span></li>
+    <li class="dropdown-item icon-item"><span class='icon-menu' title='sposta su' menu-value='sposta_su'>
+      <i class="fas fa-arrow-up"></i></span><span class='icon-menu' title='mettilo in cima'
+        menu-value='sposta_alto'><i class="fas fa-angle-double-up"></i></span><span class='icon-menu'
+          title='mettilo in fondo' menu-value='sposta_fondo'><i class="fas fa-angle-double-down">
+          </i></span></li>
+    <li class="dropdown-item icon-item"><span class='icon-menu' title='copia elemento'
+      menu-value='copia'><i class='fas fa-copy'></i></span><span class='icon-menu' title='taglia elemento'
+        menu-value='taglia'><i class='fas fa-cut'></i></span></li>
+    <!-- incolla -->
+    <li tp-menu='div-incolla'>
       <div class="dropdown-divider">
       </div>
     </li>
-    <!-- copia incolla -->
-    <li class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" style='color: #17202A;
-      font-weight: bold;' href="#">Copia Incolla Sposta</a>
+    <li tp-menu='incolla' class="dropdown-submenu"><a class="dropdown-item dropdown-toggle"
+      style='color: #17202A; font-weight: bold;' href="#">Incolla</a>
       <ul class="dropdown-menu" sub_menu='true'>
-        <li><span class="dropdown-item" value='sposta_su'>sposta su...</span></li>
-        <li><span class="dropdown-item" value='sposta_alto'>sposta in alto...</span></li>
-        <li><span class="dropdown-item" value='sposta_fondo'>sposta in fondo...</span></li>
         <li><span class="dropdown-item" value='azzera'>togli 5 oggetti copiati...</span></li>
-        <li><span class="dropdown-item" value='taglia'>taglia...</span></li>
-        <li><span class="dropdown-item" value='copia'>copia...</span></li>
         <li><span class="dropdown-item" value='incolla_prima'>incolla prima...</span></li>
         <li><span class="dropdown-item" value='incolla_dopo'>incolla dopo...</span></li>
         <li><span class="dropdown-item" value='incolla_dentro'>incolla dentro...</span></li>

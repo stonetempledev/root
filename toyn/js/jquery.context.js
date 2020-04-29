@@ -95,3 +95,8 @@ function menu_position($target, $mouse, $direction, $scrollDir) {
 
   return $position;
 }
+
+function selected_val(selected) {
+  return $(selected).closest("[menu-value]").length > 0 ?
+    $(selected).closest("[menu-value]").attr("menu-value") : selected.attr("value");
+}

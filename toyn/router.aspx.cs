@@ -30,7 +30,7 @@ public partial class _router : tl_page {
         string cmd = qry_val("cmd");
         if (string.IsNullOrEmpty(cmd)) return;
 
-        cmd c = check_cmd(cmd);
+        cmd c = master.check_cmd(cmd);
         if (c == null)
           throw new Exception("Comando '" + cmd + "' non riconosciuto!");
 
@@ -40,7 +40,7 @@ public partial class _router : tl_page {
 
         // page
         if (!string.IsNullOrEmpty(c.page)) { master.redirect_to(c.page); return; }
-
+        
         if (c.action == "view" && c.obj == "cmds") {
 
           foreach (config.table_row gr in _core.config.get_table("cmds.cmds-groups").rows_ordered("title")) {
@@ -61,14 +61,20 @@ public partial class _router : tl_page {
               }
 
               // comando
-              string cc = tr.field("action") + " " + tr.field("object") + (tr.field("subobj") != "" ? " " + tr.field("subobj") : ""), href = "";
-              if (tr.fld_bool("call")) href = get_url_cmd(cc);
+              bool action_opt = tr.fld_bool("action-opt");
+              string action = !action_opt ? tr.field("action") : string.Format("<i>[{0}]</i>", tr.field("action"))
+                , cc = action + " " + tr.field("object") + (tr.field("subobj") != "" ? " " + tr.field("subobj") : "")
+                , cc_ref = tr.field("action") + " " + tr.field("object") + (tr.field("subobj") != "" ? " " + tr.field("subobj") : "")
+                , href = "", syns = tr.field("syn-object") != "" ? string.Join(", ", tr.field("syn-object").Split(new char[] { ',' })
+                  .Select(x => action + " " + x + (tr.field("subobj") != "" ? " " + tr.field("subobj") : ""))) : "";
+              if (tr.fld_bool("call")) href = get_url_cmd(cc_ref);
               else if (tr.fld_bool("compile")) href = "javascript:compile('" + cc.Replace("'", "") + "')";
 
               sb2.AppendFormat(@"<a class='list-group-item list-group-item-action flex-column align-items-start' href=""{2}"">
                 <div class='d-flex w-90 justify-content-between'>
-                  <h5 class='mb-1'>{0}</h5></div><p class='mb-1'>{1}</p></a>"
-                , cc, tr.field("des"), href != "" ? href : "#");
+                  <h4 class='font-weight-bold mb-1'>{0}</h4></div><p style='margin-top:10px;'><b>{3}</b></p>{4}<p class='mb-1'>{1}</p></a>"
+                , cc, tr.field("des"), href != "" ? href : "#", syns != "" ? "sinonimi: " + syns : ""
+                , action_opt ? "<p style='margin-top:10px;'><u>nota: l'azione è facoltativa</u></p>" : "");
             }
             if (sb2 != null) { sb2.AppendFormat("</div><div style='height:40px;'>&nbsp;</div>"); sb.Append(sb2); }
           }
@@ -86,17 +92,17 @@ public partial class _router : tl_page {
           sb.Append("</div>");
         } else if (c.action == "crypt") {
           if (!string.IsNullOrEmpty(c.obj) && !string.IsNullOrEmpty(c.sub_obj())) {
-            sb.AppendFormat(@"<span class='h3'><span class='badge badge-primary d-block' style='white-space:normal;font-weight:normal;'>parola criptata</span></span>
-              <input type='text' style='width:100%' value=""{0}"">", cry.encrypt(c.obj, c.sub_obj()));
+            sb.AppendFormat(@"<span class='h1'><span class='badge badge-primary d-block' style='white-space:normal;font-weight:normal;'>parola criptata</span></span>
+              <input type='text' class='form-control mt-3' value=""{0}"">", cry.encrypt(c.obj, c.sub_obj()));
           } else if (!string.IsNullOrEmpty(c.obj)) {
-            sb.AppendFormat(@"<span class='h3'><span class='badge badge-primary d-block' style='white-space:normal;font-weight:normal;'>parola criptata</span></span>
-              <input type='text' style='width:100%' value=""{0}"">", cry.encode_tobase64(c.obj));
+            sb.AppendFormat(@"<span class='h1'><span class='badge badge-primary d-block' style='white-space:normal;font-weight:normal;'>parola criptata</span></span>
+              <input type='text' class='form-control mt-3' value=""{0}"">", cry.encode_tobase64(c.obj));
           }
         } else if (c.action == "decrypt") {
           if (!string.IsNullOrEmpty(c.obj) && !string.IsNullOrEmpty(c.sub_obj())) {
             sb.AppendFormat(@"<span class='h3'><span class='badge badge-primary d-block' style='white-space:normal;font-weight:normal;'>parola de-criptata</span></span>
               <input type='text' style='width:100%' value=""{0}"">", cry.decrypt(c.obj, c.sub_obj()));
-          } 
+          }
         } else if (c.action == "check" && c.obj == "conn") {
           string err = ""; bool ok = false; try { ok = db_reconn(true); } catch (Exception ex) { err = ex.Message; }
           sb.AppendFormat("<h3 style='color:white;text-transform:uppercase;background-color:royalblue;'>Check DB connection</h3>");
@@ -155,7 +161,7 @@ public partial class _router : tl_page {
             <h3 style='color:white;text-transform:uppercase;background-color:royalblue;'>Server Variables</h3>");
           sb.Append("<div class='list-group'>");
           System.Collections.Specialized.NameValueCollection coll = Request.ServerVariables;
-          String[] arr1 = coll.AllKeys; 
+          String[] arr1 = coll.AllKeys;
           for (int loop1 = 0; loop1 < arr1.Length; loop1++) {
             string val = ""; String[] arr2 = coll.GetValues(arr1[loop1]);
             for (int loop2 = 0; loop2 < arr2.Length; loop2++)
@@ -215,7 +221,7 @@ public partial class _router : tl_page {
     sb.AppendFormat("<h3 style='color:white;text-transform:uppercase;background-color:royalblue;'>{0}&nbsp;</h3>", fn);
     sb.AppendFormat("<h5 style='text-transform: uppercase;'>{0}&nbsp;</h5>", string.Format("data: {0}, size: {1}"
         , f.lw.ToString("yyyy/MM/dd"), ((int)(f.size / 1024)).ToString("N0", new System.Globalization.CultureInfo("it-IT")) + " Kb"));
-    
+
     string[] lines = File.ReadAllLines(fn);
     string block = "";
     for (int i = lines.Length - 1; i >= 0; i--) {
@@ -236,42 +242,6 @@ public partial class _router : tl_page {
         , txt = block.IndexOf(" - ") > 0 ? block.Substring(block.IndexOf(" - ")) : block;
       sb.AppendFormat("<div style='border-bottom:1pt solid lightgrey;'><b>{1}</b>{0}</div>", txt, title);
     }
-  }
-
-  protected cmd check_cmd(string cmd) {
-    cmd c = new cmd(cmd);
-    config.table_row tr = null;
-    foreach (config.table_row r in config.get_table("cmds.base-cmds").rows) {
-      string action = r.field("action"), obj = r.field("object"), subobj = r.field("subobj");
-      if (is_like_cmd(action, c.action) && is_like_cmd(obj, c.obj) && is_like_cmd(subobj, c.sub_obj())) 
-      { tr = r; break; }
-    }
-    if (tr == null) return null;
-    c.type = tr.field("type");
-    c.page = tr.field("page");
-    return c;
-  }
-
-  // SINTASSI DICHIARAZIONE object, subobj
-  //  keyword - parola chiave che rappresenta un oggetto o un'azione particolare
-  //  {par_value} - valore variabile dell'object o del subobj
-  //  name_parameter:{par_value} - valore variabile accompagnato al nome del parametro associato all'object o al subobj
-  protected bool is_like_cmd(string syntax, string txt) {
-    bool res = false;
-    if (string.IsNullOrEmpty(syntax) && string.IsNullOrEmpty(txt)) res = true;
-    else if(!string.IsNullOrEmpty(syntax) && !string.IsNullOrEmpty(txt)) {
-      if (syntax.Contains('{')) {
-        int pos = syntax.IndexOf('{');
-        if (pos == 0) res = true;
-        else {
-          string name_par = syntax.Substring(0, pos);
-          if (txt.Length >= name_par.Length && txt.Substring(0, pos) == name_par) res = true;
-        }
-      } else {
-        if (txt == syntax) res = true;
-      }
-    }
-    return res;
   }
 
   protected override void OnLoad(EventArgs e) {

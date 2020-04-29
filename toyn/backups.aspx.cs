@@ -27,90 +27,75 @@ public partial class _backups : tl_page {
 
   protected override void OnInit(EventArgs e) {
     base.OnInit(e);
-    cmd c = new cmd(qry_val("cmd"));
+    cmd c = master.check_cmd(qry_val("cmd"));
 
-    if (Request.Headers["toyn-post"] != null) {
+    if (json_request.there_request(this)) {
       json_result res = new json_result(json_result.type_result.ok);
 
       try {
+        json_request jr = new json_request(this);
 
-        string json = String.Empty;
-        Request.InputStream.Position = 0;
-        using (var inputStream = new StreamReader(Request.InputStream)) {
-          json = inputStream.ReadToEnd();
+        // del_backup
+        if (jr.action == "del_backup") {
+          string fn = jr.val_str("fn"), tp = _core.config.get_var("vars.bck.type").value;
+          if (tp == "") throw new Exception("il backup non è configurato correttamente!");
+          // fs
+          if (tp == "fs") {
+            string net_user = _core.config.get_var("vars.bck.net-user").value
+              , net_pwd = _core.config.get_var("vars.bck.net-pwd").value
+              , net_folder = _core.config.get_var("vars.bck.net-folder").value;
+            if (net_user != "") {
+              using (unc_access unc = new unc_access()) {
+                if (unc.NetUseWithCredentials(net_folder, net_user, "", net_pwd)) {
+                  string bf = Path.Combine(net_folder, fn);
+                  if (File.Exists(bf)) {
+                    File.Delete(bf); unc.NetUseDelete();
+                  } else { unc.NetUseDelete(); throw new Exception("il backup '" + fn + "' non è stato trovato!"); }
+                } else throw new Exception(unc.DesLastError);
+              }
+            } else {
+              string bf = Path.Combine(net_folder, fn);
+              if (File.Exists(bf)) File.Delete(bf);
+              else throw new Exception("il backup '" + fn + "' non è stato trovato!");
+            }
+          } else throw new Exception("il backup di tipo '" + tp + "' non è gestito!");
         }
-
-        if (!string.IsNullOrEmpty(json)) {
-          JObject jo = JObject.Parse(json);
-
-          // del_backup
-          if (jo["action"].ToString() == "del_backup") {
-            string fn = jo["fn"].ToString(), tp = _core.config.get_var("vars.bck.type").value;
-            if (tp == "") throw new Exception("il backup non è configurato correttamente!");
-            // fs
-            if (tp == "fs") {
-              string net_user = _core.config.get_var("vars.bck.net-user").value
-                , net_pwd = _core.config.get_var("vars.bck.net-pwd").value
-                , net_folder = _core.config.get_var("vars.bck.net-folder").value;
-              if (net_user != "") {
-                using (unc_access unc = new unc_access()) {
-                  if (unc.NetUseWithCredentials(net_folder, net_user, "", net_pwd)) {
-                    string bf = Path.Combine(net_folder, fn);
-                    if (File.Exists(bf)) {
-                      File.Delete(bf); unc.NetUseDelete();
-                    } else { unc.NetUseDelete(); throw new Exception("il backup '" + fn + "' non è stato trovato!"); }
-                  } else throw new Exception(unc.DesLastError);
-                }
-              } else {
-                string bf = Path.Combine(net_folder, fn);
-                if (File.Exists(bf)) File.Delete(bf);
-                else throw new Exception("il backup '" + fn + "' non è stato trovato!");
+          // down_backup
+        else if (jr.action == "down_backup") {
+          string fn = jr.val_str("fn"), tp = _core.config.get_var("vars.bck.type").value;
+          if (tp == "") throw new Exception("il backup non è configurato correttamente!");
+          // fs
+          if (tp == "fs") {
+            string net_user = _core.config.get_var("vars.bck.net-user").value
+              , net_pwd = _core.config.get_var("vars.bck.net-pwd").value
+              , net_folder = _core.config.get_var("vars.bck.net-folder").value
+              , tmp_folder = _core.config.get_var("vars.tmp-folder").value
+              , tmp_fn = Path.Combine(tmp_folder, fn);
+            if (net_user != "") {
+              using (unc_access unc = new unc_access()) {
+                if (unc.NetUseWithCredentials(net_folder, net_user, "", net_pwd)) {
+                  string bf = Path.Combine(net_folder, fn);
+                  if (File.Exists(tmp_fn)) File.Delete(tmp_fn);
+                  if (File.Exists(bf)) {
+                    File.Copy(bf, tmp_fn); unc.NetUseDelete();
+                  } else { unc.NetUseDelete(); throw new Exception("il backup '" + fn + "' non è stato trovato!"); }
+                } else throw new Exception(unc.DesLastError);
               }
-            } else throw new Exception("il backup di tipo '" + tp + "' non è gestito!");
-          }
-            // down_backup
-          else if (jo["action"].ToString() == "down_backup") {
-            string fn = jo["fn"].ToString(), tp = _core.config.get_var("vars.bck.type").value;
-            if (tp == "") throw new Exception("il backup non è configurato correttamente!");
-            // fs
-            if (tp == "fs") {
-              string net_user = _core.config.get_var("vars.bck.net-user").value
-                , net_pwd = _core.config.get_var("vars.bck.net-pwd").value
-                , net_folder = _core.config.get_var("vars.bck.net-folder").value
-                , tmp_folder = _core.config.get_var("vars.tmp-folder").value
-                , tmp_fn = Path.Combine(tmp_folder, fn);
-              if (net_user != "") {
-                using (unc_access unc = new unc_access()) {
-                  if (unc.NetUseWithCredentials(net_folder, net_user, "", net_pwd)) {
-                    string bf = Path.Combine(net_folder, fn);
-                    if (File.Exists(tmp_fn)) File.Delete(tmp_fn);
-                    if (File.Exists(bf)) {
-                      File.Copy(bf, tmp_fn); unc.NetUseDelete();
-                    } else { unc.NetUseDelete(); throw new Exception("il backup '" + fn + "' non è stato trovato!"); }
-                  } else throw new Exception(unc.DesLastError);
-                }
-              } else {
-                string bf = Path.Combine(net_folder, fn);
-                if (File.Exists(tmp_fn)) File.Delete(tmp_fn);
-                if (File.Exists(bf)) {
-                  File.Copy(bf, tmp_fn);
-                } else throw new Exception("il backup '" + fn + "' non è stato trovato!");
-              }
+            } else {
+              string bf = Path.Combine(net_folder, fn);
+              if (File.Exists(tmp_fn)) File.Delete(tmp_fn);
+              if (File.Exists(bf)) {
+                File.Copy(bf, tmp_fn);
+              } else throw new Exception("il backup '" + fn + "' non è stato trovato!");
+            }
 
-              res.url_file = _core.config.get_var("vars.tmp-url").value + "/" + fn;
-              res.url_name = fn;
-            } else throw new Exception("il backup di tipo '" + tp + "' non è gestito!");
-          }
-        } else throw new Exception("nessun dato da elaborare!");
+            res.url_file = _core.config.get_var("vars.tmp-url").value + "/" + fn;
+            res.url_name = fn;
+          } else throw new Exception("il backup di tipo '" + tp + "' non è gestito!");
+        }
       } catch (Exception ex) { log.log_err(ex); res = new json_result(json_result.type_result.error, ex.Message); }
 
-      Response.Clear();
-      Response.ContentType = "application/json";
-      Response.Write(JsonConvert.SerializeObject(res));
-      Response.Flush();
-      Response.SuppressContent = true;
-      HttpContext.Current.ApplicationInstance.CompleteRequest();
-
+      write_response(res);
       return;
     }
 
@@ -197,9 +182,9 @@ public partial class _backups : tl_page {
             string notes = rn.Count() > 0 ? db_provider.str_val(rn[0]["notes"]) : "";
             sb.AppendFormat(@"<a class='list-group-item list-group-item-action flex-column align-items-start' href=""{3}"" row-data=""{4}"">
               <div class='d-flex w-90 justify-content-between'>
-                <span class='h5 mb-1'>{0}</span></div>
+                <span class='h4 mb-1'>{0}</span></div>
                 <h4><small class='mb-1'>{2}</small></h4>
-                <p class='lead mb-1' style='margin-top:20px;'>{1}</p>
+                <p class='mb-1' style='margin-top:20px;'>{1}</p>
               <span class='float-right' style='margin-left:5px;'>
                 <button type='button' class='btn btn-danger' onclick=""del_backup('{4}'); return false;"">Cancella</button>
               </span><span class='float-right'>
@@ -305,7 +290,7 @@ public partial class _backups : tl_page {
   protected void res_backup(object sender, EventArgs e) {
     bool del_tmp = false, del_folder = false; string tmp_file = "", tmp_folder = "";
     try {
-      cmd c = new cmd(qry_val("cmd"));
+      cmd c = master.check_cmd(qry_val("cmd"));
       string fn = c.sub_obj();
 
       if (res_val_type.Value == "") throw new Exception("il backup automatico non è stato configurato correttamente!");

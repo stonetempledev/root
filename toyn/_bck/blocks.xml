@@ -1,14 +1,5 @@
 ﻿<config>
 
-  <style-levels>
-
-    <level name="0" color="CornflowerBlue" title-size="md" />
-    <level name="1" color="LightSkyBlue" title-size="sm" />
-    <level name="2" color="PowderBlue" title-size="xs" />
-    <level name="3" color="LightCyan" title-size="xs" />
-
-  </style-levels>
-
   <blocks>
 
     <!-- sections -->

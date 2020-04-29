@@ -4,33 +4,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head runat="server">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
   <title>toyn</title>
-  <link href="js/bs-4.1/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-  <script src="js/jquery-3.2.1.min.js" type="text/javascript"></script>
-  <script src="js/popper.min.js" type="text/javascript"></script>
-  <script src="js/bs-4.1/js/bootstrap.min.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700&amp;display=swap">
+  <link href="js/fontawesome-5.13.0/css/all.min.css" rel="stylesheet">
+  <link href="js/bs-4.3.1/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <link href="js/mdb-4.16.0/css/mdb.min.css" rel="stylesheet" type="text/css" />
+  <script src="js/jquery-3.5.0.min.js" type="text/javascript"></script>
+  <script src="js/bs-4.3.1/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="js/mdb-4.16.0/js/mdb.min.js"></script>
   <script src="js/common.js" type="text/javascript"></script>
   <asp:ContentPlaceHolder ID="head" runat="server">
   </asp:ContentPlaceHolder>
-  <style>
+  <style type="text/css">
     body
     {
       padding-top: 50px;
     }
   </style>
-  <script language="javascript">
+  <script type="text/javascript" language="javascript">
     function get_dev_size() { return $('#dev-size-detector').find('div:visible').first().attr('id'); }
 
-    function show_alert(title, body) {
+    // alert
+    function show_danger(title, body) { show_alert(title, body, "danger"); }
+    function show_info(title, body) { show_alert(title, body, "info"); }
+    function show_warning(title, body) { show_alert(title, body, "warning"); }
+
+    function show_alert(title, body, style) {
+      $("#alert_dlg_ok").removeClass().addClass("modal-dialog modal-notify modal-" + style);
       $("#alert_ok_title").text(title);
       $("#alert_ok_body").html(body);
       $('#alert_ok').modal('show');
     }
 
+    // alert yn
     var _fnc_yes = null;
-    function show_alert_yn(title, body, fnc_yes) {
+    function show_danger_yn(title, body, fnc_yes) { show_alert_yn(title, body, fnc_yes, "danger"); }
+    function show_info_yn(title, body, fnc_yes) { show_alert_yn(title, body, fnc_yes, "info"); }
+    function show_warning_yn(title, body, fnc_yes) { show_alert_yn(title, body, fnc_yes, "warning"); }
+
+    function show_alert_yn(title, body, fnc_yes, style) {
+      $("#alert_dlg_yn").removeClass().addClass("modal-dialog modal-notify modal-" + style);
       $("#alert_yn_title").text(title);
       $("#alert_yn_body").html(body);
       $('#alert_yn').modal('show');
@@ -39,7 +54,106 @@
 
     function yes_alert() { $('#alert_yn').modal('hide'); try { _fnc_yes(); } catch (e) { } }
 
-    function set_cmd(txt) { $("#txt_cmd").val(txt); $("#txt_cmd").focus(); }
+    // dynamic dialog
+    //
+    // modello struttura definizione
+    //  { title: "Titolo Dialog", onok: function () { }
+    //    , rows: [{ id: "id", icon: "name-icon", label: "label 1", valore: "val 1", type: "text" } 
+    //    , { id: "id", icon: "name-icon", label: "label 1", valore: "val 1", n_rows: 5, type: "textarea" } 
+    //    , { id: "id", icon: "name-icon", label: "label 1", valore: "val 1", type: "select"
+    //      , values: [ { title: "titolo 1", value, "val 1" }, { title: "titolo 2", value, "val 2" } ]
+    //  };
+    var _dyn = null;
+    function show_dyn_dlg(def) {
+      try {
+        _dyn = def; 
+        if (check_str(_dyn.title) != "") $("#dyn_dlg_title").text(_dyn.title);
+
+        // hmtl rows
+        $("#dyn_dlg_rows").empty();
+        var hrows = ""; var i = 0;
+        _dyn.rows.forEach(function (row) {
+          row.id_row = check_str(row.id) != "" ? row.id : i;
+
+          // string
+          var type = check_str(row.type);
+          if (type == "" || type == "text") {
+            var hrow = '<div class="md-form"> \
+              {icon} \
+              <input type="text" id="val_dyn_{id_val}" class="form-control validate" onfocus="sel_onfocus(this)" \
+                value="" onkeypress="return dyn_dlg_enter(event)" /> \
+              <label id="lbl_dyn_{id_val}" data-error="wrong" data-success="right" for="val_dyn_{id_val}">{label}</label> \
+            </div>';
+
+            hrows += hrow.formatUnicorn({ icon: check_str(row.icon) != "" ? "<i id='icon_dyn_" + row.id_row + "' class='fas fa-" + row.icon + " prefix grey-text'></i>" : ""
+              , id_val: row.id_row, label: check_str(row.label) != "" ? row.label : "Campo " + row.id_row
+            });
+          } // select
+          else if (type == "select") {
+            var hrow = '<div class="row"><div class="col"> \
+                  <p id="lbl_dyn_{id_val}" class="small">{label}</p></div></div> \
+                <div class="row"><div class="col mb-3"> \
+                  <select id="val_dyn_{id_val}" onkeypress="return dyn_dlg_enter(event)" class="custom-select">{options} \
+                </select></div></div>';
+
+            var hoptions = "";
+            row.values.forEach(function (val) {
+              hoptions += '<option value="' + check_str(val.value) + '" '
+                + (check_str(row.valore) == check_str(val.value) ? "selected" : "") + '>' + check_str(val.title) + '</option>';
+            });
+
+            hrows += hrow.formatUnicorn({ icon: check_str(row.icon) != "" ? "<i id='icon_dyn_" + row.id_row + "' class='fas fa-" + row.icon + " prefix grey-text'></i>" : ""
+              , id_val: row.id_row, label: check_str(row.label) != "" ? row.label : "Campo " + row.id_row, options: hoptions
+            });
+
+          } // textarea
+          else if (type == "textarea") {
+
+            var hrow = '<div class="md-form"> \
+              {icon} \
+              <textarea id="val_dyn_{id_val}" class="form-control md-textarea" rows="{n_rows}" onfocus="sel_onfocus(this)" \
+                onkeypress="return dyn_dlg_enter(event)"></textarea> \
+              <label id="lbl_dyn_{id_val}" data-error="wrong" data-success="right" for="val_dyn_{id_val}">{label}</label> \
+            </div>';
+
+            hrows += hrow.formatUnicorn({ icon: check_str(row.icon) != "" ? "<i id='icon_dyn_" + row.id_row + "' class='fas fa-" + row.icon + " prefix grey-text'></i>" : ""
+              , id_val: row.id_row, label: check_str(row.label) != "" ? row.label : "Campo " + row.id_row
+              , n_rows: check_str(row.n_rows) != "" ? check_str(row.n_rows) : 5
+            });
+
+          } else throw "il tipo di campo '" + type + "' non è supportato!";
+
+          i++;
+        });
+        $("#dyn_dlg_rows").append(hrows);
+
+        // rows: classes, values
+        _dyn.rows.forEach(function (row) {
+          // string, textarea
+          var type = check_str(row.type);
+          if (type == "" || type == "text" || type == "textarea") {
+            if (check_str(row.valore) == "") $("#lbl_dyn_" + row.id_row).removeClass();
+            else $("#lbl_dyn_" + row.id_row).addClass("active");
+            val_dyn(row.id_row, row.valore);
+          }
+        });
+
+        $('#dyn_dlg').modal('show');
+
+        window.setTimeout(function () { $("#val_dyn_" + _dyn.rows[0].id_row).focus(); }, 500);
+      } catch (e) { show_danger("Errore!", e); }
+    }
+
+    function val_dyn(id, value) {
+      if (value) { $("#val_dyn_" + id).val(value); return value; }
+      return $("#val_dyn_" + id).val();
+    }
+
+    function dyn_dlg_enter(e) { if (e.keyCode == 13) { ok_dyn_dlg(); return false; } }
+
+    function ok_dyn_dlg() { $('#dyn_dlg').modal('hide'); try { if (_dyn.on_ok) _dyn.on_ok(); } catch (e) { } }
+
+    // post actions
 
     function post_data(doc) {
       try {
@@ -54,53 +168,75 @@
           dataType: "json", async: false,
           success: function (data) { result = data; },
           error: function (req, txt_status, err) {
-            show_alert("Attenzione!", err);
+            show_danger("Attenzione!", err);
           }
         }).fail(function (jqXHR, status, err) {
-          show_alert("Attenzione!", err);
+          show_danger("Attenzione!", err);
         });
-        return result;
-      } catch (e) { show_alert("Attenzione!", e.message); return null; }
+        if (result.des_result == "ok") return result;
+        if (result != null && result.message) throw result.message;
+        else throw "qualcosa è andato storto!";
+      } catch (e) { show_danger("Attenzione!", e); return null; }
     }
+
+    function post_action(parameters) {
+      try { return post_data(parameters); } catch (e) { show_danger("Attenzione!", e); } return null;
+    }
+
+    // nav bar
+
+    function set_cmd(txt) { $("#txt_cmd").val(txt); $("#txt_cmd").focus(); }
+
+    function run_cmd(e) { if (e.keyCode == 13) { $("#btn_cmd").click(); return false; } }
 
     function set_sub_cmds(voices) {
       var html = "";
       voices.forEach(function (o) { html += "<a class='dropdown-item' href='javascript:" + o.fnc + "'>" + o.title + "</a>"; });
 
       $("#grp_vai").append("<div class='input-group-append'>"
-        + "<button id='btn_sub' class='btn btn-outline-dark' style='border-top-right-radius: 5px;border-bottom-right-radius: 5px; ' type='button' data-toggle='dropdown'><span class='navbar-toggler-icon'></span></button>"
+        + "<button id='btn_sub' class='btn btn-sm m-0 ml-2 mt-1 p-0' style='height:35px;width:45px;' type='button' data-toggle='dropdown'>"
+        + " <span class='white-text h5'><i class='fas fa-bars'></i></span></button>"
         + "  <div class='dropdown-menu dropdown-menu-right'>" + html + "  </div></div>");
     }
 
     // messaggi temporanei...
+
     var _err = false;
+    function class_navbar() { return $("#__utype").val() == "admin" ? "bg-warning" : "bg-primary"; }
     function status_txt_ms(txt) { status_txt(txt, 4000); }
     function status_txt(txt, ms) {
-      $("#navbar").removeClass("bg-primary bg-danger").addClass("bg-success");
-      $("#grp_vai").hide();
+      $("#navbar").removeClass(class_navbar() + " bg-danger").addClass("bg-success");
+      $("#grp_vai").removeClass("d-flex").addClass("d-none");
       $("#lbl_status").show().text(txt);
-      $("#grp_err").hide();
+      $("#grp_err").removeClass("d-flex").addClass("d-none");
       if (ms) end_status_to(ms);
     }
     function end_status_to(ms) { window.setTimeout(function () { end_status(); }, ms ? ms : 500); }
     function end_status() {
       if (!_err) {
-        $("#navbar").removeClass("bg-success bg-danger").addClass("bg-primary");
-        $("#grp_vai").show(); $("#lbl_status").hide(); $("#grp_err").hide();
+        $("#navbar").removeClass("bg-success bg-danger").addClass(class_navbar());
+        $("#grp_vai").removeClass("d-none").addClass("d-flex");
+        $("#lbl_status").hide();
+        $("#grp_err").removeClass("d-flex").addClass("d-none");
       }
     }
 
     function err_txt(txt) {
       _err = true;
       window.setTimeout(function () {
-        $("#navbar").removeClass("bg-primary bg-success").addClass("bg-danger");
-        $("#grp_vai").hide(); $("#lbl_status").hide(); $("#grp_err").show(); $("#txt_err").val(txt);
+        $("#navbar").removeClass(class_navbar() + " bg-success").addClass("bg-danger");
+        $("#grp_vai").removeClass("d-flex").addClass("d-none");
+        $("#lbl_status").hide();
+        $("#grp_err").removeClass("d-none").addClass("d-flex");
+        $("#txt_err").val(txt);
       }, 100);
     }
     function err_click() {
       _err = false;
-      $("#navbar").removeClass("bg-success bg-danger").addClass("bg-primary");
-      $("#grp_vai").show(); $("#lbl_status").hide(); $("#grp_err").hide();
+      $("#navbar").removeClass("bg-success bg-danger").addClass(class_navbar());
+      $("#grp_vai").removeClass("d-none").addClass("d-flex");
+      $("#lbl_status").hide();
+      $("#grp_err").removeClass("d-flex").addClass("d-none");
       return false;
     }
 
@@ -110,6 +246,7 @@
   <form mainform='true' runat="server" novalidate>
   <input id='__action' type='hidden' runat='server' />
   <input id='__args' type='hidden' runat='server' />
+  <input id='__utype' type='hidden' runat='server' />
   <!-- bootstrap: ottiene la dimensione dello schermo -->
   <div id="dev-size-detector">
     <div id="xs" class="d-block d-sm-none">
@@ -123,73 +260,109 @@
     <div id="xl" class="d-none d-xl-block">
     </div>
   </div>
-  <!-- dialogs -->
-  <div id='alert_ok' class="modal" tabindex="-1" role="dialog" data-backdrop="static">
-    <div class="modal-dialog" role="document">
+  <!-- ok dialog -->
+  <div id='alert_ok' class="modal fade" tabindex="-1" role="dialog" data-backdrop="static">
+    <div id='alert_dlg_ok' class="modal-dialog modal-notify modal-success" role="document">
       <div class="modal-content">
-        <div class="modal-header alert-danger">
-          <h5 id='alert_ok_title' class="modal-title">
-          </h5>
+        <div class="modal-header">
+          <p id='alert_ok_title' class="heading lead">
+            Attenzione!</p>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+            <span aria-hidden="true" class="white-text">&times;</span>
           </button>
         </div>
         <div class="modal-body">
-          <p id='alert_ok_body'>
-          </p>
+          <div class="text-center">
+            <i class="fas fa-check fa-4x mb-3 animated rotateIn"></i>
+            <p id='alert_ok_body' class='lead'>
+              ...</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- yes no -->
-  <div id='alert_yn' class="modal" tabindex="-1" role="dialog" data-backdrop="static">
+  <!-- yes no dialog -->
+  <div id='alert_yn' class="modal fade" tabindex="-1" role="dialog" data-backdrop="static">
+    <div id='alert_dlg_yn' class="modal-dialog modal-dialog-centered modal-notify modal-success"
+      role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <p id='alert_yn_title' class="heading lead">
+          </p>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true" class="white-text">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center">
+            <i class="fas fa-check fa-4x mb-3 animated rotateIn"></i>
+            <p id='alert_yn_body' class='lead'>
+              ...</p>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-primary" onclick="yes_alert()">
+            Si</button>
+          <button type="button" class="btn btn-outline-primary waves-effect" data-dismiss="modal">
+            Annulla</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- dyn input dialog -->
+  <div class="modal fade" id="dyn_dlg" tabindex="-1" role="dialog" data-backdrop="static"
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
-        <div class="modal-header alert-warning">
-          <h5 id='alert_yn_title' class="modal-title">
-          </h5>
+        <div class="modal-header text-center">
+          <h4 id='dyn_dlg_title' class="modal-title w-100 font-weight-bold">
+            Titolo</h4>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
-          <p id='alert_yn_body'>
-          </p>
+        <div id='dyn_dlg_rows' class="modal-body mx-2">
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" style='width:75px' data-dismiss="modal">
+        <div class="modal-footer d-flex justify-content-center">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
             Annulla</button>
-          <button type="button" class="btn btn-primary" style='width:75px' onclick="yes_alert()">
-            Si</button>
+          <button type="button" class="btn btn-primary" onclick="ok_dyn_dlg()">
+            Ok</button>
         </div>
       </div>
     </div>
   </div>
   <!-- navbar -->
-  <nav id='navbar' class="navbar navbar-expand navbar-dark bg-primary fixed-top" style='padding-bottom: 0px;
-    padding-top: 0px;' runat="server">   
-    <a class="navbar-brand" href="./">
-      <img src="images/toyn-40-b.png" class="d-inline-block align-middle" alt="">
-    </a>
+  <nav id='navbar' class="navbar navbar-expand navbar-dark bg-primary fixed-top pt-1 pb-0"
+    runat="server">   
+    <div class="d-flex flex-grow-1">
+      <a class="navbar-brand" href="./">
+        <img src="images/toyn-40-b.png" class="d-inline-block align-middle" alt="">
+      </a>
 
-    <div id='grp_vai' class="input-group" runat="server">
-      <input id="txt_cmd" runat="server" type="text" class="form-control" onfocus='sel_onfocus(this)' placeholder="ESEGUI AZIONE" aria-label="ESEGUI AZIONE"/>
-      <div class="input-group-append">
-        <asp:Button id="btn_cmd" runat="server" class="btn btn-outline-dark" OnClick="Cmd_Click" Text="VAI"/>
+      <div id='grp_vai' runat="server" class="w-100 d-flex">
+        <div class="md-form my-1 mr-3 w-100">
+          <input id="txt_cmd" runat="server" class="w-100 my-1" style='font-size:130%;' type="text" onkeypress="return run_cmd(event)" onfocus='sel_onfocus(this)' placeholder="Comando" aria-label="Comando"/>
+        </div>
+
+        <button id="btn_cmd" runat="server" class="btn btn-sm m-0 mt-1 p-0" style='height:35px;width:45px;' onserverclick="Cmd_Click">
+          <span class='white-text h5'><i class="fas fa-search"></i></span></button>
+
       </div>
-    </div>
 
-    <span id='lbl_status' class='lead' style='color:white;display:none;' runat="server">...</span>
+      <span id='lbl_status' class='my-2 pt-1 lead' style='color:white;display:none;' runat="server">...</span>
 
-    <div id='grp_err' style='display:none;' class="input-group" runat="server">
-      <input id="txt_err" readonly type="text" style='color:tomato;' class="form-control"/>
-      <div class="input-group-append">
-        <button class="btn btn-outline-dark" onclick="return err_click()">OK</button>
+      <div id='grp_err' class="w-100 d-none" runat="server">
+        <div class="md-form my-1 w-100 mr-3">
+          <input id="txt_err" readonly type="text" class="w-100 my-1" style='font-size:130%;'/>
+        </div>
+        <button class="btn btn-sm m-0 mt-1 p-0" style='height:35px;width:45px;' onclick="return err_click()">
+          <span class='white-text h5'><i class="fas fa-times"></i></span></button>
       </div>
     </div>
 
   </nav>
-  <!-- body -->
+  <!-- bodys -->
   <asp:ContentPlaceHolder ID="contents" runat="server">
   </asp:ContentPlaceHolder>
   </form>

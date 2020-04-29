@@ -62,8 +62,8 @@
     </div>
     <div class='row' style='padding-top: 40px;'>
       <div class="col">
-        <asp:Button ID="btn_logon" CssClass="btn btn-lg btn-primary btn-block" OnClick="Logon_Click"
-          Text="ENTRA" runat="server" />
+        <button id="btn_logon" runat='server' class="btn btn-lg btn-primary btn-block" onserverclick="Logon_Click">
+          ENTRA</button>
         <div id='lbl_alert' class='alert alert-danger' runat='server' visible='false' style='margin-top: 25px;'>
         </div>
       </div>

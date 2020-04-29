@@ -6,3 +6,42 @@ html
 {
   font-size: 12px;
 }
+
+.dropdown.no-arrow .dropdown-toggle::after {
+  display: none;
+}
+
+/* icone menu */
+
+.icon-item
+{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.icon-menu
+{
+  height: 27px;
+  width: 27px;
+  margin-right: 5px;
+  cursor: pointer;
+  display: inline-block;
+  border: 1pt solid lightgray;
+  border-radius: 14px;
+  text-align: center;
+  font-size:120%;
+}
+
+/* @title-val */
+
+[title-val]:not([title-val='...']):not(:empty)::before
+{
+  content: attr(title-val) ": ";
+  color: lightgray;
+}
+
+[title-val='...']:not(:empty)::before
+{
+  content: attr(title-val);
+}

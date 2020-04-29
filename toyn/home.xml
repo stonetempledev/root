@@ -1,0 +1,101 @@
+﻿<config>
+  <html-blocks>
+
+    <!-- MACRO SEZIONE -->
+    
+    <html-block name="macro-section">
+      <![CDATA[<!-- macro sezione -->
+<div id-ms='{@field='ms.id'}' class='pb-3 mb-4 border-bottom'>
+  <!-- title -->
+  <div class="row">
+    <div tp='ms-title' class='col mb-2 d-flex justify-content-between'>
+      {@html-block='title-macro-section'}
+    </div>
+  </div>
+  <!-- sections -->
+  <div tp='ms-body' class="row p-2"><div tp='virtual'></div>
+    {@field='html-sections'}
+  </div>
+</div>]]>
+    </html-block>
+    <html-block name="title-macro-section">
+      <![CDATA[
+      <h3 class='h2-responsive'>
+        <span tp-val='title'>{@field='ms.title'}</span>
+        <small tp-val='notes' class='d-block grey-text'>{@field='ms.notes'}</small></h2>
+      <div class="dropdown no-arrow mr-1 mt-1">
+        <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
+          aria-expanded="false"><i class="fas fa-ellipsis-v grey-text"></i></a>
+        <div class="dropdown-menu dropdown-menu-right shadow">
+          <div class="dropdown-header">Macro Sezione</div>
+          <div class="dropdown-item icon-item"><span class='icon-menu' title='modifica titolo macro sezione...'
+            onclick='modify_ms_title({@field='ms.id'})'><i class="fas fa-pen text-info"></i></span>
+              <span class='icon-menu text-danger' title='elimina macro sezione...' onclick="del_ms({@field='ms.id'})">
+              <i class="fas fa-trash-alt"></i></span><span class='icon-menu text-success'
+                  title='aggiungi sezione in fondo...' onclick="add_sec({@field='ms.id'})"><i class="fas fa-plus">
+                  </i></span></div>
+          <div class="dropdown-item icon-item"><span class='icon-menu' title="cancella tutte le sezioni all'interno..."
+            onclick='empty_ms({@field='ms.id'})'><i class="fas fa-eraser text-warning"></i></span></div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item icon-item"><span class='icon-menu' title='spostala su' onclick="move_ms('su', {@field='ms.id'})">
+            <i class="fas fa-arrow-up"></i></span><span class='icon-menu' title='mettila in cima'
+              onclick="move_ms('in_cima', {@field='ms.id'})"><i class="fas fa-angle-double-up"></i></span><span class='icon-menu'
+                title='mettila in fondo' onclick="move_ms('in_fondo', {@field='ms.id'})"><i class="fas fa-angle-double-down">
+                </i></span></div>
+        </div>
+      </div>
+      ]]>
+    </html-block>
+    
+    <!-- SEZIONE -->
+    
+    <html-block name="section">
+      <![CDATA[<div id-s='{@field='s.id'}' class='col-sm-{@field='s.cols'} p-1' val-emphasis='{@field='s.emphasis'}' val-cols='{@field='s.cols'}' val-rows='{@field='s.get_attribute_int(rows;4)'}'>
+        <div class='p-1 note note-{@field='s.emphasis','success'}'>
+
+        <!-- title -->
+        <div tp='s-title' class="d-block d-flex justify-content-between">
+          {@html-block='title-section'}
+        </div>
+      
+        <!-- body -->
+        <div tp='s-body'>
+          <textarea tp-val='text' class='form-control' style='font-size: inherit;' onfocus='focus_notes({@field='s.id'})' onblur='blur_notes({@field='s.id'})' wrap='off'
+            rows='{@field='s.get_attribute_int(rows;4)'}'>{@field='s.get_attribute_string(text)'}</textarea>
+        </div>
+        
+        <!-- footer -->
+        <div tp='s-footer' class='text-right grey-text'>
+          <span title-val='nota del:'>{@date_fld='s.last_dt','dddd dd MMMM yyyy'}</span>
+        </div>
+              
+    </div></div>]]>
+    </html-block>
+    <html-block name="title-section">
+      <![CDATA[<div><i class="h4 text-{@field='s.emphasis','success'} fas fa-sticky-note c-pointer" onclick='change_emphasis_s({@field='s.id'})'></i>
+        <span class='h5'><span tp-val='title'>{@field='s.title'}</span>
+          <small title-val='...' tp-val='notes' class='ml-2 grey-text'>{@field='s.notes'}</small></span></div>
+
+        <div class="dropdown no-arrow mr-1 mt-1">
+          <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
+            aria-expanded="false"><i class="fas fa-ellipsis-v grey-text"></i></a>
+          <div class="dropdown-menu dropdown-menu-right shadow">
+            <div class="dropdown-header">Sezione</div>
+            <div class="dropdown-item icon-item"><span class='icon-menu' title='modifica sezione...'
+              onclick='modify_s({@field='s.id'})'><i class="fas fa-pen text-info"></i></span>
+                <span class='icon-menu text-danger' title='elimina sezione...' onclick="del_s({@field='s.id'})">
+                <i class="fas fa-trash-alt"></i></span><span class='icon-menu text-success'
+                    title='aggiungi sezione dopo questa...' onclick="add_sec({@field='s.id'}, true)"><i class="fas fa-plus">
+                    </i></span></div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item icon-item"><span class='icon-menu' title='spostala su' onclick="move_s('su', {@field='s.id'})">
+              <i class="fas fa-arrow-up"></i></span><span class='icon-menu' title='mettila in cima'
+                onclick="move_s('in_cima', {@field='s.id'})"><i class="fas fa-angle-double-up"></i></span><span class='icon-menu'
+                  title='mettila in fondo' onclick="move_s('in_fondo', {@field='s.id'})"><i class="fas fa-angle-double-down">
+                  </i></span></div>
+          </div>
+        </div>]]>
+    </html-block>
+  </html-blocks>
+</config>
+

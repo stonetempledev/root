@@ -1,5 +1,5 @@
-﻿<%@ Page Language="C#" MasterPageFile="~/user.master" AutoEventWireup="true" CodeFile="new.aspx.cs" Inherits="login"
-  ClientIDMode="Static" %>
+﻿<%@ Page Language="C#" MasterPageFile="~/user.master" AutoEventWireup="true" CodeFile="new.aspx.cs"
+  Inherits="login" ClientIDMode="Static" %>
 
 <asp:Content ContentPlaceHolderID="head" runat="Server">
   <script language="javascript">
@@ -49,8 +49,9 @@
     </div>
     <div class='row' style='padding-top: 40px;'>
       <div class="col">
-        <asp:Button ID="btn_go" CssClass="btn btn-lg btn-primary btn-block" OnClick="Go_Click"
-          Text="REGISTRATI" runat="server" />
+        <button id="btn_go" class="btn btn-lg btn-primary btn-block" onserverclick="Go_Click"
+          runat="server">
+          REGISTRATI</button>
         <div id='lbl_alert' class='alert alert-danger' runat='server' visible='false' style='margin-top: 25px;'>
         </div>
         <div id='lbl_ok' class='alert alert-success' runat='server' visible='false' style='margin-top: 25px;'>
