@@ -17,7 +17,7 @@ namespace toyn {
 
       // main section
       DataTable dt = db_conn.dt_table(core.parse(config.get_query("sections.homepage-vars").text
-        , new Dictionary<string, object>() { { "id_utente", this.user_id } }));
+        , new Dictionary<string, object>() { { "user_id", this.user_id } }));
       string title = db_provider.str_val(dt.Select("name='home-page.title'")[0]["value"]);
       ps.title = title != "" ? title : "";
 
@@ -50,12 +50,12 @@ namespace toyn {
 
     protected DataTable dt_macro_sections(int? id = null) {
       return db_conn.dt_table(core.parse_query("sections.load-macro-sections"
-        , new string[,] { { "id_utente", user_id.ToString() }, { "id", id.HasValue ? id.ToString() : "" } }));
+        , new string[,] { { "user_id", user_id.ToString() }, { "id", id.HasValue ? id.ToString() : "" } }));
     }
 
     protected macro_section macro_section_from_dr(DataRow dr) {
       return new macro_section() {
-        id = db_provider.int_val(dr["id_macro_section"]), title = db_provider.str_val(dr["title"]),
+        id = db_provider.int_val(dr["macro_section_id"]), title = db_provider.str_val(dr["title"]),
         notes = db_provider.str_val(dr["notes"]), order = db_provider.int_val(dr["order"])
       };
     }
@@ -67,8 +67,8 @@ namespace toyn {
     public List<section> load_sections(int? id = null, int? id_ms = null) {
       List<section> res = new List<section>();
       foreach (DataRow ra in dt_sections(id, id_ms).Rows) {
-        int id_section = db_provider.int_val(ra["id_section"]);
-        section s = res.FirstOrDefault(x => x.id == id_section);
+        int section_id = db_provider.int_val(ra["section_id"]);
+        section s = res.FirstOrDefault(x => x.id == section_id);
         if (s == null) { s = section_from_dr(ra); res.Add(s); }
 
         string attribute_code = db_provider.str_val(ra["attribute_code"]);
@@ -100,13 +100,13 @@ namespace toyn {
 
     protected DataTable dt_sections(int? id = null, int? id_ms = null) {
       return db_conn.dt_table(core.parse_query("sections.load-sections"
-        , new string[,] { { "id_utente", user_id.ToString() }, { "id", id.HasValue ? id.ToString() : "" }
+        , new string[,] { { "user_id", user_id.ToString() }, { "id", id.HasValue ? id.ToString() : "" }
           , { "id_ms", id_ms.HasValue ? id_ms.ToString() : "" }}));
     }
 
     protected section section_from_dr(DataRow dr) {
       return new section() {
-        id = db_provider.int_val(dr["id_section"]), id_ms = db_provider.int_val(dr["id_macro_section"]),
+        id = db_provider.int_val(dr["section_id"]), id_ms = db_provider.int_val(dr["macro_section_id"]),
         type = (section.type_section)Enum.Parse(typeof(section.type_section), db_provider.str_val(dr["type"])),
         title = db_provider.str_val(dr["title"]), notes = db_provider.str_val(dr["notes"]), order = db_provider.int_val(dr["order"]),
         dt_ins = db_provider.dt_val(dr["dt_ins"]), dt_upd = db_provider.dt_val(dr["dt_upd"]),
@@ -117,12 +117,12 @@ namespace toyn {
     protected void exec_set_attribute(section.type_section st, long id, section_attr.section_attr_type at, string code, string qry_val) {
       db_conn.exec(core.parse_query("sections.set-attribute"
         , new Dictionary<string, object>() { { "attr_type", at }, { "attr_value", qry_val }
-          , { "id_section", id }, { "attr_code", code }, { "section_type", st } }));
+          , { "section_id", id }, { "attr_code", code }, { "section_type", st } }));
     }
 
     protected void exec_del_attribute(section.type_section st, long id, section_attr.section_attr_type at, string code) {
       db_conn.exec(core.parse_query("sections.delete-attribute"
-        , new Dictionary<string, object>() { { "id_section", id }, { "attr_type", at.ToString() }
+        , new Dictionary<string, object>() { { "section_id", id }, { "attr_type", at.ToString() }
             , { "attr_code", code }, { "section_type", st }}));
     }
 

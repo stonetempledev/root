@@ -1,8 +1,8 @@
-<%@ Page Language="C#" MasterPageFile="~/default.master" AutoEventWireup="true" CodeFile="element.aspx.cs"
-  Inherits="_element" ClientIDMode="Static" %>
+<%@ Page Language="C#" MasterPageFile="~/default.master" AutoEventWireup="true" CodeFile="docs.aspx.cs"
+  Inherits="_docs" ClientIDMode="Static" %>
 
 <asp:Content ContentPlaceHolderID="head" runat="Server">
-  <link href="element.css" rel="stylesheet" type="text/css" />
+  <link href="docs.css" rel="stylesheet" type="text/css" />
   <link href="js/codemirror-5.49.2/lib/codemirror.css" rel="stylesheet" type="text/css" />
   <link href="js/codemirror-5.49.2/addon/hint/show-hint.css" rel="stylesheet" type="text/css" />
   <script src="js/codemirror-5.49.2/lib/codemirror.js" type="text/javascript"></script>
@@ -475,7 +475,7 @@
       var res = post_action({ "action": "update_code", "id": id, "title": title, "notes": notes
         , "in_list": e.attr("in_list"), "parent_stored": e.attr("parent_stored"), "no_opacity": e.attr("no_opacity")
       });
-      
+
       if (res) reload_html_element(id, res.html_element, false, false, false);
     }
 
@@ -800,22 +800,26 @@
   <input id='there_stored' type='hidden' runat='server' />
   <div class="container-fluid">
     <div class="row">
-      <!-- menu -->
-      <nav class="d-none d-md-block col-md-3 sidebar">
+      <!-- sidebar menu -->
+      <nav sidebar-tp='menu' class='d-none' sidebar-init='show'>
         <div id='menu' class='sidebar-sticky' runat='server'>
         </div>
       </nav>
       <!-- view -->
-      <div id="contents" class="col-md-9 ml-sm-auto" style='padding: 0px;' runat='server'>
+      <div id="contents" sidebar-tp='' style='padding: 0px;' runat='server'>
         <!-- doc -->
         <div id="contents_doc" style='padding: 2px;' runat='server'>
         </div>
       </div>
       <!-- xml -->
-      <div id="contents_xml" class="col-md-9 ml-sm-auto" style='padding: 0px;' runat='server'>
+      <div id="contents_xml" sidebar-tp='' style='padding: 0px;' runat='server'>
         <!-- doc -->
         <textarea id='doc_xml_bck' runat='server' style='display: none;'></textarea>
         <textarea id='doc_xml' runat='server'></textarea>
+      </div>
+      <!-- sidebar icon -->
+      <div sidebar-tp='sh' onclick='sh_side_menu()'>
+        <i sidebar-tp='icon'></i>
       </div>
     </div>
   </div>

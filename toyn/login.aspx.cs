@@ -31,8 +31,8 @@ public partial class login : tl_page {
           // utente
         else {
           string uname = user_mail.Value, upass = user_pass.Value;
-          DataRow dr = db_conn.first_row(@"select id_utente, nome, pwd, email, isnull(activated, 0) as activated 
-          from utenti where nome = '" + uname + "';");
+          DataRow dr = db_conn.first_row(@"select [user_id], nome, pwd, email, isnull(activated, 0) as activated 
+          from users where nome = '" + uname + "';");
           if (dr == null) {
             err_login("NON SEI REGISTRATO!"); return;
           } else if (Convert.ToInt16(dr["activated"]) == 0) {
@@ -46,7 +46,7 @@ public partial class login : tl_page {
           }
 
           // ok
-          string uid = db_provider.str_val(dr["id_utente"]);
+          string uid = db_provider.str_val(dr["user_id"]);
           FormsAuthentication.RedirectFromLoginPage(uname + "|" + uid, true);
         }
       }
@@ -59,17 +59,17 @@ public partial class login : tl_page {
       else {
         // check nomignolo
         DataRow dr = db_conn.first_row(@"select nome, email
-        from utenti where activated = 1 and nome = '" + user_mail.Value + "';");
+        from users where activated = 1 and nome = '" + user_mail.Value + "';");
         if (dr == null) { err_login("NON C'È NESSUN UTENTE " + user_mail.Value + " ATTIVO!"); return; }
 
         // registrazione
         string tkey = mlib.tools.cry.rnd_str(32), akey = mlib.tools.cry.rnd_str(32);
-        db_conn.exec(string.Format(@"update utenti set tmp_key = '{0}', activate_key = '{1}', dt_upd = getdate() 
+        db_conn.exec(string.Format(@"update users set tmp_key = '{0}', activate_key = '{1}', dt_upd = getdate() 
           where nome = '{2}' and activated = 1", tkey, akey, user_mail.Value));
 
         send_mail(dr["email"].ToString(), "reimposta la tua password del toyn",
           string.Format("<h3>Ciao {0}!</h3><p><a href='{1}reimposta.aspx?akey={2}'>Clicca qui per poter reimpostare la tua password!</a></p>"
-          , dr["nome"], base_url, akey));
+          , dr["nome"], core.base_url, akey));
 
         Response.Redirect(string.Format("~/toreimposta.aspx?tkey={0}", tkey));
       }

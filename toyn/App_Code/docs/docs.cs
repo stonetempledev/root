@@ -8,21 +8,21 @@ using mlib.db;
 using mlib.tools;
 
 namespace toyn {
-  public class elements : bo {
+  public class docs : bo {
 
-    public elements() {
+    public docs() {
     }
 
     public List<attribute> load_attributes() {
       List<attribute> attrs = new List<attribute>();
-      foreach (DataRow dr in db_conn.dt_table(core.parse_query("elements.elements-attributes")).Rows)
+      foreach (DataRow dr in db_conn.dt_table(core.parse_query("docs.elements-attributes")).Rows)
         attrs.Add(create_attribute(dr));
       return attrs;
     }
 
     public List<element> load_types_elements() {
       List<element> els = new List<element>();
-      foreach (DataRow dr in db_conn.dt_table(core.parse_query("elements.types-attributes")).Rows) {
+      foreach (DataRow dr in db_conn.dt_table(core.parse_query("docs.types-attributes")).Rows) {
         string des = db_provider.str_val(dr["element_des"]), childs_types = db_provider.str_val(dr["childs_types"]);
         element.type_element et = (element.type_element)Enum.Parse(typeof(element.type_element), db_provider.str_val(dr["element_type"]));
         element e = els.FirstOrDefault(x => x.type == et);
@@ -37,7 +37,7 @@ namespace toyn {
 
     public element load_type_element(element.type_element et, long id = 0, string[,] attrs = null, Dictionary<string, string> attrs2 = null) {
       element etype = null;
-      foreach (DataRow dr in db_conn.dt_table(core.parse_query("elements.type-attributes"
+      foreach (DataRow dr in db_conn.dt_table(core.parse_query("docs.type-attributes"
         , new Dictionary<string, object>() { { "type", et.ToString() } })).Rows) {
         string des = db_provider.str_val(dr["element_des"]), childs_types = db_provider.str_val(dr["childs_types"]);
         if (etype == null) {
@@ -69,12 +69,12 @@ namespace toyn {
     }
 
     public void store_element(long element_id) {
-      db_conn.exec(core.parse_query("elements.store-element"
+      db_conn.exec(core.parse_query("docs.store-element"
         , new Dictionary<string, object>() { { "id_element", element_id } }));
     }
 
     public void unstore_element(long element_id) {
-      db_conn.exec(core.parse_query("elements.unstore-element"
+      db_conn.exec(core.parse_query("docs.unstore-element"
         , new Dictionary<string, object>() { { "id_element", element_id } }));
     }
 
@@ -105,19 +105,19 @@ namespace toyn {
     }
 
     protected void exec_del_attribute(long id, attribute.attribute_type at, string code) {
-      db_conn.exec(core.parse_query("elements.delete-attribute"
+      db_conn.exec(core.parse_query("docs.delete-attribute"
         , new Dictionary<string, object>() { { "id_element", id }, { "attr_type", at.ToString() }
             , { "attr_code", code } }));
     }
 
     protected void exec_set_attribute(element.type_element et, long id, attribute.attribute_type at, string code, string qry_val) {
-      db_conn.exec(core.parse_query("elements.set-attribute"
+      db_conn.exec(core.parse_query("docs.set-attribute"
         , new Dictionary<string, object>() { { "attr_type", at }, { "attr_value", qry_val }
           , { "id_element", id }, { "attr_code", code }, { "element_type", et } }));
     }
 
     public attribute load_attribute(element.type_element te, string code) {
-      return create_attribute(db_conn.first_row(core.parse_query("elements.element-attribute"
+      return create_attribute(db_conn.first_row(core.parse_query("docs.element-attribute"
         , new Dictionary<string, object>() { { "type", te.ToString() }, { "code", code } })));
     }
 
@@ -141,14 +141,14 @@ namespace toyn {
     public List<element> load_elements(out int out_max_lvl_els, out int out_max_lvl, long? element_id = null, int? max_level = null, bool only_childs = false, bool childs = true, bool also_deleted = false, string key_page = null, int? force_level = null) {
 
       List<element> els = new List<element>(); out_max_lvl_els = -1; out_max_lvl = -1;
-      string sql = !element_id.HasValue ? core.parse_query("elements.open-roots-elements"
+      string sql = !element_id.HasValue ? core.parse_query("docs.open-roots-elements"
           , new Dictionary<string, object>() { { "filter_level", max_level.HasValue ? "(h.in_list = 1 or (h.in_list = 0 and h.livello <= " + (max_level.Value + 1).ToString() + "))" : "1 = 1" }
-         , { "id_utente", this.user_id }, { "filter_deleted", !also_deleted ? "isnull(h.deleted, 0) = 0" : "1 = 1" } })
-        : core.parse_query("elements.open-elements"
+         , { "user_id", this.user_id }, { "filter_deleted", !also_deleted ? "isnull(h.deleted, 0) = 0" : "1 = 1" } })
+        : core.parse_query("docs.open-elements"
           , new Dictionary<string, object>() { { "id_element", element_id }
           , { "filter_head", only_childs ? "and 1 = 0" : "" }, { "filter_childs", !childs ? "and 1 = 0" : "" }
           , { "filter_level", max_level.HasValue ? "(h.in_list = 1 or (h.in_list = 0 and h.livello <= " + (max_level.Value + 1).ToString() + "))" : "1 = 1" }
-          , { "id_utente", this.user_id }, { "filter_deleted", !also_deleted ? "isnull(h.deleted, 0) = 0" : "1 = 1" } });
+          , { "user_id", this.user_id }, { "filter_deleted", !also_deleted ? "isnull(h.deleted, 0) = 0" : "1 = 1" } });
       DataTable dt = db_conn.dt_table(sql);
       foreach (DataRow re in dt.Rows) {
 
@@ -206,8 +206,8 @@ namespace toyn {
       List<element> els = new List<element>();
 
       bool first = true; int diff_level = 0, max_livello = 0; element el = null;
-      foreach (DataRow re in db_conn.dt_table(core.parse_query("elements.open-parents-elements"
-        , new Dictionary<string, object>() { { "element_id", element_id }, { "id_utente", this.user_id }
+      foreach (DataRow re in db_conn.dt_table(core.parse_query("docs.open-parents-elements"
+        , new Dictionary<string, object>() { { "element_id", element_id }, { "user_id", this.user_id }
           , { "parent_id", from_parent_id > 0 && element_id != from_parent_id ? (object)from_parent_id : null } })).Rows) {
 
         int livello = db_provider.int_val(re["livello"]);
@@ -254,16 +254,16 @@ namespace toyn {
     }
 
     public List<long> get_child_elements_ids(long element_id) {
-      return db_conn.dt_table(core.parse_query("elements.open-elements"
+      return db_conn.dt_table(core.parse_query("docs.open-elements"
         , new Dictionary<string, object>() { { "id_element", element_id }
         , { "filter_head", "and 1 = 0" }, { "filter_childs", "" }, { "filter_level", "1 = 1" }
-        , { "id_utente", this.user_id }, { "filter_deleted", "isnull(h.deleted, 0) = 0" } })).Rows
+        , { "user_id", this.user_id }, { "filter_deleted", "isnull(h.deleted, 0) = 0" } })).Rows
           .Cast<DataRow>().Select(r => db_provider.long_val(r["element_id"])).ToList();
     }
 
     public List<long> get_parent_elements_ids(long element_id) {
-      return db_conn.dt_table(core.parse_query("elements.parent-elements"
-        , new Dictionary<string, object>() { { "id_element", element_id }, { "id_utente", this.user_id } })).Rows
+      return db_conn.dt_table(core.parse_query("docs.parent-elements"
+        , new Dictionary<string, object>() { { "id_element", element_id }, { "user_id", this.user_id } })).Rows
           .Cast<DataRow>().Select(r => db_provider.long_val(r["parent_id"])).ToList();
     }
 
@@ -297,12 +297,12 @@ namespace toyn {
       }
 
       // ciclo pulizia
-      DataRow dr = db_conn.first_row(core.parse_query("elements.id-deleted", new Dictionary<string, object>() { { "id_utente", this.user_id } }));
+      DataRow dr = db_conn.first_row(core.parse_query("docs.id-deleted", new Dictionary<string, object>() { { "user_id", this.user_id } }));
       int id_deleted = db_provider.int_val(dr["id_deleted"]);
       foreach (element c in get_all(els_bck)) {
         if (all.FirstOrDefault(x => x.id == c.id) == null) {
-          db_conn.exec(core.parse_query("elements.delete-element"
-            , new Dictionary<string, object>() { { "id_element", c.id }, { "id_utente", this.user_id }, { "id_deleted", id_deleted } }));
+          db_conn.exec(core.parse_query("docs.delete-element"
+            , new Dictionary<string, object>() { { "id_element", c.id }, { "user_id", this.user_id }, { "id_deleted", id_deleted } }));
         }
       }
 
@@ -310,9 +310,10 @@ namespace toyn {
 
     public void save_elements(List<element> els, string key_page = "", int parent_id = 0, int? first_order = null, int? last_order = null) {
 
+      bool close_trans = false;
       try {
 
-        db_conn.begin_trans();
+        close_trans = db_conn.check_begin_trans();
 
         List<element> el_types = load_types_elements();
 
@@ -320,9 +321,9 @@ namespace toyn {
         if (first_order.HasValue && last_order.HasValue) {
           int diff = els.Count - ((last_order.Value - first_order.Value) + 1);
           if (diff != 0) {
-            db_conn.exec(core.parse_query("elements.refresh-orders"
+            db_conn.exec(core.parse_query("docs.refresh-orders"
               , new Dictionary<string, object>() { { "filter_id_element", parent_id > 0 ? " = " + parent_id.ToString() : " = -1" }
-            , { "id_utente", this.user_id }, { "diff_order", diff }, { "filter_order", last_order.Value } }));
+            , { "user_id", this.user_id }, { "diff_order", diff }, { "filter_order", last_order.Value } }));
           }
         }
 
@@ -330,18 +331,18 @@ namespace toyn {
         foreach (element el in els) {
           save_element2(el, el_types, key_page);
           el.order = el.order_xml + (first_order.HasValue ? first_order.Value : 0);
-          db_conn.exec(core.parse_query("elements.save-child"
+          db_conn.exec(core.parse_query("docs.save-child"
             , new Dictionary<string, object>() { { "id_parent", parent_id > 0 ? parent_id.ToString() : "-1" }
             , { "id_element", el.id }, { "order", el.order_xml + (first_order.HasValue ? first_order.Value : 0) } }));
         }
 
-        db_conn.commit();
-      } catch (Exception ex) { db_conn.rollback(); throw ex; }
+        if(close_trans) db_conn.commit();
+      } catch (Exception ex) { if (close_trans) db_conn.rollback(); throw ex; }
     }
 
     public List<long> check_exists_elements(List<long> ids) {
-      return db_conn.dt_table(core.parse_query("elements.check-exists-elements"
-        , new Dictionary<string, object>() { { "ids_elements", string.Join(",", ids) }, { "id_utente", user_id } }))
+      return db_conn.dt_table(core.parse_query("docs.check-exists-elements"
+        , new Dictionary<string, object>() { { "ids_elements", string.Join(",", ids) }, { "user_id", user_id } }))
         .Rows.Cast<DataRow>().Select(r => db_provider.long_val(r["element_id"])).ToList();
     }
 
@@ -364,7 +365,7 @@ namespace toyn {
       // from_id
       e.undeleted = false;
       if (e.from_id > 0) {
-        DataRow dr = db_conn.first_row(core.parse_query("elements.deleted-element"
+        DataRow dr = db_conn.first_row(core.parse_query("docs.deleted-element"
           , new Dictionary<string, object>() { { "id_element", e.from_id }, { "type_element", e.type.ToString() } }));
         if (dr != null) { e.id = e.from_id; e.key_page = key_page; e.undeleted = true; }
       }
@@ -373,11 +374,11 @@ namespace toyn {
       e.added = false;
       if (e.id == 0) {
         e.added = true;
-        e.id = int.Parse(db_conn.exec(core.parse_query("elements.save-element"
-          , new Dictionary<string, object>() { { "id_utente", this.user_id }, { "code", e.code }, { "type", e.type.ToString() }, { "title", e.title } }), true));
+        e.id = int.Parse(db_conn.exec(core.parse_query("docs.save-element"
+          , new Dictionary<string, object>() { { "user_id", this.user_id }, { "code", e.code }, { "type", e.type.ToString() }, { "title", e.title } }), true));
         e.key_page = key_page;
       } else
-        db_conn.exec(core.parse_query("elements.update-element"
+        db_conn.exec(core.parse_query("docs.update-element"
           , new Dictionary<string, object>() { { "type", e.type.ToString() }, { "title", e.title }, { "code", e.code }, { "id_element", e.id } }));
 
       // set attributes
@@ -398,18 +399,18 @@ namespace toyn {
       // childs
       if (save_childs) {
         if (!e.sham) {
-          if (!e.added) db_conn.exec(core.parse_query("elements.reset-contents"
+          if (!e.added) db_conn.exec(core.parse_query("docs.reset-contents"
            , new Dictionary<string, object>() { { "id_element", e.id } }));
 
           foreach (element ec in e.childs) {
             save_element2(ec, el_types, key_page);
-            db_conn.exec(core.parse_query("elements.save-child-content"
+            db_conn.exec(core.parse_query("docs.save-child-content"
               , new Dictionary<string, object>() { { "id_element", e.id }, { "id_child", ec.id }, { "order", ec.order_xml } }));
           }
         } // elementi figli sham 
         else {
           if (e.undeleted)
-            db_conn.exec(core.parse_query("elements.undelete-childs"
+            db_conn.exec(core.parse_query("docs.undelete-childs"
               , new Dictionary<string, object>() { { "id_element", e.id } }));
         }
       }
@@ -419,19 +420,19 @@ namespace toyn {
 
     public void refresh_order_element(long element_id, db_provider conn = null) {
       (conn != null ? conn : this.db_conn).exec(
-        core.parse_query("elements.refresh-orders-element"
+        core.parse_query("docs.refresh-orders-element"
           , new Dictionary<string, object>() { { "element_id", element_id } }));
     }
 
     public void refresh_order_child(long child_id, db_provider conn = null) {
       (conn != null ? conn : this.db_conn).exec(
-        core.parse_query("elements.refresh-orders-child"
+        core.parse_query("docs.refresh-orders-child"
          , new Dictionary<string, object>() { { "child_id", child_id } }));
     }
 
     public List<long> next_elements_to(long id, List<element.type_element> t_end) {
       List<long> ids = new List<long>();
-      foreach (DataRow r in db_conn.dt_table(core.parse_query("elements.next-elements"
+      foreach (DataRow r in db_conn.dt_table(core.parse_query("docs.next-elements"
         , new Dictionary<string, object>() { { "id_element", id } })).Rows) {
         long idc = db_provider.long_val(r["child_element_id"]);
         element.type_element type = (element.type_element)Enum.Parse(typeof(element.type_element), db_provider.str_val(r["element_type"]));

@@ -35,9 +35,9 @@ function get_page() { return [location.protocol, '//', location.host, location.p
 
 function is_mobile() { return navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/) != null; }
 
-function check_bool(par, def) { if (typeof (par) == 'undefined') return def ? def : false; return par; }
+function check_bool(par, def) { if (par == null || typeof (par) == 'undefined') return def ? def : false; return par; }
 
-function check_str(par) { if (typeof (par) == 'undefined') return ""; return par; }
+function check_str(par, def) { if (par == null || typeof (par) == 'undefined') return def ? def : ""; return par; }
 
 // formatUnicorn
 //  "Hello, {name}, are you feeling {adjective}?".formatUnicorn({name:"Gabriel", adjective: "OK"})

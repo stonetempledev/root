@@ -35,7 +35,9 @@
                   title='aggiungi sezione in fondo...' onclick="add_sec({@field='ms.id'})"><i class="fas fa-plus">
                   </i></span></div>
           <div class="dropdown-item icon-item"><span class='icon-menu' title="cancella tutte le sezioni all'interno..."
-            onclick='empty_ms({@field='ms.id'})'><i class="fas fa-eraser text-warning"></i></span></div>
+            onclick='empty_ms({@field='ms.id'})'><i class="fas fa-eraser text-warning"></i></span>
+            <span class='icon-menu text-success' title='aggiungi macro sezione dopo...'
+                    onclick='add_macro_sec({@field='ms.id'})'><i class="fas fa-folder-plus"></i></span></div>
           <div class="dropdown-divider"></div>
           <div class="dropdown-item icon-item"><span class='icon-menu' title='spostala su' onclick="move_ms('su', {@field='ms.id'})">
             <i class="fas fa-arrow-up"></i></span><span class='icon-menu' title='mettila in cima'
@@ -50,7 +52,8 @@
     <!-- SEZIONE -->
     
     <html-block name="section">
-      <![CDATA[<div id-s='{@field='s.id'}' class='col-sm-{@field='s.cols'} p-1' val-emphasis='{@field='s.emphasis'}' val-cols='{@field='s.cols'}' val-rows='{@field='s.get_attribute_int(rows;4)'}'>
+      <![CDATA[<div id-s='{@field='s.id'}' class='col-sm-{@field='s.cols'} p-1' val-emphasis='{@field='s.emphasis'}' val-cols='{@field='s.cols'}' val-height-body='{@field='s.get_attribute_string(height_body;125)'}'}'
+          val-font='{@field='s.get_attribute_string(font)'}' val-wrap='{@field='s.get_attribute_string(wrap;off)'}'>
         <div class='p-1 note note-{@field='s.emphasis','success'}'>
 
         <!-- title -->
@@ -58,10 +61,12 @@
           {@html-block='title-section'}
         </div>
       
-        <!-- body -->
-        <div tp='s-body'>
-          <textarea tp-val='text' class='form-control' style='font-size: inherit;' onfocus='focus_notes({@field='s.id'})' onblur='blur_notes({@field='s.id'})' wrap='off'
-            rows='{@field='s.get_attribute_int(rows;4)'}'>{@field='s.get_attribute_string(text)'}</textarea>
+        <!-- body 
+        rows='{@field='s.get_attribute_int(rows;4)'}'
+        -->
+        <div tp='s-body' style='height:{@field='s.get_attribute_string(height_body;125)'}px;'>
+          <textarea tp-val='text' class='form-control' style='height:100%;font-size: inherit;font-family:{@field='s.get_attribute_string(font)'};' onfocus='focus_notes({@field='s.id'})' onblur='blur_notes({@field='s.id'})' 
+            spellcheck="false" wrap='{@field='s.get_attribute_string(wrap;off)'}'>{@field='s.get_attribute_string(text)'}</textarea>
         </div>
         
         <!-- footer -->

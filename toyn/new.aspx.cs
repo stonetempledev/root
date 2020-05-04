@@ -15,11 +15,12 @@ using mlib.xml;
 
 public partial class login : tl_page {
 
-  protected void Page_Load (object sender, EventArgs e) {
+  protected void Page_Load(object sender, EventArgs e) {
     lbl_alert.Visible = lbl_ok.Visible = false;
   }
 
-  protected void Go_Click (object sender, EventArgs e) {
+  protected void Go_Click(object sender, EventArgs e) {
+    bool close_trans = false;
     try {
       if (user_mail.Value == "") err_msg("devi scrivere la email!");
       else if (user_name.Value == "") err_msg("qual'è il tuo nomignolo?");
@@ -30,38 +31,46 @@ public partial class login : tl_page {
       else if (user_pass2.Value == "") err_msg("devi confermare la password!");
       else if (user_pass.Value != user_pass2.Value) err_msg("la conferma della password è andata male!");
       else {
+
+        close_trans = db_conn.check_begin_trans();
+
         // check nomignolo
-        DataRow dr = db_conn.first_row(@"select count(*) as cc from utenti 
+        DataRow dr = db_conn.first_row(@"select count(*) as cc from users 
         where isnull(activated, 0) in (1, 2, 3) and nome = '" + user_name.Value + "';");
         if ((int)dr["cc"] > 0) { err_msg("c'è già uno che si chiama " + user_name.Value + "!"); return; }
 
         // registrazione
         string tkey = cry.rnd_str(32);
-        int id_utente = int.Parse(db_conn.exec(string.Format(@"insert into utenti (nome, email, pwd, dt_ins, tmp_key, activate_key, activated)
+        int user_id = int.Parse(db_conn.exec(string.Format(@"insert into users (nome, email, pwd, dt_ins, tmp_key, activate_key, activated)
          values ('{0}', '{1}', '{2}', getdate(), '{3}', '{4}', 2);"
           , user_name.Value, user_mail.Value, cry.encode_tobase64(user_pass.Value), tkey, cry.rnd_str(32)), true));
+        this.user = new mlib.tiles.user(user_id, user_name.Value, user_mail.Value, mlib.tiles.user.type_user.normal);
 
         // salvo il documento di benvenuto
-        elements el = new elements();
+        docs el = new docs();
         List<element> els = el.load_xml(@"<element title=""Benvenuto ##user##!""> 
          <text style=""bold"">Ciao ##user##, benvenuto nel toyn!</text>
          <text>Ci sono un sacco di funzionalità utili per salvare i tuoi appunti, prendere note, seguire le tue attività.</text>
          <text>Avrai anche la possibilità di organizzare i tuoi documenti, le tue foto, i tuoi contatti e tutta una serie di informazioni che ti saranno utili.</text>
-         <title ref=""{cmdurl='view cmds'}"">view cmds</title>
+         <title ref=""{cmdurl='view cmds'}"">comandi</title>
          <text>Come prima cosa per cominciare comincia con il visualizzare l'elenco dei comandi a disposizione, poi piano piano col tempo sarai in grado di capire come funziona il toyn!</text></element>"
           .Replace("##user##", user_name.Value));
         el.save_elements(els);
 
+        if(close_trans) db_conn.commit();
+
+        set_cache_var("tmp_password", user_pass.Value);
+
         Response.Redirect(string.Format("iscritto.aspx?tkey={0}", tkey));
       }
-    } catch (Exception ex) { log.log_err(ex); err_msg(ex.Message); }
+    } catch (Exception ex) { if (close_trans) db_conn.rollback(); log.log_err(ex); err_msg(ex.Message); }
   }
 
-  protected void ok_msg (string txt) {
+  protected void ok_msg(string txt) {
     lbl_ok.Visible = true; lbl_ok.InnerHtml = string.Format("<strong>{0}</strong>", txt);
   }
 
-  protected void err_msg (string txt) {
+  protected void err_msg(string txt) {
     lbl_alert.Visible = true; lbl_alert.InnerHtml = string.Format("<strong>{0}</strong>", txt);
   }
 }

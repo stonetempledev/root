@@ -27,7 +27,7 @@ namespace toyn {
 
     public string set_setting(string setting, string val) {
       db_conn.exec(core.parse_query("base.set-setting"
-        , new string[,] { { "setting", setting }, { "value", string.IsNullOrEmpty(val) ? "" : val }, { "id_utente", user_id.ToString() } }));
+        , new string[,] { { "setting", setting }, { "value", string.IsNullOrEmpty(val) ? "" : val }, { "user_id", user_id.ToString() } }));
       return val;
     }
 

@@ -6,190 +6,210 @@
     <query name="homepage-vars">
       <![CDATA[select vars.[name], us.setting_var as [value] 
  from (select 'home-page.title' as [name]) as vars 
- left join utenti_settings us on us.setting_name = vars.[name] and us.id_utente = {@field='id_utente'}]]>
+ left join users_settings us on us.setting_name = vars.[name] and us.[user_id] = {@field='user_id'}]]>
     </query>
     <query name="set-title">
-      <![CDATA[if not exists (select top 1 1 from utenti_settings where id_utente = {@field='id_utente'} and setting_name = 'home-page.title')
- insert into utenti_settings (setting_name, setting_var, id_utente)
-  values ('home-page.title', {@txtvoid='title'}, {@field='id_utente'});
+      <![CDATA[if not exists (select top 1 1 from users_settings where [user_id] = {@field='user_id'} and setting_name = 'home-page.title')
+ insert into users_settings (setting_name, setting_var, [user_id])
+  values ('home-page.title', {@txtvoid='title'}, {@field='user_id'});
 else 
- update utenti_settings set setting_var = {@txtvoid='title'}, dt_upd = getdate()
-  where setting_name = 'home-page.title' and id_utente = {@field='id_utente'}]]>
+ update users_settings set setting_var = {@txtvoid='title'}, dt_upd = getdate()
+  where setting_name = 'home-page.title' and [user_id] = {@field='user_id'}]]>
     </query>
     
     <!-- MACRO SEZIONE -->
     
     <query name="add-macro-section">
-      <![CDATA[insert into macro_sections (title, notes, [order], id_utente)
+      <![CDATA[insert into macro_sections (title, notes, [order], [user_id])
  select {@txtqry='title'} as title, {@txtqry='notes'} as notes
-  , (select isnull(max([order]), 0) + 1 from macro_sections where id_utente = {@field='id_utente'}) as [order]
-  , {@field='id_utente'} as id_utente]]>
+  , (select isnull(max([order]), 0) + 1 from macro_sections where [user_id] = {@field='user_id'}) as [order]
+  , {@field='user_id'} as [user_id]]]>
+    </query>
+    <query name="add-macro-section-after">
+      <![CDATA[update macro_sections set [order] = [order] + 1
+      where [user_id] = {@field='user_id'} and [order] > (select top 1 [order] from macro_sections 
+        where [user_id] = {@field='user_id'} and macro_section_id = {@field='after_id'});
+insert into macro_sections (title, notes, [order], [user_id])
+ select {@txtqry='title'} as title, {@txtqry='notes'} as notes
+  , (select [order] + 1 from macro_sections where [user_id] = {@field='user_id'} and macro_section_id = {@field='after_id'}) as [order]
+  , {@field='user_id'} as [user_id]]]>
     </query>
     <query name="upd-macro-section">
       <![CDATA[update macro_sections set title = {@txtqry='title'}, notes = {@txtqry='notes'}, dt_upd = getdate()
-         where id_macro_section = {@field='id'}]]>
+         where macro_section_id = {@field='id'}]]>
     </query>
     <query name="load-macro-sections">
-      <![CDATA[select ms.id_macro_section, ms.title, ms.notes, ms.[order]
+      <![CDATA[select ms.macro_section_id, ms.title, ms.notes, ms.[order]
  from macro_sections ms
- where ms.id_utente = {@field='id_utente'} {@field_cond='id','id-filter'} order by [order]]]>
+ where ms.[user_id] = {@field='user_id'} {@field_cond='id','id-filter'} order by [order]]]>
       <filter name="id-filter">
-        <![CDATA[and ms.id_macro_section = {@field='id'}]]>
+        <![CDATA[and ms.macro_section_id = {@field='id'}]]>
       </filter>
     </query>
     <query name="del-macro-section">
-      <![CDATA[delete from macro_sections where id_macro_section = {@field='id'};
-      delete from sections where id_macro_section = {@field='id'};
+      <![CDATA[delete from macro_sections where macro_section_id = {@field='id'};
+      delete from sections where macro_section_id = {@field='id'};
       {@query-text='sections.clean-attributes'};]]>
     </query>
     <query name="clean-attributes">
       <![CDATA[delete sa from sections_attrs_datetime sa 
-       where not exists (select top 1 1 from sections where id_section = sa.id_section);
+       where not exists (select top 1 1 from sections where section_id = sa.section_id);
       delete sa from sections_attrs_flag sa
-       where not exists (select top 1 1 from sections where id_section = sa.id_section);
+       where not exists (select top 1 1 from sections where section_id = sa.section_id);
       delete sa from sections_attrs_integer sa 
-       where not exists (select top 1 1 from sections where id_section = sa.id_section);
+       where not exists (select top 1 1 from sections where section_id = sa.section_id);
       delete sa from sections_attrs_text sa 
-       where not exists (select top 1 1 from sections where id_section = sa.id_section);
+       where not exists (select top 1 1 from sections where section_id = sa.section_id);
       delete sa from sections_attrs_varchar sa 
-        where not exists (select top 1 1 from sections where id_section = sa.id_section);]]>
+        where not exists (select top 1 1 from sections where section_id = sa.section_id);]]>
     </query>
     <query name="up-macro-section">
       <![CDATA[declare @id_prev int, @order_prev int, @order int;
-select top 1 @order = [order] from macro_sections where id_macro_section = {@field='id'};
-select top 1 @id_prev = id_macro_section, @order_prev = [order] from macro_sections 
- where [order] < (select top 1 [order] from macro_sections where id_macro_section = {@field='id'})
-  and id_utente = (select top 1 id_utente from macro_sections where id_macro_section = {@field='id'}) order by [order] desc;
+select top 1 @order = [order] from macro_sections where macro_section_id = {@field='id'};
+select top 1 @id_prev = macro_section_id, @order_prev = [order] from macro_sections 
+ where [order] < (select top 1 [order] from macro_sections where macro_section_id = {@field='id'})
+  and [user_id] = (select top 1 [user_id] from macro_sections where macro_section_id = {@field='id'}) order by [order] desc;
 
 if (@id_prev is not null)
 begin
- update macro_sections set [order] = @order_prev where id_macro_section = {@field='id'};
- update macro_sections set [order] = @order where id_macro_section = @id_prev;
+ update macro_sections set [order] = @order_prev where macro_section_id = {@field='id'};
+ update macro_sections set [order] = @order where macro_section_id = @id_prev;
 end]]>
     </query>
     <query name="first-macro-section">
       <![CDATA[declare @first_order int;
 select top 1 @first_order = min([order]) from macro_sections 
- where id_utente = (select top 1 id_utente from macro_sections where id_macro_section = {@field='id'});
+ where [user_id] = (select top 1 [user_id] from macro_sections where macro_section_id = {@field='id'});
 update macro_sections set [order] = [order] + 1 
-  where id_utente = (select top 1 id_utente from macro_sections where id_macro_section = {@field='id'}) 
-   and [order] < (select top 1 [order] from macro_sections where id_macro_section = {@field='id'});
-update macro_sections set [order] = @first_order where id_macro_section = {@field='id'};]]>
+  where [user_id] = (select top 1 [user_id] from macro_sections where macro_section_id = {@field='id'}) 
+   and [order] < (select top 1 [order] from macro_sections where macro_section_id = {@field='id'});
+update macro_sections set [order] = @first_order where macro_section_id = {@field='id'};]]>
     </query>
     <query name="last-macro-section">
       <![CDATA[declare @last_order int;
 select top 1 @last_order = max([order]) from macro_sections 
- where id_utente = (select top 1 id_utente from macro_sections where id_macro_section = {@field='id'});
+ where [user_id] = (select top 1 [user_id] from macro_sections where macro_section_id = {@field='id'});
 update macro_sections set [order] = [order] - 1 
-  where id_utente = (select top 1 id_utente from macro_sections where id_macro_section = {@field='id'}) 
-   and [order] > (select top 1 [order] from macro_sections where id_macro_section = {@field='id'});
-update macro_sections set [order] = @last_order where id_macro_section = {@field='id'};]]>
+  where [user_id] = (select top 1 [user_id] from macro_sections where macro_section_id = {@field='id'}) 
+   and [order] > (select top 1 [order] from macro_sections where macro_section_id = {@field='id'});
+update macro_sections set [order] = @last_order where macro_section_id = {@field='id'};]]>
     </query>
     <query name="empty-macro-section">
-      <![CDATA[delete from sections where id_macro_section = {@field='id'};
+      <![CDATA[delete from sections where macro_section_id = {@field='id'};
       {@query-text='sections.clean-attributes'};]]>
     </query>
 
     <!-- SEZIONE -->
 
     <query name="add-section">
-      <![CDATA[insert into sections (id_macro_section, [type], title, notes, cols, id_utente, [order])
-  select {@field='id'} as id_macro_section, {@txtqry='type'} as [type], {@txtqry='title'} as title
-    , {@txtqry='notes'} as notes, 4 as cols, {@field='id_utente'} as id_utente
-    , (select isnull(max([order]), 0) + 1 from sections where id_macro_section = {@field='id'}) as [order]]]>
+      <![CDATA[
+ declare @cols integer;
+ select @cols = s.cols from sections s
+  where s.macro_section_id = {@field='id'}
+   and s.[order] = (select max([order]) from sections where macro_section_id = s.macro_section_id);
+ insert into sections (macro_section_id, [type], title, notes, cols, [order])
+  select {@field='id'} as macro_section_id, {@txtqry='type'} as [type], {@txtqry='title'} as title
+    , {@txtqry='notes'} as notes, isnull(@cols, 4) as cols
+    , (select isnull(max([order]), 0) + 1 from sections where macro_section_id = {@field='id'}) as [order];]]>
     </query>
     <query name="add-section-after">
-      <![CDATA[update sections set [order] = [order] + 1
- where id_macro_section = (select top 1 id_macro_section from sections where id_section = {@field='id'})
-  and [order] > (select top 1 [order] from sections where id_section = {@field='id'});
+      <![CDATA[
+update sections set [order] = [order] + 1
+ where macro_section_id = (select top 1 macro_section_id from sections where section_id = {@field='id'})
+  and [order] > (select top 1 [order] from sections where section_id = {@field='id'});
 
-insert into sections (id_macro_section, [type], title, notes, cols, id_utente, [order])
-  select t.id_macro_section
+declare @cols integer;
+select @cols = s.cols from sections s
+ where s.section_id = {@field='id'};
+
+insert into sections (macro_section_id, [type], title, notes, cols, [order])
+  select t.macro_section_id
     , {@txtqry='type'} as [type], {@txtqry='title'} as title
-    , {@txtqry='notes'} as notes, 4 as cols, 0 as id_utente
+    , {@txtqry='notes'} as notes, isnull(@cols, 4) as cols
     , t.[order] + 1 as [order]
-	from (select id_macro_section, [order] from sections where id_section = {@field='id'}) t;]]>
+	from (select macro_section_id, [order] from sections where section_id = {@field='id'}) t;]]>
     </query>
     <query name="load-sections">
-      <![CDATA[select s.id_section, s.id_macro_section, s.[type], s.title, s.notes, s.[order], s.dt_ins, s.dt_upd, s.id_utente, s.emphasis, s.cols
+      <![CDATA[select s.section_id, s.macro_section_id, s.[type], s.title, s.notes, s.[order], s.dt_ins, s.dt_upd, ms.[user_id], s.emphasis, s.cols
    , sa.attribute_code, sa.attribute_type, sa.val_datetime, sa.val_integer, sa.val_text, sa.val_varchar, sa.val_flag
   from sections s
-  left join vw_sections_attrs sa on sa.id_section = s.id_section
-  where s.id_utente = {@field='id_utente'} {@field_cond='id','id-filter'} {@field_cond='id_ms','id-filter-ms'} 
-  order by s.id_macro_section, s.[order]]]>
+  join macro_sections ms on ms.macro_section_id = s.macro_section_id
+  left join vw_sections_attrs sa on sa.section_id = s.section_id
+  where ms.[user_id] = {@field='user_id'} {@field_cond='id','id-filter'} {@field_cond='id_ms','id-filter-ms'} 
+  order by s.macro_section_id, s.[order]]]>
       <filter name="id-filter">
-        <![CDATA[and s.id_section = {@field='id'}]]>
+        <![CDATA[and s.section_id = {@field='id'}]]>
       </filter>
       <filter name="id-filter-ms">
-        <![CDATA[and s.id_macro_section = {@field='id_ms'}]]>
+        <![CDATA[and s.macro_section_id = {@field='id_ms'}]]>
       </filter>
     </query>
     <query name="upd-section">
       <![CDATA[update sections set title = {@txtqry='title'}, notes = {@txtqry='notes'}, cols = {@field='cols','NULL'}, dt_upd = getdate()
-         where id_section = {@field='id'}
+         where section_id = {@field='id'}
           and (isnull(title, '') <> isnull({@txtqry='title'}, '') or isnull(notes, '') <> isnull({@txtqry='notes'}, '')
            or isnull(cols, 0) <> isnull({@field='cols','NULL'}, 0))]]>
     </query>
     <query name="upd-section-emphasis">
-      <![CDATA[update sections set emphasis = {@txtqry='emphasis'} where id_section = {@field='id'}]]>
+      <![CDATA[update sections set emphasis = {@txtqry='emphasis'} where section_id = {@field='id'}]]>
     </query>
     <query name="del-section">
-      <![CDATA[delete from sections where id_section = {@field='id'};
+      <![CDATA[delete from sections where section_id = {@field='id'};
       {@query-text='sections.clean-attributes'};]]>
     </query>
     <query name="up-section">
       <![CDATA[declare @id_prev int, @order_prev int, @order int;
-select top 1 @order = [order] from sections where id_section = {@field='id'};
-select top 1 @id_prev = id_section, @order_prev = [order] from sections 
- where [order] < (select top 1 [order] from sections where id_section = {@field='id'})
-  and id_macro_section = (select top 1 id_macro_section from sections where id_section = {@field='id'}) order by [order] desc;
+select top 1 @order = [order] from sections where section_id = {@field='id'};
+select top 1 @id_prev = section_id, @order_prev = [order] from sections 
+ where [order] < (select top 1 [order] from sections where section_id = {@field='id'})
+  and macro_section_id = (select top 1 macro_section_id from sections where section_id = {@field='id'}) order by [order] desc;
 
 if (@id_prev is not null)
 begin
- update sections set [order] = @order_prev where id_section = {@field='id'};
- update sections set [order] = @order where id_section = @id_prev;
+ update sections set [order] = @order_prev where section_id = {@field='id'};
+ update sections set [order] = @order where section_id = @id_prev;
 end]]>
     </query>
     <query name="first-section">
       <![CDATA[declare @first_order int;
 select top 1 @first_order = min([order]) from sections 
- where id_macro_section = (select top 1 id_macro_section from sections where id_section = {@field='id'});
+ where macro_section_id = (select top 1 macro_section_id from sections where section_id = {@field='id'});
 update sections set [order] = [order] + 1 
-  where id_macro_section = (select top 1 id_macro_section from sections where id_section = {@field='id'}) 
-   and [order] < (select top 1 [order] from sections where id_section = {@field='id'});
-update sections set [order] = @first_order where id_section = {@field='id'};]]>
+  where macro_section_id = (select top 1 macro_section_id from sections where section_id = {@field='id'}) 
+   and [order] < (select top 1 [order] from sections where section_id = {@field='id'});
+update sections set [order] = @first_order where section_id = {@field='id'};]]>
     </query>
     <query name="last-section">
       <![CDATA[declare @last_order int;
 select top 1 @last_order = max([order]) from sections 
- where id_macro_section = (select top 1 id_macro_section from sections where id_section = {@field='id'});
+ where macro_section_id = (select top 1 macro_section_id from sections where section_id = {@field='id'});
 update sections set [order] = [order] - 1 
-  where id_macro_section = (select top 1 id_macro_section from sections where id_section = {@field='id'})
-   and [order] > (select top 1 [order] from sections where id_section = {@field='id'});
-update sections set [order] = @last_order where id_section = {@field='id'};]]>
+  where macro_section_id = (select top 1 macro_section_id from sections where section_id = {@field='id'})
+   and [order] > (select top 1 [order] from sections where section_id = {@field='id'});
+update sections set [order] = @last_order where section_id = {@field='id'};]]>
     </query>
     <query name="delete-attribute">
       <![CDATA[delete sa from [sections_attrs_{@field='attr_type'}] sa 
-            where sa.id_section = {@field='id_section'} 
+            where sa.section_id = {@field='section_id'} 
              and sa.attribute_id = (select top 1 attribute_id from sections_attrs where attribute_code = '{@field='attr_code'}'
               and section_type = '{@field='section_type'}')]]>
     </query>
     <query name="set-attribute">
       <![CDATA[declare @aid int; select @aid = attribute_id from sections_attrs where section_type = '{@field='section_type'}' and attribute_code = '{@field='attr_code'}';
       if exists (select top 1 1 from [sections_attrs_{@field='attr_type'}] sa
-          where sa.id_section = {@field='id_section'} and sa.attribute_id = @aid)
+          where sa.section_id = {@field='section_id'} and sa.attribute_id = @aid)
           begin
             update sa set sa.value = {@field='attr_value'}
              from [sections_attrs_{@field='attr_type'}] sa
-             where sa.id_section = {@field='id_section'} and sa.value <> {@field='attr_value'} and sa.attribute_id = @aid
+             where sa.section_id = {@field='section_id'} and sa.value <> {@field='attr_value'} and sa.attribute_id = @aid
             if @@ROWCOUNT > 0
-             update sections set dt_upd = getdate() where id_section = {@field='id_section'};
+             update sections set dt_upd = getdate() where section_id = {@field='section_id'};
           end
           else
           begin
-            insert into [sections_attrs_{@field='attr_type'}] (id_section, attribute_id, [value])
-             values ({@field='id_section'}, @aid, {@field='attr_value'});
-            update sections set dt_upd = getdate() where id_section = {@field='id_section'};
+            insert into [sections_attrs_{@field='attr_type'}] (section_id, attribute_id, [value])
+             values ({@field='section_id'}, @aid, {@field='attr_value'});
+            update sections set dt_upd = getdate() where section_id = {@field='section_id'};
           end]]>
     </query>
   </queries>

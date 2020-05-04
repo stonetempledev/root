@@ -29,7 +29,11 @@ namespace toyn {
       return !required ? (has_attribute(code) ? get_attribute(code).value : null) : get_attribute(code).value;
     }
     public section_attr get_attribute(string code) { return _attributes.FirstOrDefault(a => a.code == code); }
-    public string get_attribute_string(string code) { section_attr a = _attributes.FirstOrDefault(x => x.code == code); return a != null ? a.get_str : ""; }
+    public string get_attribute_string(string code, string def = "") 
+    { 
+      section_attr a = _attributes.FirstOrDefault(x => x.code == code); 
+      return a != null && !string.IsNullOrEmpty(a.get_str) ? a.get_str : def; 
+    }
     public bool get_attribute_bool(string code) {
       section_attr a = _attributes.FirstOrDefault(x => x.code == code);
       return a != null ? a.get_bool : false;

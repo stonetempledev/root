@@ -24,35 +24,6 @@ a.anchor
   padding-left: 2px;
 }
 
-/* sidebar */
-
-.sidebar
-{
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  padding: 50px 0 0;
-}
-.sidebar-sticky
-{
-  background: #343a40;
-  position: relative;
-  top: 0;
-  height: calc(100vh - 50px);
-  padding-top: 8px;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.sidebar-sticky ul
-{
-  margin: 0;
-  padding: 0;
-  padding-left: 10px;
-  list-style-type: none;
-}
-
 /* ul */
 
 ul.no-bullet

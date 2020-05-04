@@ -59,7 +59,14 @@ public partial class _home : tl_page {
           else if (jr.action == "add_macro_sezione") {
             string title = jr.val_str("title"), notes = jr.val_str("notes");
             string id = db_conn.exec(core.parse_query("sections.add-macro-section"
-              , new string[,] { { "title", title }, { "notes", notes }, { "id_utente", user.id_str } }), true);
+              , new string[,] { { "title", title }, { "notes", notes }, { "user_id", user.id_str } }), true);
+            res.html_element = parse_macro_section(hpb, int.Parse(id));
+          }
+            // add_macro_sezione_after
+          else if (jr.action == "add_macro_sezione_after") {
+            string title = jr.val_str("title"), notes = jr.val_str("notes");
+            string id = db_conn.exec(core.parse_query("sections.add-macro-section-after"
+              , new string[,] { { "title", title }, { "notes", notes }, { "user_id", user.id_str }, { "after_id", jr.val_str("after_id") } }), true);
             res.html_element = parse_macro_section(hpb, int.Parse(id));
           }
             // upd_macro_sezione
@@ -95,14 +102,14 @@ public partial class _home : tl_page {
           else if (jr.action == "add_sezione") {
             string id = db_conn.exec(core.parse_query("sections.add-section"
               , new string[,] { { "id", jr.val_str("id") }, { "title", jr.val_str("title") }, { "type", jr.val_str("type") }
-                , { "notes", jr.val_str("notes") }, { "id_utente", user.id_str } }), true);
+                , { "notes", jr.val_str("notes") }, { "user_id", user.id_str } }), true);
             res.html_element = parse_section(hpb.load_section(int.Parse(id)));
           }
             // add_sezione_after
           else if (jr.action == "add_sezione_after") {
             string id = db_conn.exec(core.parse_query("sections.add-section-after"
               , new string[,] { { "id", jr.val_str("id") }, { "title", jr.val_str("title") }, { "type", jr.val_str("type") }
-                , { "notes", jr.val_str("notes") }, { "id_utente", user.id_str } }), true);
+                , { "notes", jr.val_str("notes") }, { "user_id", user.id_str } }), true);
             res.html_element = parse_section(hpb.load_section(int.Parse(id)));
           }
             // upd_sezione
@@ -112,7 +119,9 @@ public partial class _home : tl_page {
             s.title = jr.val_str("title");
             s.notes = jr.val_str("notes");
             s.cols = jr.val_int("cols");
-            s.set_attribute_int("rows", jr.val_int("rows", 4));
+            s.set_attribute_int("height_body", jr.val_int("height_body", 125));
+            s.set_attribute_string("wrap", jr.val_str("wrap"));
+            s.set_attribute_string("font", jr.val_str("font"));
             hpb.update_section(s);
             res.html_element = parse_section(s);
           }
@@ -166,6 +175,41 @@ public partial class _home : tl_page {
       // view
       if (_cmd.action == "view" && _cmd.obj == "home-page") {
 
+        // menu
+        /*
+        menu.InnerHtml = @"<ul class='nav flex-column' style='padding:0px;margin-top:0px;'>
+           <div tp='virtual'></div>
+           <li>
+            <div style='display:block;'><a class='h5' style='color:steelblue;' href='#ele_1'>Temple of your Notes</a></div></li>
+            <li menu_id='90' style=''><div style='display:block;'>
+              <a style='color:skyblue;margin-top:10px;padding-top:5px;padding-left:3px;' href='#ele_90'>
+                <img src='images/tr-gray-10.png' style='margin-right:3px;'>linea guida</a></div></li>
+            <li menu_id='110' style=''><div style='display:block;'>
+              <a style='color:skyblue;margin-top:10px;padding-top:5px;padding-left:3px;' href='#ele_110'>
+                <img src='images/tr-gray-10.png' style='margin-right:3px;'>riferimenti e librerie</a></div></li>
+            <ul menu_childs_id='90'>
+              <li><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_112'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>gojs</a></div></li>
+              <li menu_id='111' style=''><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_111'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>laravel</a></div></li>
+              <li menu_id='114' style=''><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_114'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>CodeMirror</a></div></li>
+              <li menu_id='113' style=''><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_113'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>Newtonsoft - Json.NET</a></div></li>
+              <li menu_id='789' style=''><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_789'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>Font Awesome</a></div></li>
+              <li menu_id='790' style=''><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_790'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>Material Design for Bootstrap</a></div></li></ul>
+            </ul>
+          </ul>"; */
+
+        // sections
         page_sections ps = hpb.load_home_page();
         main_title.InnerText = ps.title != "" ? ps.title : "la " + user.name + " home page";
         macro_sezioni.InnerHtml = parse_macro_sections(ps.macro_sections);

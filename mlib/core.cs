@@ -21,7 +21,11 @@ namespace mlib {
     protected config _config = null;
     public config config { get { return _config; } }
 
-    public core(string base_path, string base_url) { _base_path = base_path; _base_url = base_url; _config = new config(this); }
+    public core(string base_path, string base_url = "") { 
+      _base_path = base_path; 
+      _base_url = !string.IsNullOrEmpty(base_url) ? base_url : app_setting("base_url");
+      _config = new config(this); 
+    }
 
     #region configs
 
@@ -223,6 +227,7 @@ namespace mlib {
         List<object> pvals = new List<object>(); int i = 0;
         foreach (System.Reflection.ParameterInfo pi in mi.GetParameters()) {
           if (values.Length > i) pvals.Add(Convert.ChangeType(values[i], pi.ParameterType));
+          else pvals.Add(null);
           i++;
         }
         object val = mi.Invoke(o, pvals.ToArray());

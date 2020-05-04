@@ -24,7 +24,18 @@
     }
   </style>
   <script type="text/javascript" language="javascript">
+
+    $(document).ready(function () {
+      var ds = get_dev_size();
+
+      // init sidebar menu
+      var sb_init = $("[sidebar-tp=menu]").attr("sidebar-init");
+      sh_init(sb_init ? (sb_init == "show" && (ds != "sm" && ds != "xs") ? "show" : "hide"): "hide");
+    });
+
     function get_dev_size() { return $('#dev-size-detector').find('div:visible').first().attr('id'); }
+
+    ////// DIALOGS
 
     // alert
     function show_danger(title, body) { show_alert(title, body, "danger"); }
@@ -66,7 +77,7 @@
     var _dyn = null;
     function show_dyn_dlg(def) {
       try {
-        _dyn = def; 
+        _dyn = def;
         if (check_str(_dyn.title) != "") $("#dyn_dlg_title").text(_dyn.title);
 
         // hmtl rows
@@ -78,9 +89,9 @@
           // string
           var type = check_str(row.type);
           if (type == "" || type == "text") {
-            var hrow = '<div class="md-form"> \
+            var hrow = '<div class="md-form mt-2 mb-3"> \
               {icon} \
-              <input type="text" id="val_dyn_{id_val}" class="form-control validate" onfocus="sel_onfocus(this)" \
+              <input type="text" id="val_dyn_{id_val}" class="form-control validate mb-2" onfocus="sel_onfocus(this)" \
                 value="" onkeypress="return dyn_dlg_enter(event)" /> \
               <label id="lbl_dyn_{id_val}" data-error="wrong" data-success="right" for="val_dyn_{id_val}">{label}</label> \
             </div>';
@@ -91,8 +102,8 @@
           } // select
           else if (type == "select") {
             var hrow = '<div class="row"><div class="col"> \
-                  <p id="lbl_dyn_{id_val}" class="small">{label}</p></div></div> \
-                <div class="row"><div class="col mb-3"> \
+                  <p id="lbl_dyn_{id_val}" class="small mb-1 text-muted">{label}</p></div></div> \
+                <div class="row mb-3"><div class="col"> \
                   <select id="val_dyn_{id_val}" onkeypress="return dyn_dlg_enter(event)" class="custom-select">{options} \
                 </select></div></div>';
 
@@ -153,7 +164,7 @@
 
     function ok_dyn_dlg() { $('#dyn_dlg').modal('hide'); try { if (_dyn.on_ok) _dyn.on_ok(); } catch (e) { } }
 
-    // post actions
+    ////// POST ACTIONS
 
     function post_data(doc) {
       try {
@@ -183,7 +194,7 @@
       try { return post_data(parameters); } catch (e) { show_danger("Attenzione!", e); } return null;
     }
 
-    // nav bar
+    ////// NAV BAR
 
     function set_cmd(txt) { $("#txt_cmd").val(txt); $("#txt_cmd").focus(); }
 
@@ -238,6 +249,99 @@
       $("#lbl_status").hide();
       $("#grp_err").removeClass("d-flex").addClass("d-none");
       return false;
+    }
+
+    // SIDE MENU
+
+    function sh_init(state) {
+      try {
+        var menu = $("[sidebar-tp=menu]"), sh = $("[sidebar-tp=sh]"), i = $("[sidebar-tp=icon]")
+        , body = $("[sidebar-tp=body]");
+
+        // menu_id
+        $("[menu_id]").on("click", function () {
+          var ds = get_dev_size(), sh = $("[sidebar-tp=sh]");
+          if ((ds == "sm" || ds == "xs")
+            && sh.attr("sidebar-state") == "showed") { sh_side_menu(); }
+        });
+
+        // init structure
+        var ds = get_dev_size(), hstate = "";
+        if (state == "show") {
+          // smart
+          if (ds == "sm" || ds == "xs") {
+            menu.addClass("col-md-12 sidebar");
+            body.addClass("d-none");
+          }
+          // desktop
+          else {
+            menu.addClass("d-none d-md-block col-md-3 sidebar");
+            body.addClass("col-md-9 ml-sm-auto");
+          }
+          hstate = "showed";
+        }
+        else {
+          // smart
+          if (ds == "sm" || ds == "xs") {
+            menu.addClass("d-none sidebar");
+            body.addClass("col-md-12 ml-sm-auto");
+          }
+          // desktop
+          else {
+            menu.addClass("d-none sidebar");
+            body.addClass("col-md-12 ml-sm-auto");
+          }
+          hstate = "hidden";
+        }
+
+        // init icon
+        if (hstate == "showed") {
+          sh.addClass("sidebar-icon sidebar-icon-menu");
+          sh.attr("sidebar-state", hstate).attr("title", "nascondi il menu..."); i.addClass("fas fa-angle-double-left");
+        }
+        else {
+          sh.addClass("sidebar-icon sidebar-icon-body");
+          sh.attr("sidebar-state", hstate).attr("title", "visualizza il menu..."); i.addClass("fas fa-angle-double-right");
+        }
+      } catch (e) { alert(e); }
+    }
+
+    function sh_side_menu() {
+      var sh = $("[sidebar-tp=sh]"), ds = get_dev_size();
+      // show menu
+      if (sh.attr("sidebar-state") == "hidden") {
+        // smart
+        if (ds == "sm" || ds == "xs") {
+          $("[sidebar-tp=menu]").removeClass().addClass("col-md-12 sidebar");
+          $("[sidebar-tp=body]").removeClass().addClass("d-none");
+        }
+        // desktop
+        else {
+          $("[sidebar-tp=menu]").addClass("col-md-3 d-md-block");
+          $("[sidebar-tp=body]").removeClass("col-md-12").addClass("col-md-9");
+        }
+        $("[sidebar-tp=icon]").removeClass().addClass("fas fa-angle-double-left");
+        sh.removeClass().addClass("sidebar-icon sidebar-icon-menu");
+        sh.attr("sidebar-state", "showed");
+        sh.attr("title", "nascondi il menu...");
+      }
+      // hide menu
+      else {
+        // smart
+        if (ds == "sm" || ds == "xs") {
+          $("[sidebar-tp=menu]").removeClass().addClass("d-none sidebar");
+          $("[sidebar-tp=body]").removeClass().addClass("col-md-12 ml-sm-auto");
+        }
+        // desktop
+        else {
+          $("[sidebar-tp=menu]").removeClass().addClass("d-none sidebar"); 
+          $("[sidebar-tp=body]").removeClass().addClass("col-md-12 ml-sm-auto");
+        }
+        $("[sidebar-tp=icon]").removeClass().addClass("fas fa-angle-double-right");
+        sh.removeClass().addClass("sidebar-icon sidebar-icon-body");
+        sh.attr("sidebar-state", "hidden");
+        sh.attr("title", "visualizza il menu...");
+      }
     }
 
   </script>

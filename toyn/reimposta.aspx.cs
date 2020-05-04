@@ -14,7 +14,7 @@ public partial class reimposta : tl_page {
     try {
       lbl_alert.Visible = lbl_ok.Visible = false;
       DataRow dr = db_conn.first_row(@"select nome, email
-          from utenti where activated = 1 and activate_key = '" + qry_val("akey") + "';");
+          from users where activated = 1 and activate_key = '" + qry_val("akey") + "';");
       if (dr == null) { FormsAuthentication.SignOut(); Response.Redirect("login.aspx"); return; }
 
       _nome = dr["nome"].ToString(); _mail = dr["email"].ToString();
@@ -35,7 +35,7 @@ public partial class reimposta : tl_page {
 
         // ri-registrazione
         string tkey = mlib.tools.cry.rnd_str(32);
-        db_conn.exec(string.Format(@"update utenti set pwd = '{0}', dt_upd = getdate()
+        db_conn.exec(string.Format(@"update users set pwd = '{0}', dt_upd = getdate()
           where activated = 1 and nome = '{1}';"
           , mlib.tools.cry.encode_tobase64(user_pass.Value), _nome));
 

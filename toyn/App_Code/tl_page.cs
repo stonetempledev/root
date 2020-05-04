@@ -28,12 +28,9 @@ public class tl_page : System.Web.UI.Page {
 
   protected string _base_path = null;
   public string base_path { get { if (_base_path == null) _base_path = System.Web.HttpContext.Current.Server.MapPath("~"); return _base_path; } }
-  public string base_url {
-    get {
-      return Request.Url.Scheme + "://" + Request.Url.Authority +
-        Request.ApplicationPath.TrimEnd('/') + "/";
-    }
-  }
+  //public string base_url_request {
+  //  get { return Request.Url.Scheme + "://" + Request.Url.Authority + Request.ApplicationPath.TrimEnd('/') + "/"; }
+  //}
   public string abs_path { get { return HttpContext.Current.Request.Url.AbsolutePath; } }
   public string page_name { get { return (new FileInfo(abs_path)).Name; } }
 
@@ -52,14 +49,14 @@ public class tl_page : System.Web.UI.Page {
       bool reload_cfg = false;
       if (Cache["core_obj"] == null) {
         log.log_info("reload core");
-        core cr = new core(base_path, base_url);
+        core cr = new core(base_path);
         reload_cfg = true;
         Cache["core_obj"] = cr;
       } 
 
       // configs
       _core = (core)Cache["core_obj"];
-      _core.base_url = this.base_url;
+      //_core.base_url = this.base_url;
       foreach (string key in _core.config_keys) if (Cache[key] == null) { reload_cfg = true; break; }
       reload_cfg = true;
       if (reload_cfg) {
@@ -124,7 +121,7 @@ public class tl_page : System.Web.UI.Page {
   public config config { get { return _core.config; } }
   public bool is_user { get { return _user != null; } }
   public bool is_admin { get { return _user != null && _user.type == mlib.tiles.user.type_user.admin; } }
-  public user user { get { return _user; } }
+  public user user { get { return _user; } protected set { _user = value; } }
   public void set_user(int id, string user, string email, user.type_user tp) {
     _user = new user(id, user, email, tp);
   }
@@ -220,34 +217,34 @@ public class tl_page : System.Web.UI.Page {
 
   private bool set_cache_var2(string var_name, string var_value) { 
     if(!is_user) return false;
-    int id_utente = _user.id;
+    int user_id = _user.id;
     db_conn.exec(core.parse(config.get_query("base.set-cache-var").text
-      , new Dictionary<string, object>() { { "id_utente", id_utente }, { "var_name", var_name }, { "var_value", var_value } }));
+      , new Dictionary<string, object>() { { "user_id", user_id }, { "var_name", var_name }, { "var_value", var_value } }));
     return true;
   }
 
   protected bool reset_cache_var(string var_name) { 
     if(!is_user) return false;
-    int id_utente = _user.id;
+    int user_id = _user.id;
     db_conn.exec(core.parse(config.get_query("base.reset-cache-var").text
-      , new Dictionary<string, object>() { { "id_utente", id_utente }, { "var_name", var_name } }));
+      , new Dictionary<string, object>() { { "user_id", user_id }, { "var_name", var_name } }));
     return true;
   }
 
   protected string get_cache_var(string var_name, string def = "") {
     if (!is_user) return def;
-    int id_utente = _user.id;
+    int user_id = _user.id;
     DataRow dr = db_conn.first_row(core.parse(config.get_query("base.get-cache-var").text
-      , new Dictionary<string, object>() { { "id_utente", id_utente }, { "list_vars", "'" + var_name + "'" } }));
+      , new Dictionary<string, object>() { { "user_id", user_id }, { "list_vars", "'" + var_name + "'" } }));
     return dr != null ? db_provider.str_val(dr["var_value"], def) : def;
   }
 
   protected Dictionary<string, string> get_cache_vars(string var_names) {
     if (!is_user) return null;
-    int id_utente = _user.id;
+    int user_id = _user.id;
     Dictionary<string, string> res = new Dictionary<string, string>();
     foreach (DataRow dr in db_conn.dt_table(core.parse(config.get_query("base.get-cache-var").text
-      , new Dictionary<string, object>() { { "id_utente", id_utente }
+      , new Dictionary<string, object>() { { "user_id", user_id }
         , { "list_vars", string.Join(", ", var_names.Split(new char[]{','}, StringSplitOptions.RemoveEmptyEntries).Select(s => "'" + s + "'")) } })).Rows) {
           res.Add(db_provider.str_val(dr["var_name"]), db_provider.str_val(dr["var_value"]));
     }

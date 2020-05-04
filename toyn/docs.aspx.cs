@@ -22,7 +22,7 @@ using mlib.xml;
 using mlib.tiles;
 using toyn;
 
-public partial class _element : tl_page {
+public partial class _docs : tl_page {
 
   protected int _max_level = 3;
   protected cmd _cmd = null;
@@ -52,7 +52,7 @@ public partial class _element : tl_page {
     if (this.IsPostBack) return;
 
     try {
-      elements eb = new elements();
+      docs eb = new docs();
 
       if (json_request.there_request(this)) {
         json_result res = new json_result(json_result.type_result.ok);
@@ -83,7 +83,7 @@ public partial class _element : tl_page {
             // vedo se ci sono elementi figli
             int ml = element.max_level(els);
             foreach (element ec in element.find_elements(els, ml).Where(x => x.id > 0)) {
-              DataRow dr = db_conn.first_row(core.parse_query("elements.has-childs"
+              DataRow dr = db_conn.first_row(core.parse_query("docs.has-childs"
                 , new Dictionary<string, object>() { { "id_element", ec.id } }));
               ec.has_childs = db_provider.int_val(dr["has_childs"]) == 1;
               ec.has_child_elements = db_provider.int_val(dr["has_child_elements"]) == 1;
@@ -104,11 +104,11 @@ public partial class _element : tl_page {
             // remove_element
           else if (jr.action == "remove_element") {
             // pulizia
-            DataRow dr = db_conn.first_row(core.parse_query("elements.id-deleted"
-              , new Dictionary<string, object>() { { "id_utente", _user.id } }));
+            DataRow dr = db_conn.first_row(core.parse_query("docs.id-deleted"
+              , new Dictionary<string, object>() { { "user_id", _user.id } }));
             int id_deleted = db_provider.int_val(dr["id_deleted"]);
-            db_conn.exec(core.parse_query("elements.delete-element"
-              , new Dictionary<string, object>() { { "id_element", jr.id }, { "id_utente", _user.id }, { "id_deleted", id_deleted } }));
+            db_conn.exec(core.parse_query("docs.delete-element"
+              , new Dictionary<string, object>() { { "id_element", jr.id }, { "user_id", _user.id }, { "id_deleted", id_deleted } }));
             eb.refresh_order_child(jr.id);
             res.add_var("cache_ids", check_cache(eb));
 
@@ -179,7 +179,7 @@ public partial class _element : tl_page {
                 if (doc_xml.IndexOf("_id=\"" + id.ToString() + ":") >= 0)
                   ids_to_del.Add(val);
                 else {
-                  DataRow dr = db_conn.first_row(core.parse_query("elements.exists-element"
+                  DataRow dr = db_conn.first_row(core.parse_query("docs.exists-element"
                   , new Dictionary<string, object>() { { "id_element", id } }));
                   if (kp != key_page && dr != null) ids_to_del.Add(val);
                   else if (dr == null) ids_to_del.Add(val);
@@ -220,7 +220,7 @@ public partial class _element : tl_page {
           }
             // move_up
           else if (jr.action == "move_up") {
-            DataTable dt = db_conn.dt_table(core.parse_query("elements.move-up"
+            DataTable dt = db_conn.dt_table(core.parse_query("docs.move-up"
               , new Dictionary<string, object>() { { "element_id", jr.id }
                 , { "filter_stored_1", !_view_stored ? "and e.dt_stored is null" : "" }
                 , { "filter_stored_2", !_view_stored ? "and e2.dt_stored is null" : "" } }));
@@ -229,7 +229,7 @@ public partial class _element : tl_page {
                 , id_2 = db_provider.long_val(dt.Rows[1]["elements_contents_id"]);
               int order_1 = db_provider.int_val(dt.Rows[0]["order"])
                 , order_2 = db_provider.int_val(dt.Rows[1]["order"]);
-              db_conn.exec(core.parse_query("elements.after-move-up"
+              db_conn.exec(core.parse_query("docs.after-move-up"
                 , new Dictionary<string, object>() { { "id_1", id_1 }, { "order_1", order_1 } 
                     , { "id_2", id_2 }, { "order_2", order_2 }}));
               res.contents = "1";
@@ -243,7 +243,7 @@ public partial class _element : tl_page {
           }
             // move_end
           else if (jr.action == "move_end") {
-            DataTable dt = db_conn.dt_table(core.parse_query("elements.move-end"
+            DataTable dt = db_conn.dt_table(core.parse_query("docs.move-end"
               , new Dictionary<string, object>() { { "element_id", jr.id } }));
             if (dt.Rows.Count == 2) {
               long element_id = db_provider.long_val(dt.Rows[0]["element_id"])
@@ -251,7 +251,7 @@ public partial class _element : tl_page {
                 , id_2 = db_provider.long_val(dt.Rows[1]["elements_contents_id"]);
               int order_1 = db_provider.int_val(dt.Rows[0]["order"])
                 , order_2 = db_provider.int_val(dt.Rows[1]["order"]);
-              db_conn.exec(core.parse_query("elements.after-move-end"
+              db_conn.exec(core.parse_query("docs.after-move-end"
                 , new Dictionary<string, object>() { { "element_id", element_id }, { "order_1", order_1 } 
                     , { "id_1", id_1 }, { "order_2", order_2 }}));
               res.contents = "1";
@@ -265,7 +265,7 @@ public partial class _element : tl_page {
           }
             // move_first
           else if (jr.action == "move_first") {
-            DataTable dt = db_conn.dt_table(core.parse_query("elements.move-first"
+            DataTable dt = db_conn.dt_table(core.parse_query("docs.move-first"
               , new Dictionary<string, object>() { { "element_id", jr.id } }));
             if (dt.Rows.Count == 2) {
               long element_id = db_provider.long_val(dt.Rows[0]["element_id"])
@@ -273,7 +273,7 @@ public partial class _element : tl_page {
                 , id_2 = db_provider.long_val(dt.Rows[1]["elements_contents_id"]);
               int order_1 = db_provider.int_val(dt.Rows[0]["order"])
                 , order_2 = db_provider.int_val(dt.Rows[1]["order"]);
-              db_conn.exec(core.parse_query("elements.after-move-first"
+              db_conn.exec(core.parse_query("docs.after-move-first"
                 , new Dictionary<string, object>() { { "element_id", element_id }, { "order_1", order_1 } 
                     , { "id_2", id_2 }, { "order_2", order_2 }}));
               res.contents = "1";
@@ -306,14 +306,14 @@ public partial class _element : tl_page {
 
                 // cut e copy position
                 if (jr.action == "paste_after") {
-                  db_conn.exec(core.parse_query("elements.paste-after"
+                  db_conn.exec(core.parse_query("docs.paste-after"
                     , new Dictionary<string, object>() { { "ref_id", idref }, { "element_id", id } }));
                   idref = id;
                 } else if (jr.action == "paste_before") {
-                  db_conn.exec(core.parse_query("elements.paste-before"
+                  db_conn.exec(core.parse_query("docs.paste-before"
                     , new Dictionary<string, object>() { { "ref_id", idref }, { "element_id", id } }));
                 } else if (jr.action == "paste_inside") {
-                  db_conn.exec(core.parse_query("elements.paste-inside"
+                  db_conn.exec(core.parse_query("docs.paste-inside"
                     , new Dictionary<string, object>() { { "ref_id", idref }, { "element_id", id } }));
                 }
               }
@@ -379,7 +379,7 @@ public partial class _element : tl_page {
             res.html_element = parse_edited_element(el, ep, jr.val_bool("in_list"), jr.val_bool("parent_stored")
               , jr.val_bool("no_opacity"), true);
             if (_element_id != "" && el.id == long.Parse(_element_id)) el.back_element_id = el.parent_id;
-            res.menu_html = parse_title_menu(el, ep, parent_stored: jr.val_bool("parent_stored"), can_back: _element_id != "");
+            res.menu_html = parse_title_menu(el, ep, _max_level + 1, parent_stored: jr.val_bool("parent_stored"), can_back: _element_id != "");
           } // update_link
           else if (jr.action == "update_link") {
             Dictionary<string, string> avalues = new Dictionary<string, string>() { 
@@ -401,7 +401,7 @@ public partial class _element : tl_page {
             element el = eb.find_element(jr.id, els), ep = el.parent_id > 0 ? eb.find_element(el.parent_id, els) : null;
             res.html_element = parse_edited_element(el, ep, jr.val_bool("in_list"), jr.val_bool("parent_stored"), jr.val_bool("no_opacity"), true);
             if (_element_id != "" && el.id == long.Parse(_element_id)) el.back_element_id = el.parent_id;
-            res.menu_html = parse_title_menu(el, ep, parent_stored: jr.val_bool("parent_stored"), can_back: _element_id != "");
+            res.menu_html = parse_title_menu(el, ep, _max_level + 1, parent_stored: jr.val_bool("parent_stored"), can_back: _element_id != "");
           } // update_par
           else if (jr.action == "update_par") {
             Dictionary<string, string> avalues = new Dictionary<string, string>() { 
@@ -413,7 +413,7 @@ public partial class _element : tl_page {
             element el = eb.find_element(jr.id, els), ep = el.parent_id > 0 ? eb.find_element(el.parent_id, els) : null;
             res.html_element = parse_edited_element(el, ep, jr.val_bool("in_list"), jr.val_bool("parent_stored"), jr.val_bool("no_opacity"), true);
             if (_element_id != "" && el.id == long.Parse(_element_id)) el.back_element_id = el.parent_id;
-            res.menu_html = parse_title_menu(el, ep, false, jr.val_bool("parent_stored"), can_back: _element_id != "");
+            res.menu_html = parse_title_menu(el, ep, _max_level + 1, false, jr.val_bool("parent_stored"), can_back: _element_id != "");
           } // update_text
           else if (jr.action == "update_text") {
             Dictionary<string, string> avalues = new Dictionary<string, string>() { { "title", jr.val_str("title") }
@@ -435,7 +435,7 @@ public partial class _element : tl_page {
             element el = eb.find_element(jr.id, els), ep = el.parent_id > 0 ? eb.find_element(el.parent_id, els) : null;
             res.html_element = parse_edited_element(el, ep, jr.val_bool("in_list"), jr.val_bool("parent_stored"), jr.val_bool("no_opacity"), true);
             if (_element_id != "" && el.id == long.Parse(_element_id)) el.back_element_id = el.parent_id;
-            res.menu_html = parse_title_menu(el, ep, parent_stored: jr.val_bool("parent_stored"), can_back: _element_id != "");
+            res.menu_html = parse_title_menu(el, ep, _max_level + 1, parent_stored: jr.val_bool("parent_stored"), can_back: _element_id != "");
           } // update_value
           else if (jr.action == "update_value") {
             Dictionary<string, string> avalues = new Dictionary<string, string>() { { "title", jr.val_str("title") }
@@ -476,6 +476,7 @@ public partial class _element : tl_page {
         List<element> els = eb.load_elements(out max_lvl_els, out max_level, _element_id != "" ? int.Parse(_element_id) : (int?)null, _max_level);
         if (!_view_stored && els.FirstOrDefault(x => !x.dt_stored.HasValue) == null) _view_stored = true;
         contents_doc.InnerHtml = parse_elements_doc(els, parent_stored, _view_stored);
+        contents.Attributes["sidebar-tp"] = "body";
         contents_xml.Visible = false;
 
         // client vars
@@ -500,6 +501,7 @@ public partial class _element : tl_page {
         // xml document
         List<element> els = eb.load_elements(out max_level_els, out max_level, _element_id != "" ? int.Parse(_element_id) : (int?)null, _max_level, key_page: kp);
         contents_xml.Visible = true;
+        contents_xml.Attributes["sidebar-tp"] = "body";
         contents.Visible = false;
         doc_xml.Value = doc_xml_bck.Value = element.get_doc(els, eb.load_types_elements()).root_node.inner_xml;
 
@@ -520,7 +522,7 @@ public partial class _element : tl_page {
     } catch (Exception ex) { log.log_err(ex); if (!json_request.there_request(this)) master.err_txt(ex.Message); }
   }
 
-  protected List<element> parents_elements(elements eb, string element_id, out bool parent_stored) {
+  protected List<element> parents_elements(docs eb, string element_id, out bool parent_stored) {
     List<element> pels = element_id != "" ? eb.load_parents_elements(long.Parse(element_id)) : null;
     parent_stored = pels != null && pels.FirstOrDefault(x => x.dt_stored.HasValue) != null;
     return pels;
@@ -540,7 +542,7 @@ public partial class _element : tl_page {
 
   #region cache
 
-  protected string check_cache(elements eb, bool save = true) {
+  protected string check_cache(docs eb, bool save = true) {
     string cache_ids = get_cache_var("cache_ids");
     if (string.IsNullOrEmpty(cache_ids)) return "";
 
@@ -573,6 +575,9 @@ public partial class _element : tl_page {
 
   protected void parse_menu(element e, StringBuilder sb, bool root = false, bool for_xml = false
     , int? max_level = null, bool parent_stored = false, bool view_stored = false, bool can_back = false) {
+
+    if (e.id == 14) { int j = 0; }
+
     if (e.get_attribute_bool("closed")) return;
     if (!view_stored && e.dt_stored.HasValue) return;
 
@@ -582,33 +587,35 @@ public partial class _element : tl_page {
       , title = e.type == element.type_element.title && e.has_content ? e.content
       : (e.has_title ? e.title : (reference != "" ? reference : e.type != element.type_element.par ? "[senza titolo]" : ""));
 
-    if (title != "") {
+    if (title != "") 
       parse_title_menu(e, title, sb
-        , open_element_id: (e.level == _max_level + 1 && e.has_childs && !e.in_list ? e.id : 0)
+        , open_element_id: (max_level.HasValue && e.level == max_level && e.has_childs && !e.in_list ? e.id : 0)
         , back_element_id: e.back_element_id.HasValue && can_back ? e.back_element_id.Value : 0
         , for_xml: for_xml, parent_stored: parent_stored);
-    }
 
-    bool first = true;
-    foreach (element ec in e.childs) {
-      if (!view_stored && ec.dt_stored.HasValue) continue;
+    // childs
+    if (!max_level.HasValue || e.level < max_level) {
+      bool first = true;
+      foreach (element ec in e.childs) {
+        if (!view_stored && ec.dt_stored.HasValue) continue;
 
-      if (ec.type == element.type_element.title) {
-        if (first && e.level >= 1 && e.type != element.type_element.par) { sb.Append("<ul menu_childs_id='" + e.id.ToString() + "'><div tp='virtual'></div>"); first = false; }
-        parse_title_menu(ec, ec.has_content ? ec.content : "[senza titolo]", sb, for_xml: for_xml
-          , into_par: e.type == element.type_element.par, parent_stored: parent_stored || e.dt_stored.HasValue);
-      } else if (ec.type == element.type_element.element
-        || ec.type == element.type_element.list || ec.type == element.type_element.par) {
-        if (first && e.level >= 1 && e.type != element.type_element.par) { sb.Append("<ul menu_childs_id='" + e.id.ToString() + "'>"); first = false; }
-        parse_menu(ec, sb, false, for_xml, max_level, parent_stored: parent_stored || e.dt_stored.HasValue, view_stored: view_stored, can_back: can_back);
+        if (ec.type == element.type_element.title) {
+          if (first && e.level >= 1 && e.type != element.type_element.par) { sb.Append("<ul menu_childs_id='" + e.id.ToString() + "'><div tp='virtual'></div>"); first = false; }
+          parse_title_menu(ec, ec.has_content ? ec.content : "[senza titolo]", sb, for_xml: for_xml
+            , into_par: e.type == element.type_element.par, parent_stored: parent_stored || e.dt_stored.HasValue);
+        } else if (ec.type == element.type_element.element
+          || ec.type == element.type_element.list || ec.type == element.type_element.par) {
+          if (first && e.level >= 1 && e.type != element.type_element.par) { sb.Append("<ul menu_childs_id='" + e.id.ToString() + "'>"); first = false; }
+          parse_menu(ec, sb, false, for_xml, max_level, parent_stored: parent_stored || e.dt_stored.HasValue, view_stored: view_stored, can_back: can_back);
+        }
       }
-    }
 
-    if (!first) sb.AppendFormat("{0}\n", !first ? "</ul>" : "");
-    if (root) { sb.AppendFormat("</ul>\n"); }
+      if (!first) sb.AppendFormat("{0}\n", !first ? "</ul>" : "");
+      if (root) { sb.AppendFormat("</ul>\n"); }
+    }
   }
 
-  protected string parse_title_menu(element e, element ep, bool for_xml = false, bool parent_stored = false, bool can_back = false) {
+  protected string parse_title_menu(element e, element ep, int? max_level = null, bool for_xml = false, bool parent_stored = false, bool can_back = false) {
 
     StringBuilder sb = new StringBuilder();
 
@@ -619,7 +626,7 @@ public partial class _element : tl_page {
           : (e.has_title ? e.title : (reference != "" ? reference : e.type != element.type_element.par ? "[senza titolo]" : ""));
 
       parse_title_menu(e, title, sb
-        , open_element_id: (e.level == _max_level + 1 && e.has_childs && !e.in_list ? e.id : 0)
+        , open_element_id: (max_level.HasValue && e.level == max_level && e.has_childs && !e.in_list ? e.id : 0)
         , back_element_id: e.back_element_id.HasValue && can_back ? e.back_element_id.Value : 0
         , for_xml: for_xml, parent_stored: parent_stored);
     } else

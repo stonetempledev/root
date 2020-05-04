@@ -21,12 +21,18 @@
 
     // MACRO SEZIONE
 
-    function add_macro_sec() {
+    function add_macro_sec(after_id) {
       show_dyn_dlg({ title: "Nuova Macro Sezione", rows: [{ id: "title", icon: "heading", label: "Titolo" }, { id: "des", label: "Note Particolari"}]
         , on_ok: function () {
           if (val_dyn("title")) {
-            var result = post_action({ "action": "add_macro_sezione", "title": val_dyn("title"), "notes": val_dyn("des") });
-            if (result) $("#macro_sezioni").append(result.html_element);
+            var result = post_action({ "action": after_id ? "add_macro_sezione_after" : "add_macro_sezione", "title": val_dyn("title"), "notes": val_dyn("des")
+              , "after_id": check_str(after_id)
+            });
+            if (result) {
+              if (after_id)
+                $("[id-ms=" + after_id + "]").after(result.html_element);
+              else $("#macro_sezioni").append(result.html_element);
+            }
           }
         }
       });
@@ -34,8 +40,8 @@
 
     function modify_ms_title(id) {
       var ms_el = $("[id-ms=" + id + "]");
-      show_dyn_dlg({ title: "Aggiorna Macro Sezione", rows: [{ id: "title", icon: "heading", label: "Titolo", valore: $(ms_el).find("[tp-val='title']").text() }
-        , { id: "notes", label: "Note Particolari", valore: $(ms_el).find("[tp-val='notes']").text()}]
+      show_dyn_dlg({ title: "Aggiorna Macro Sezione", rows: [{ id: "title", icon: "heading", label: "Titolo", valore: $(ms_el).find("[tp-val='title']:first").text() }
+        , { id: "notes", label: "Note Particolari", valore: $(ms_el).find("[tp-val='notes']:first").text()}]
         , on_ok: function () {
           if (val_dyn("title")) {
             var result = post_action({ "action": "upd_macro_sezione", "id": id, "title": val_dyn("title"), "notes": val_dyn("notes") });
@@ -94,11 +100,17 @@
             , values: [{ title: "tutta la pagina", value: "12" }, { title: "met\u00E0 pagina", value: "6" }
               , { title: "un terzo di pagina", value: "4" }, { title: "un quarto di pagina", value: "3"}]
         }
-        , { id: "rows", label: "Righe Casella di Testo", valore: s_el.attr("val-rows")}]
+        , { id: "height_body", label: "Altezza", valore: s_el.attr("val-height-body") }
+        , { id: "font", label: "Carattere", valore: s_el.attr("val-font"), type: 'select'
+            , values: [{ title: "Normale", value: "" }, { title: "Codice", value: "courier new;"}]
+        }, { id: "wrap", label: "Wrap", valore: s_el.attr("val-wrap"), type: 'select'
+            , values: [{ title: "Si", value: "soft" }, { title: "No", value: "off"}]
+        }]
         , on_ok: function () {
           if (val_dyn("title")) {
             var result = post_action({ "action": "upd_sezione", "id": id, "title": val_dyn("title")
-              , "notes": val_dyn("notes"), "cols": val_dyn("cols"), "rows": val_dyn("rows")
+              , "notes": val_dyn("notes"), "cols": val_dyn("cols"), "height_body": val_dyn("height_body")
+              , "font": val_dyn("font"), "wrap": val_dyn("wrap")
             });
             if (result) { var s_el = $("[id-s=" + id + "]"), p = s_el.prev(); s_el.remove(); p.after(result.html_element); }
           }
@@ -142,9 +154,9 @@
       try {
         $("[id-s=" + id + "] [tp-val=text]").css("border-color", "lightgreen").css("box-shadow", "0 0 2px lightgreen");
         window.setTimeout(function () {
-          if (post_action({ "action": "save_notes", "id": id, "text": txt })) 
+          if (post_action({ "action": "save_notes", "id": id, "text": txt }))
             $("[id-s=" + id + "] [tp-val=text]").css("border-color", "").css("box-shadow", "");
-          else 
+          else
             $("[id-s=" + id + "] [tp-val=text]").css("border-color", "tomato").css("box-shadow", "0 0 2px tomato");
         }, 200);
 
@@ -156,10 +168,16 @@
 </asp:Content>
 <asp:Content ContentPlaceHolderID="contents" runat="Server">
   <div class="container-fluid">
-    <!-- title -->
     <div class="row mb-4">
-      <div class="col">
-        <div class='border-bottom p-1 mt-1 d-flex justify-content-between'>
+      <!-- sidebar menu -->
+      <nav sidebar-tp='menu' class='d-none' sidebar-init='hide'>
+        <div id='menu' class='sidebar-sticky' runat='server'>
+        </div>
+      </nav>
+      <!-- contenuti -->
+      <div sidebar-tp='body'>
+        <!-- title -->
+        <div class='d-block border-bottom p-1 mt-1 mb-3 d-flex justify-content-between'>
           <h1 id='main_title' runat='server' class='light-blue-text'>
             ...</h1>
           <div class="dropdown no-arrow mr-1 mt-1">
@@ -171,15 +189,19 @@
               <div class="dropdown-item icon-item">
                 <span class='icon-menu' title='modifica titolo pagina...' onclick='modify_hp_title()'>
                   <i class="fas fa-pen text-info"></i></span><span class='icon-menu text-success' title='aggiungi macro sezione...'
-                    onclick='add_macro_sec()'><i class="fas fa-plus"></i></span>
+                    onclick='add_macro_sec()'><i class="fas fa-folder-plus"></i></span>
               </div>
             </div>
           </div>
         </div>
+        <!-- macro sezioni -->
+        <div id="macro_sezioni" class='d-block' runat="server">
+        </div>
       </div>
-    </div>
-    <!-- macro sezioni -->
-    <div id="macro_sezioni" runat="server">
+      <!-- sidebar icon -->
+      <div sidebar-tp='sh' onclick='sh_side_menu()'>
+        <i sidebar-tp='icon'></i>
+      </div>
     </div>
   </div>
 </asp:Content>
