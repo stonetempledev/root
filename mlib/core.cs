@@ -6,6 +6,7 @@ using System.IO;
 using System.Data;
 using mlib.tools;
 using mlib.xml;
+using mlib.db;
 
 namespace mlib {
   public class core {
@@ -21,24 +22,53 @@ namespace mlib {
     protected config _config = null;
     public config config { get { return _config; } }
 
-    public core(string base_path, string base_url = "") { 
-      _base_path = base_path; 
+    public core(string base_path, string base_url = "") {
+      _base_path = base_path;
       _base_url = !string.IsNullOrEmpty(base_url) ? base_url : app_setting("base_url");
-      _config = new config(this); 
+      _config = new config(this);
     }
 
     #region configs
 
     public void reset_configs() { _cfg_keys.Clear(); _config.reset(); }
 
-    public void load_config(xml_doc doc, string doc_key, string vars_key = "", bool page = false) {
+    public void load_base_config(xml_doc doc, string doc_key, string vars_key = "", bool page = false) {
       try {
         if (!_cfg_keys.Keys.Contains(doc_key)) _cfg_keys.Add(doc_key, "doc_path");
-        _config.load_doc(doc_key, vars_key, doc, page);
+        _config.load_base_config(doc_key, vars_key, doc, page);
       } catch (Exception ex) { _cfg_keys.Clear(); throw new Exception("caricamento documento '" + doc.path + "': " + ex.Message); }
     }
 
-    public void load_page_config(xml_doc doc, string doc_key) { load_config(doc, doc_key, page: true); }
+    public void load_config(xml_doc doc, string doc_key, db_provider conn, Dictionary<string, object> keys, string vars_key = "", bool page = false) {
+      try {
+        if (!_cfg_keys.Keys.Contains(doc_key)) _cfg_keys.Add(doc_key, "doc_path");
+        _config.load_doc(doc_key, vars_key, doc, conn, keys, page);
+      } catch (Exception ex) { _cfg_keys.Clear(); throw new Exception("caricamento documento '" + doc.path + "': " + ex.Message); }
+    }
+
+    public void load_page_config(xml_doc doc, string doc_key, db_provider conn, Dictionary<string, object> keys) {
+      load_config(doc, doc_key, conn, keys, page: true);
+    }
+
+    public List<xml_node> parse_nodes(List<xml_node> l, Dictionary<string, object> keys, DataRow dr = null) { 
+      l.ForEach(x => parse_node(x, keys, dr)); return l;
+    }
+
+    public xml_node parse_node(xml_node n, Dictionary<string, object> keys, DataRow dr = null) {
+
+      // text
+      if(!string.IsNullOrEmpty(n.text)) n.text = parse(n.text, keys, dr);
+
+      // attributes
+      foreach (string a in n.get_attrs())
+        n.set_attr(a, parse(n.get_attr(a), keys, dr));
+
+      // childs
+      foreach (xml_node nc in n.childs)
+        parse_node(nc, keys, dr);
+
+      return n;
+    }
 
     public void reset_page_config() { _config.remove_for_page(); }
 
@@ -163,7 +193,7 @@ namespace mlib {
                 }
               // {@html-block='<NAME KEY>'}
               case "html-block": value = parse(config.get_html_block(par).content, flds, dr, conds); break;
-                // {@query-text='<NAME QUERY'}
+              // {@query-text='<NAME QUERY'}
               case "query-text": value = parse(config.get_query(par).text, flds, dr, conds); break;
               // {@var='<NAME KEY>'}
               case "var": value = config.get_var(par).value; break;

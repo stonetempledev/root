@@ -54,7 +54,7 @@ public partial class _router : tl_page {
 
               // gruppo
               if (sb2 == null) {
-                sb.AppendFormat("<h3 style='color:white;text-transform:uppercase;background-color:royalblue;'>{0}&nbsp;<small>{1}</small></h3>"
+                sb.AppendFormat("<h3 style='color:white;text-transform:uppercase;background-color:royalblue;'>{0}<small class='d-block'>{1}</small></h3>"
                   , gr.field("title"), gr.field("des"));
                 sb2 = new StringBuilder();
                 sb2.AppendFormat("<div class='list-group'>");

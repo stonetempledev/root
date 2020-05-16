@@ -290,7 +290,7 @@ namespace toyn {
 
         e.load_node(ne, el_type);
         int order_child = 0;
-        foreach (xml_node nd in ne.childs()) {
+        foreach (xml_node nd in ne.childs) {
           if (!nd.is_element) continue;
 
           if (!el_type.can_have_childs)
@@ -324,7 +324,7 @@ namespace toyn {
       this.add_child(el);
 
       int order_child = 0;
-      foreach (xml_node ndc in nd.childs()) {
+      foreach (xml_node ndc in nd.childs) {
         if (!ndc.is_element) continue;
 
         if (!el_type.can_have_childs)
@@ -355,7 +355,7 @@ namespace toyn {
       else if (ca == null && txt != "") throw new Exception("attenzione c'è un nodo con il contenuto non ammesso!");
 
       // attributes
-      foreach (string attr in nd.attrs()) {
+      foreach (string attr in nd.get_attrs()) {
         if (attr == "_id") {
           string val = nd.get_val(attr);
           this.id = val != "" ? int.Parse(val.Split(new char[] { ':' })[0]) : 0;

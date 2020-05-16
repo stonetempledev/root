@@ -93,7 +93,7 @@ namespace mlib.xml {
       xml_node nd = node(xpath); return nd == null ? null : nd.add_node(node_add, node(xpath_after));
     }
 
-    public xml_node add_before (string xpath, xml_node node_add, string xpath_before) {
+    public xml_node add_before(string xpath, xml_node node_add, string xpath_before) {
       xml_node nd = node(xpath); return nd == null ? null : nd.add_node(node_add, null, node(xpath_before));
     }
 

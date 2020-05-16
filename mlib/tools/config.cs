@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Data;
 using mlib.xml;
+using mlib.db;
 
 namespace mlib.tools {
   public class config {
@@ -85,7 +87,7 @@ namespace mlib.tools {
       public int count { get { return _queries.Count(); } }
       public Dictionary<string, string> filters { get { return _filters; } }
       public void add_filter(string name, string txt) {
-        if (_filters.ContainsKey(name)) 
+        if (_filters.ContainsKey(name))
           throw new Exception("c'è già un filtro '" + name + "' nella query '" + _name + "'!");
         _filters.Add(name, txt);
       }
@@ -148,23 +150,22 @@ namespace mlib.tools {
 
     #endregion
 
-    core _cr = null;
+    core _core = null;
     Dictionary<string, folder> _folders = new Dictionary<string, folder>();
     Dictionary<string, var> _vars = new Dictionary<string, var>();
     Dictionary<string, conn> _conns = new Dictionary<string, conn>();
     Dictionary<string, table> _tables = new Dictionary<string, table>();
-    Dictionary<string, html_block> _blocks = new Dictionary<string, html_block>();
+    Dictionary<string, html_block> _html_blocks = new Dictionary<string, html_block>();
     Dictionary<string, query> _queries = new Dictionary<string, query>();
 
-    public config(core cr) { _cr = cr; }
+    public config(core cr) { _core = cr; }
 
-    public void reset() { _tables.Clear(); _folders.Clear(); _vars.Clear(); _conns.Clear(); _blocks.Clear(); _queries.Clear(); }
+    public void reset() { _tables.Clear(); _folders.Clear(); _vars.Clear(); _conns.Clear(); _html_blocks.Clear(); _queries.Clear(); }
 
-    public void load_doc(string doc_key, string vars_key, xml_doc doc, bool for_pg = false) {
-
+    public void load_base_config(string doc_key, string vars_key, xml_doc doc, bool for_pg = false) {
       string var_key = !string.IsNullOrEmpty(vars_key) ? vars_key + "." : "";
 
-      // aggiungo
+      // vars
       string nkey = "";
       try {
         foreach (xml_node vars in doc.nodes("/config/vars")) {
@@ -174,19 +175,12 @@ namespace mlib.tools {
             string machine2 = var.get_attr("machine") != "" ? var.get_attr("machine") : machine;
             if (machine2 != "" && core.machine_name().ToLower() != machine2.ToLower()) continue;
             nkey = var_key + bname + var.get_attr("name");
-            _vars.Add(nkey, new var(doc_key, nkey, _cr.parse(var.get_val()), for_pg));
+            _vars.Add(nkey, new var(doc_key, nkey, _core.parse(var.get_val()), for_pg));
           }
         }
       } catch (Exception ex) { throw new Exception("chiave vars.'" + nkey + "' - " + ex.Message); }
 
-      nkey = "";
-      try {
-        foreach (xml_node var in doc.nodes("/config//folders/folder")) {
-          nkey = var_key + var.get_attr("name");
-          _folders.Add(nkey, new folder(doc_key, nkey, _cr.parse(var.get_val()), for_pg));
-        }
-      } catch (Exception ex) { throw new Exception("chiave folders.'" + nkey + "' - " + ex.Message); }
-
+      // conns
       nkey = "";
       try {
         foreach (xml_node var in doc.nodes("/config//conns/conn")) {
@@ -195,6 +189,32 @@ namespace mlib.tools {
             , var.get_attr("date-format"), var.get_int("timeout", 0), var.get_attr("key"), var.sub_node("sql_key").text, for_pg));
         }
       } catch (Exception ex) { throw new Exception("chiave conns.'" + nkey + "' - " + ex.Message); }
+    }
+
+    public void load_doc(string doc_key, string vars_key, xml_doc doc, db_provider conn, Dictionary<string, object> keys, bool for_pg = false) {
+
+      string var_key = !string.IsNullOrEmpty(vars_key) ? vars_key + "." : "";
+
+      // sql-select
+      if (doc.exists("//sql-select")) {
+        foreach (xml_node s in doc.nodes("//sql-select")) {
+          xml_node ref_node = s;
+          foreach (DataRow r in conn.dt_table(_core.parse(s.get_attr("qry"), keys)).Rows) {
+            foreach (xml_node n in _core.parse_nodes(s.clone_childs(s), keys, r))
+              ref_node = ref_node.add_after(n);
+          }
+        }
+        while (true) { xml_node s = doc.node("//sql-select"); if (!s.remove()) break; }
+      }
+
+      // aggiungo
+      string nkey = "";
+      try {
+        foreach (xml_node var in doc.nodes("/config//folders/folder")) {
+          nkey = var_key + var.get_attr("name");
+          _folders.Add(nkey, new folder(doc_key, nkey, _core.parse(var.get_val()), for_pg));
+        }
+      } catch (Exception ex) { throw new Exception("chiave folders.'" + nkey + "' - " + ex.Message); }
 
       nkey = "";
       try {
@@ -208,7 +228,7 @@ namespace mlib.tools {
       try {
         foreach (xml_node tbl in doc.nodes("/config/html-blocks/html-block")) {
           nkey = var_key + tbl.get_attr("name");
-          _blocks.Add(nkey, new html_block(doc_key, nkey, tbl.text, for_pg));
+          _html_blocks.Add(nkey, new html_block(doc_key, nkey, tbl.text, for_pg));
         }
       } catch (Exception ex) { throw new Exception("chiave html-blocks.'" + nkey + "' - " + ex.Message); }
 
@@ -255,8 +275,8 @@ namespace mlib.tools {
       k = _tables.FirstOrDefault(x => x.Value.for_page == true).Key;
       while (k != null) { _tables.Remove(k); k = _tables.FirstOrDefault(x => x.Value.for_page == true).Key; }
 
-      k = _blocks.FirstOrDefault(x => x.Value.for_page == true).Key;
-      while (k != null) { _blocks.Remove(k); k = _blocks.FirstOrDefault(x => x.Value.for_page == true).Key; }
+      k = _html_blocks.FirstOrDefault(x => x.Value.for_page == true).Key;
+      while (k != null) { _html_blocks.Remove(k); k = _html_blocks.FirstOrDefault(x => x.Value.for_page == true).Key; }
 
       k = _queries.FirstOrDefault(x => x.Value.for_page == true).Key;
       while (k != null) { _queries.Remove(k); k = _queries.FirstOrDefault(x => x.Value.for_page == true).Key; }
@@ -269,7 +289,7 @@ namespace mlib.tools {
     public folder get_folder(string name) { if (!_folders.ContainsKey(name)) throw new Exception("il folder '" + name + "' non esiste!"); return _folders[name]; }
     public conn get_conn(string name) { if (!_conns.ContainsKey(name)) throw new Exception("la connessione '" + name + "' non esiste!"); return _conns[name]; }
     public table get_table(string name) { if (!_tables.ContainsKey(name)) throw new Exception("la tabella '" + name + "' non esiste!"); return _tables[name]; }
-    public html_block get_html_block(string name) { if (!_blocks.ContainsKey(name)) throw new Exception("il blocco html '" + name + "' non esiste!"); return _blocks[name]; }
+    public html_block get_html_block(string name) { if (!_html_blocks.ContainsKey(name)) throw new Exception("il blocco html '" + name + "' non esiste!"); return _html_blocks[name]; }
     public query get_query(string name) { if (!_queries.ContainsKey(name)) throw new Exception("la query '" + name + "' non esiste!"); return _queries[name]; }
   }
 }

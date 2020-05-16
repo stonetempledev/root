@@ -11,10 +11,14 @@
     // PARTE PRINCIPALE 
 
     function modify_hp_title() {
-      show_dyn_dlg({ title: "Titolo Home Page", rows: [{ id: "title", icon: "heading", label: "Titolo", valore: $("#main_title").text()}]
+      show_dyn_dlg({ title: "Titolo Home Page", rows: [{ id: "title", icon: "heading", label: "Titolo", valore: $("#main_title").text() }
+            , { id: "sub_title", label: "Sotto-titolo", valore: $("#sub_title").text()}]
         , on_ok: function () {
-          var result = post_action({ "action": "set_title_hp", "new_title": val_dyn("title") });
-          if (result) $("#main_title").text(result.contents);
+          var result = post_action({ "action": "set_title_hp", "new_title": val_dyn("title"), "new_sub_title": val_dyn("sub_title") });
+          if (result) {
+            $("#main_title").text(result.vars["title"]);
+            $("#sub_title").text(result.vars["sub_title"]);
+          }
         }
       });
     }
@@ -43,10 +47,8 @@
       show_dyn_dlg({ title: "Aggiorna Macro Sezione", rows: [{ id: "title", icon: "heading", label: "Titolo", valore: $(ms_el).find("[tp-val='title']:first").text() }
         , { id: "notes", label: "Note Particolari", valore: $(ms_el).find("[tp-val='notes']:first").text()}]
         , on_ok: function () {
-          if (val_dyn("title")) {
-            var result = post_action({ "action": "upd_macro_sezione", "id": id, "title": val_dyn("title"), "notes": val_dyn("notes") });
-            if (result) $("[id-ms=" + id + "] [tp=ms-title]").html(result.html_element);
-          }
+          var result = post_action({ "action": "upd_macro_sezione", "id": id, "title": val_dyn("title"), "notes": val_dyn("notes") });
+          if (result) $("[id-ms=" + id + "] [tp=ms-title]").html(result.html_element);
         }
       });
     }
@@ -78,22 +80,26 @@
       var el = check_bool(after) ? $("[id-s=" + id + "]") : $("[id-ms=" + id + "]");
       show_dyn_dlg({ title: "Nuova Sezione", rows: [{ id: "title", icon: "heading", label: "Titolo" }
         , { id: "notes", label: "Note Particolari" }
-        , { id: "type", label: "Tipo", type: "select", values: [{ title: "Note Libere", value: "notes_free"}]}]
+        , { id: "type", label: "Tipo", type: "select", values: [{ title: "Note Libere", value: "notes_free" }, { title: "Paragrafo", value: "paragraph"}]}]
         , on_ok: function () {
-          if (val_dyn("title")) {
-            var result = post_action({ "action": check_bool(after) ? "add_sezione_after" : "add_sezione", "id": id, "title": val_dyn("title"), "notes": val_dyn("notes"), "type": val_dyn("type") });
-            if (result) {
-              if (check_bool(after)) el.after(result.html_element);
-              else el.find("[tp=ms-body]").append(result.html_element);
-            }
+          var result = post_action({ "action": check_bool(after) ? "add_sezione_after" : "add_sezione", "id": id, "title": val_dyn("title"), "notes": val_dyn("notes"), "type": val_dyn("type") });
+          if (result) {
+            if (check_bool(after)) el.after(result.html_element);
+            else el.find("[tp=ms-body]").append(result.html_element);
           }
         }
       });
     }
 
     function modify_s(id) {
-      var s_el = $("[id-s=" + id + "]");
-      show_dyn_dlg({ title: "Aggiorna Sezione", rows: [
+      var s_el = $("[id-s=" + id + "]"), tp = s_el.attr("tp");
+      if (tp == "notes_free") modify_notes_free(id);
+      else if (tp == "paragraph") modify_paragraph(id);
+    }
+
+    function modify_notes_free(id) {
+      var s_el = $("[id-s=" + id + "]"), tp_el = s_el.attr("tp");
+      show_dyn_dlg({ title: "Aggiorna Nota", rows: [
         { id: "title", icon: "heading", label: "Titolo", valore: s_el.find("[tp-val='title']").text() }
         , { id: "notes", label: "Note Particolari", valore: s_el.find("[tp-val='notes']").text() }
         , { id: "cols", label: "Larghezza", valore: s_el.attr("val-cols"), type: 'select'
@@ -107,13 +113,26 @@
             , values: [{ title: "Si", value: "soft" }, { title: "No", value: "off"}]
         }]
         , on_ok: function () {
-          if (val_dyn("title")) {
-            var result = post_action({ "action": "upd_sezione", "id": id, "title": val_dyn("title")
-              , "notes": val_dyn("notes"), "cols": val_dyn("cols"), "height_body": val_dyn("height_body")
-              , "font": val_dyn("font"), "wrap": val_dyn("wrap")
-            });
-            if (result) { var s_el = $("[id-s=" + id + "]"), p = s_el.prev(); s_el.remove(); p.after(result.html_element); }
-          }
+          var result = post_action({ "action": "upd_" + tp_el, "id": id, "title": val_dyn("title")
+            , "notes": val_dyn("notes"), "cols": val_dyn("cols"), "height_body": val_dyn("height_body")
+            , "font": val_dyn("font"), "wrap": val_dyn("wrap")
+          });
+          if (result) { var s_el = $("[id-s=" + id + "]"), p = s_el.prev(); s_el.remove(); p.after(result.html_element); }
+        }
+      });
+    }
+
+    function modify_paragraph(id) {
+      var s_el = $("[id-s=" + id + "]"), tp_el = s_el.attr("tp");
+      show_dyn_dlg({ title: "Aggiorna Paragrafo", rows: [
+        { id: "title", icon: "heading", label: "Titolo", valore: s_el.find("[tp-val='title']").text() }
+        , { id: "notes", label: "Note Particolari", valore: s_el.find("[tp-val='notes']").text() }
+        , { id: "text", label: "Contenuto", type: "textarea", valore: s_el.find("[tp-val='text']").text()}]
+        , on_ok: function () {
+          var result = post_action({ "action": "upd_" + tp_el, "id": id, "title": val_dyn("title")
+              , "notes": val_dyn("notes"), "text": val_dyn("text")
+          });
+          if (result) { var s_el = $("[id-s=" + id + "]"), p = s_el.prev(); s_el.remove(); p.after(result.html_element); }
         }
       });
     }
@@ -163,6 +182,55 @@
       } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
+    // PARAGRAPH
+
+    var _par = null;
+    function focus_par(id) { _par = $("[id-s=" + id + "] [tp-val=text]").text(); }
+
+    function blur_par(id) {
+      var par_2 = $("[id-s=" + id + "] [tp-val=text]").text();
+      if (_par != par_2) { _par = null; save_par(id, par_2); }
+    }
+
+    function paste_par(e, obj) {
+      try {
+        e.stopPropagation();
+        e.preventDefault();
+        var clipboardData = e.clipboardData || window.clipboardData
+          , txt = $("<div>" + clipboardData.getData('Text') + "</div>").text();
+        var cursorPos = get_caret_pos(), v = $(obj).text()
+                    , bf = v.substring(0, cursorPos), af = v.substring(cursorPos, v.length);
+        $(obj).text(bf + txt + af);
+
+        var el = $(obj)[0], range = document.createRange()
+                    , sel = window.getSelection();
+        range.setStart(el.childNodes[0], cursorPos + txt.length);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        //el.focus();
+      } catch (e) { }
+    }
+
+    function get_caret_pos() {
+      if (window.getSelection) {
+        var sel = window.getSelection(); if (sel.getRangeAt) return sel.getRangeAt(0).startOffset;
+      }
+      return null;
+    }
+
+    function save_par(id, txt) {
+      try {
+        $("[id-s=" + id + "] [tp-val=text]").css("border-color", "lightgreen").css("box-shadow", "0 0 2px lightgreen");
+        window.setTimeout(function () {
+          var result = post_action({ "action": "save_par", "id": id, "text": txt });
+          if (result) $("[id-s=" + id + "] [tp-val=text]").css("border-color", "").css("box-shadow", "");
+          else
+            $("[id-s=" + id + "] [tp-val=text]").css("border-color", "tomato").css("box-shadow", "0 0 2px tomato");
+        }, 200);
+
+      } catch (e) { show_danger("Attenzione!", e.message); }
+    }
 
   </script>
 </asp:Content>
@@ -177,9 +245,13 @@
       <!-- contenuti -->
       <div sidebar-tp='body'>
         <!-- title -->
-        <div class='d-block border-bottom p-1 mt-1 mb-3 d-flex justify-content-between'>
-          <h1 id='main_title' runat='server' class='light-blue-text'>
-            ...</h1>
+        <div class='d-block border-bottom pt-1 pb-1 mt-1 mb-3 d-flex justify-content-between'>
+          <div>
+            <h1 id='main_title' runat='server' class='light-blue-text'>
+              titolo</h1>
+            <h2>
+              <small id='sub_title' runat='server'>sotto-titolo</small></h2>
+          </div>
           <div class="dropdown no-arrow mr-1 mt-1">
             <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
               aria-expanded="false"><i class="fas fa-ellipsis-v"></i></a>

@@ -43,6 +43,15 @@ public class tl_page : System.Web.UI.Page {
 
   protected override void OnPreInit(EventArgs e) {
 
+    // check user
+    string u_name = ""; int u_id = -1;
+    if (User.Identity.IsAuthenticated) {
+      FormsIdentity id = (FormsIdentity)User.Identity;
+      FormsAuthenticationTicket ticket = id.Ticket;
+      u_name = ticket.Name.Split(new char[] { '|' })[0];
+      u_id = int.Parse(ticket.Name.Split(new char[] { '|' })[1]);
+    }
+
     try {
 
       // core
@@ -52,7 +61,7 @@ public class tl_page : System.Web.UI.Page {
         core cr = new core(base_path);
         reload_cfg = true;
         Cache["core_obj"] = cr;
-      } 
+      }
 
       // configs
       _core = (core)Cache["core_obj"];
@@ -62,14 +71,36 @@ public class tl_page : System.Web.UI.Page {
       if (reload_cfg) {
         log.log_info("reload config docs");
         _core.reset_configs();
+
+        // docs
+        Dictionary<string, xml_doc> docs = new Dictionary<string, xml_doc>();
         Directory.EnumerateFiles(_core.app_setting("settings-folder")).ToList().ForEach(f => {
           string doc_key = strings.rel_path(base_path, f), vars_key = Path.GetFileNameWithoutExtension(f).ToLower();
-          log.log_info("load config doc: " + doc_key + " - " + f);
-          xml_doc doc = Path.GetExtension(f) != _core.app_setting("enc-ext-xml") ? new xml_doc(f)
-            : new xml_doc(cry.xml_decrypt(f, _core.app_setting("pwdcr-xml")));
-          _core.load_config(doc, doc_key, vars_key);
-          if (Cache[doc_key] == null) Cache.Insert(doc_key, true, new System.Web.Caching.CacheDependency(f));
+          log.log_info("load xml config doc: " + doc_key + " - " + f);
+          docs.Add(string.Format("{0};{1};{2}", doc_key, vars_key, f), Path.GetExtension(f) != _core.app_setting("enc-ext-xml") ? new xml_doc(f)
+            : new xml_doc(cry.xml_decrypt(f, _core.app_setting("pwdcr-xml"))));
         });
+
+        // vars
+        foreach (KeyValuePair<string, xml_doc> d in docs) {
+          try {
+            string[] keys = d.Key.Split(new char[] { ';' });
+            string doc_key = keys[0], vars_key = keys[1], f = keys[2];
+            log.log_info("load vars doc: " + doc_key + " - " + f);
+            _core.load_base_config(d.Value, doc_key, vars_key);
+          } catch (Exception ex) { string err = ex.Message; }
+        }
+
+        // docs
+        foreach (KeyValuePair<string, xml_doc> d in docs) {
+          try {
+            string[] keys = d.Key.Split(new char[] { ';' });
+            string doc_key = keys[0], vars_key = keys[1], f = keys[2];
+            log.log_info("load config doc: " + doc_key + " - " + f);
+            _core.load_config(d.Value, doc_key, db_conn, new Dictionary<string, object>() { { "user_id", u_id } }, vars_key);
+            if (Cache[doc_key] == null) Cache.Insert(doc_key, true, new System.Web.Caching.CacheDependency(f));
+          } catch (Exception ex) { string err = ex.Message; }
+        }
 
         Cache["core_obj"] = _core;
       }
@@ -88,7 +119,7 @@ public class tl_page : System.Web.UI.Page {
       if (dp != null) Cache.Insert(dck, dp, new System.Web.Caching.CacheDependency(xml));
     }
 
-    if (dp != null) { _core.reset_page_config(); _core.load_page_config(dp, dck); }
+    if (dp != null) { _core.reset_page_config(); _core.load_page_config(dp, dck, db_conn, new Dictionary<string, object>() { { "user_id", u_id } }); }
 
     // conn to db
     db_reconn();
@@ -215,16 +246,16 @@ public class tl_page : System.Web.UI.Page {
       : set_cache_var2(var_name, var_value);
   }
 
-  private bool set_cache_var2(string var_name, string var_value) { 
-    if(!is_user) return false;
+  private bool set_cache_var2(string var_name, string var_value) {
+    if (!is_user) return false;
     int user_id = _user.id;
     db_conn.exec(core.parse(config.get_query("base.set-cache-var").text
       , new Dictionary<string, object>() { { "user_id", user_id }, { "var_name", var_name }, { "var_value", var_value } }));
     return true;
   }
 
-  protected bool reset_cache_var(string var_name) { 
-    if(!is_user) return false;
+  protected bool reset_cache_var(string var_name) {
+    if (!is_user) return false;
     int user_id = _user.id;
     db_conn.exec(core.parse(config.get_query("base.reset-cache-var").text
       , new Dictionary<string, object>() { { "user_id", user_id }, { "var_name", var_name } }));
@@ -246,7 +277,7 @@ public class tl_page : System.Web.UI.Page {
     foreach (DataRow dr in db_conn.dt_table(core.parse(config.get_query("base.get-cache-var").text
       , new Dictionary<string, object>() { { "user_id", user_id }
         , { "list_vars", string.Join(", ", var_names.Split(new char[]{','}, StringSplitOptions.RemoveEmptyEntries).Select(s => "'" + s + "'")) } })).Rows) {
-          res.Add(db_provider.str_val(dr["var_name"]), db_provider.str_val(dr["var_value"]));
+      res.Add(db_provider.str_val(dr["var_name"]), db_provider.str_val(dr["var_value"]));
     }
     return res;
   }

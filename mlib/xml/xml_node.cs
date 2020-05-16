@@ -64,8 +64,10 @@ namespace mlib.xml {
     }
 
     // attrs
-    public string[] attrs() { return _node == null || _node.Attributes == null ? 
-      new string[0] : _node.Attributes.Cast<XmlAttribute>().Select(a => a.Name).ToArray(); }
+    public string[] get_attrs() {
+      return _node == null || _node.Attributes == null ?
+        new string[0] : _node.Attributes.Cast<XmlAttribute>().Select(a => a.Name).ToArray();
+    }
     public string set_attr(string name, string value, bool optional = true) { set_attr(_node, name, value, optional); return value; }
     public string get_attr(string name, string def = "") { return get_attr(_node, name, def); }
     public xml_node set_attrs(Dictionary<string, string> attrs) { if (attrs != null) { foreach (KeyValuePair<string, string> attr in attrs) set_attr(_node, attr.Key, attr.Value); } return this; }
@@ -111,6 +113,26 @@ namespace mlib.xml {
       return _node == null ? null : new xml_node(node_after != null ? _node.InsertAfter(node_add.node, node_after.node) :
         node_before != null ? _node.InsertBefore(node_add.node, node_before.node) : _node.AppendChild(node_add.node));
     }
+    public xml_node add_after(xml_node node_add) {
+      if (_node == null || _node.ParentNode == null) return null;
+      return new xml_node(_node.ParentNode.InsertAfter(node_add.node, this.node));
+    }
+
+    public bool remove() {
+      if (_node == null || _node.ParentNode == null) return false;
+      _node.ParentNode.RemoveChild(_node);
+      _node = null; return true;
+    }
+
+    public xml_node add_clone(xml_node node_to_clone) {
+      return this.add_node(node_to_clone.clone(this));
+    }
+    public List<xml_node> add_clone_childs(xml_node node_to_clone) {
+      List<xml_node> res = new List<xml_node>();
+      foreach (xml_node nc in node_to_clone.childs)
+        res.Add(this.add_node(nc.clone(this)));
+      return res;
+    }
     public xml_node add_xml(string xml) {
       return _node == null ? null : new xml_node(_node.AppendChild(_node.OwnerDocument.ImportNode(
           xml_doc.doc_from_xml(xml).root_node.node, true)));
@@ -128,12 +150,33 @@ namespace mlib.xml {
     public bool has_child() { return _node.ChildNodes.Count > 0; }
 
     public List<xml_node> nodes(string xpath) { return _node.SelectNodes(xpath).Cast<XmlNode>().Select(n => new xml_node(n)).ToList(); }
-    public List<xml_node> childs() { return _node.ChildNodes.Cast<XmlNode>().Select(n => new xml_node(n)).ToList(); }
+    public List<xml_node> childs { get { return _node.ChildNodes.Cast<XmlNode>().Select(n => new xml_node(n)).ToList(); } }
 
     // values
     public string get_val(string attr = "", string def = "") { return node_val(_node, attr, def); }
     public bool get_bool(string attr = "", bool def = false) { return node_bool(_node, attr, def); }
     public int get_int(string attr = "", int def = -1) { return node_int(_node, attr, def); }
+
+    protected xml_node clone(xml_node ref_node) {
+      xml_node res = new xml_node(ref_node._node.OwnerDocument.CreateElement(this.name));
+
+      // attrs
+      foreach (XmlAttribute a in this._node.Attributes)
+        res.set_attr(a.Name, a.Value);
+
+      // childs
+      foreach (xml_node nc in this.childs)
+        res._node.AppendChild(nc.clone(ref_node)._node);
+      return res;
+    }
+
+    public List<xml_node> clone_childs(xml_node ref_node) {
+      List<xml_node> res = new List<xml_node>();
+      foreach (xml_node nc in this.childs)
+        res.Add(nc.clone(this));
+      return res;
+    }
+
 
     #region globals
 
@@ -149,7 +192,7 @@ namespace mlib.xml {
       }
 
       if (node.Attributes != null) {
-        if (node.Attributes[attr] == null) 
+        if (node.Attributes[attr] == null)
           node.Attributes.Append(node.OwnerDocument.CreateAttribute(attr));
         node.Attributes[attr].Value = value;
       }

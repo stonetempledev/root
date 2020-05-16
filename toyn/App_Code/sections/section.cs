@@ -6,7 +6,7 @@ using System.Web;
 namespace toyn {
   public class section {
 
-    public enum type_section { notes_free }
+    public enum type_section { notes_free, paragraph }
 
     protected List<section_attr> _attributes;
 

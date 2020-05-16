@@ -18,8 +18,8 @@ namespace toyn {
       // main section
       DataTable dt = db_conn.dt_table(core.parse(config.get_query("sections.homepage-vars").text
         , new Dictionary<string, object>() { { "user_id", this.user_id } }));
-      string title = db_provider.str_val(dt.Select("name='home-page.title'")[0]["value"]);
-      ps.title = title != "" ? title : "";
+      ps.title = db_provider.str_val(dt.Select("name='home-page.title'")[0]["value"]);
+      ps.sub_title = db_provider.str_val(dt.Select("name='home-page.sub-title'")[0]["value"]);
 
       // macro sections
       ps.macro_sections = load_macros_sections();
@@ -150,6 +150,7 @@ namespace toyn {
     #region statics
 
     public string set_main_title(string txt) { return set_setting("home-page.title", txt); }
+    public string set_sub_title(string txt) { return set_setting("home-page.sub-title", txt); }
 
     #endregion
   }

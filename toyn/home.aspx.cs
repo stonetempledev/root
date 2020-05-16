@@ -26,7 +26,8 @@ public partial class _home : tl_page {
 
   protected cmd _cmd = null;
 
-  protected override void OnInit(EventArgs e) {
+  protected override void OnInit(EventArgs e)
+  {
     base.OnInit(e);
 
     // inizializzazione
@@ -50,9 +51,12 @@ public partial class _home : tl_page {
 
           // set_title_hp
           if (jr.action == "set_title_hp") {
-            string new_title = hpb.set_main_title(jr.val_str("new_title"));
-            res.contents = !string.IsNullOrEmpty(new_title) ? new_title : "la " + user.name + " home page";
+            string new_title = hpb.set_main_title(jr.val_str("new_title"))
+                , sub_title = hpb.set_sub_title(jr.val_str("new_sub_title"));
+            res.add_var("title", !string.IsNullOrEmpty(new_title) ? new_title : "la " + user.name + " home page");
+            res.add_var("sub_title", sub_title);
           }
+
             // MACRO SEZIONE
 
             // add_macro_sezione
@@ -112,8 +116,8 @@ public partial class _home : tl_page {
                 , { "notes", jr.val_str("notes") }, { "user_id", user.id_str } }), true);
             res.html_element = parse_section(hpb.load_section(int.Parse(id)));
           }
-            // upd_sezione
-          else if (jr.action == "upd_sezione") {
+            // upd_*
+          else if (jr.action == "upd_notes_free") {
             string id = jr.val_str("id");
             section s = hpb.load_section(int.Parse(id));
             s.title = jr.val_str("title");
@@ -124,6 +128,14 @@ public partial class _home : tl_page {
             s.set_attribute_string("font", jr.val_str("font"));
             hpb.update_section(s);
             res.html_element = parse_section(s);
+          } else if (jr.action == "upd_paragraph") {
+            string id = jr.val_str("id");
+            section s = hpb.load_section(int.Parse(id));
+            s.title = jr.val_str("title");
+            s.notes = jr.val_str("notes");
+            s.set_attribute_text("text", jr.val_str("text"));
+            hpb.update_section(s);
+            res.html_element = parse_section(s);
           }
             // del_sezione
           else if (jr.action == "del_sezione") {
@@ -131,6 +143,12 @@ public partial class _home : tl_page {
           }
             // save_notes
           else if (jr.action == "save_notes") {
+            section s = hpb.load_section(jr.val_int("id"));
+            s.set_attribute_text("text", jr.val_str("text"));
+            hpb.update_section(s);
+          }
+            // save_par
+          else if (jr.action == "save_par") {
             section s = hpb.load_section(jr.val_int("id"));
             s.set_attribute_text("text", jr.val_str("text"));
             hpb.update_section(s);
@@ -212,6 +230,7 @@ public partial class _home : tl_page {
         // sections
         page_sections ps = hpb.load_home_page();
         main_title.InnerText = ps.title != "" ? ps.title : "la " + user.name + " home page";
+        sub_title.InnerText = ps.sub_title;
         macro_sezioni.InnerHtml = parse_macro_sections(ps.macro_sections);
 
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
@@ -219,26 +238,30 @@ public partial class _home : tl_page {
     } catch (Exception ex) { log.log_err(ex); if (!json_request.there_request(this)) master.err_txt(ex.Message); }
   }
 
-  protected override void OnLoad(EventArgs e) {
+  protected override void OnLoad(EventArgs e)
+  {
     base.OnLoad(e);
 
     //if (_cmd.action == "xml") this.master.set_status_txt("caricamento dati...");
 
   }
 
-  protected override void OnLoadComplete(EventArgs e) {
+  protected override void OnLoadComplete(EventArgs e)
+  {
     base.OnLoadComplete(e);
   }
 
   #region macro sezione
 
-  protected string parse_macro_sections(List<macro_section> mss) {
+  protected string parse_macro_sections(List<macro_section> mss)
+  {
     StringBuilder sb = new StringBuilder("<div tp='to-append'></div>");
     mss.ForEach(x => { sb.Append(parse_macro_section(x)); });
     return sb.ToString();
   }
 
-  protected string parse_macro_section(macro_section ms, bool only_title = false) {
+  protected string parse_macro_section(macro_section ms, bool only_title = false)
+  {
     if (!only_title) {
       StringBuilder sb = new StringBuilder();
       foreach (section s in ms.sections)
@@ -249,7 +272,8 @@ public partial class _home : tl_page {
     return core.parse_html_block("title-macro-section", new Dictionary<string, object>() { { "ms", ms } });
   }
 
-  protected string parse_macro_section(sections hp, int id, bool only_title = false) {
+  protected string parse_macro_section(sections hp, int id, bool only_title = false)
+  {
     return parse_macro_section(hp.load_macro_section(id), only_title);
   }
 
@@ -257,8 +281,9 @@ public partial class _home : tl_page {
 
   #region sezione
 
-  protected string parse_section(section s, bool only_title = false) {
-    return core.parse_html_block(!only_title ? "section" : "title-section"
+  protected string parse_section(section s, bool only_title = false)
+  {
+    return core.parse_html_block(!only_title ? "section-" + s.type.ToString() : "title-section-" + s.type.ToString()
       , new Dictionary<string, object>() { { "s", s } });
   }
 

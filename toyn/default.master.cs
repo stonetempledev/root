@@ -89,7 +89,8 @@ public partial class _default : tl_master {
     cmd c = new cmd(cmd), c2 = new cmd("[action] " + cmd);
     config.table_row tr = null;
     foreach (config.table_row r in config.get_table("cmds.base-cmds").rows) {
-      string action = r.field("action"), obj = r.field("object"), synobj = r.field("syn-object"), subobj = r.field("subobj");
+      string action = r.field("action"), obj = r.field("object")
+        , synobj = r.field("syn-object"), subobj = r.field("subobj");
       bool action_opt = r.fld_bool("action-opt");
       if (is_like_cmd(action, c.action) && is_like_cmd(obj, c.obj, synobj) && is_like_cmd(subobj, c.sub_obj())) { tr = r; c.obj = obj; break; }
       if (action_opt) {
@@ -97,6 +98,9 @@ public partial class _default : tl_master {
       }
     }
     if (tr == null) return null;
+    c.group = tr.field("group");
+    c.code = tr.field("code");
+    c.sub_code = tr.field("sub-code");
     c.type = tr.field("type");
     c.page = tr.field("page");
     return c;

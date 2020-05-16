@@ -5,7 +5,8 @@
     
     <query name="homepage-vars">
       <![CDATA[select vars.[name], us.setting_var as [value] 
- from (select 'home-page.title' as [name]) as vars 
+ from (select 'home-page.title' as [name]
+  union select 'home-page.sub-title' as [name]) as vars 
  left join users_settings us on us.setting_name = vars.[name] and us.[user_id] = {@field='user_id'}]]>
     </query>
     <query name="set-title">
