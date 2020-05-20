@@ -16,7 +16,7 @@ using mlib;
 using mlib.tools;
 using mlib.db;
 using mlib.xml;
-using mlib.tiles;
+using toyn;
 
 public class tl_page : System.Web.UI.Page {
 
@@ -151,7 +151,7 @@ public class tl_page : System.Web.UI.Page {
   public core core { get { return _core; } }
   public config config { get { return _core.config; } }
   public bool is_user { get { return _user != null; } }
-  public bool is_admin { get { return _user != null && _user.type == mlib.tiles.user.type_user.admin; } }
+  public bool is_admin { get { return _user != null && _user.type == toyn.user.type_user.admin; } }
   public user user { get { return _user; } protected set { _user = value; } }
   public void set_user(int id, string user, string email, user.type_user tp) {
     _user = new user(id, user, email, tp);

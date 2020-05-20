@@ -67,7 +67,7 @@ namespace mlib.tools {
       tp_query _tp = tp_query.normal;
       string _name, _des, _do, _while;
       List<string> _queries = new List<string>();
-      Dictionary<string, string> _filters = new Dictionary<string, string>();
+      Dictionary<string, string> _conds = new Dictionary<string, string>();
       public query(string doc_key, string name, string txt, string des = "", bool for_pg = false)
         : base(doc_key, for_pg) {
         _name = name; _des = des; _queries.Add(txt);
@@ -85,16 +85,16 @@ namespace mlib.tools {
       public void add_query(string txt) { _queries.Add(txt); }
       public List<string> queries { get { return _queries; } }
       public int count { get { return _queries.Count(); } }
-      public Dictionary<string, string> filters { get { return _filters; } }
-      public void add_filter(string name, string txt) {
-        if (_filters.ContainsKey(name))
-          throw new Exception("c'è già un filtro '" + name + "' nella query '" + _name + "'!");
-        _filters.Add(name, txt);
+      public Dictionary<string, string> conds { get { return _conds; } }
+      public void add_cond(string name, string txt) {
+        if (_conds.ContainsKey(name))
+          throw new Exception("c'è già una condizione '" + name + "' nella query '" + _name + "'!");
+        _conds.Add(name, txt);
       }
-      public string filter(string name) {
-        if (!_filters.ContainsKey(name))
-          throw new Exception("non c'è il filtro '" + name + "' nella query '" + _name + "'!");
-        return _filters[name];
+      public string get_cond(string name) {
+        if (!_conds.ContainsKey(name))
+          throw new Exception("non c'è la condizione '" + name + "' nella query '" + _name + "'!");
+        return _conds[name];
       }
     }
 
@@ -146,6 +146,21 @@ namespace mlib.tools {
       public string name { get { return _name; } }
       public string content { get { return _content; } }
       public html_block(string doc_key, string name, string content, bool for_pg = false) : base(doc_key, for_pg) { _name = name; _content = content; }
+
+      // conds
+      Dictionary<string, string> _conds = new Dictionary<string, string>();
+      public Dictionary<string, string> conds { get { return _conds; } }
+      public void add_cond(string name, string txt) {
+        if (_conds.ContainsKey(name))
+          throw new Exception("c'è già una condizione '" + name + "' nel blocco '" + _name + "'!");
+        _conds.Add(name, txt);
+      }
+      public string get_cond(string name) {
+        if (!_conds.ContainsKey(name))
+          throw new Exception("non c'è la condizione '" + name + "' nel blocco '" + _name + "'!");
+        return _conds[name];
+      }
+
     }
 
     #endregion
@@ -228,7 +243,10 @@ namespace mlib.tools {
       try {
         foreach (xml_node tbl in doc.nodes("/config/html-blocks/html-block")) {
           nkey = var_key + tbl.get_attr("name");
-          _html_blocks.Add(nkey, new html_block(doc_key, nkey, tbl.text, for_pg));
+          html_block b = new html_block(doc_key, nkey, tbl.text, for_pg);
+          foreach (xml_node f in tbl.nodes("cond"))
+            b.add_cond(f.get_attr("name"), f.text);
+          _html_blocks.Add(nkey, b);
         }
       } catch (Exception ex) { throw new Exception("chiave html-blocks.'" + nkey + "' - " + ex.Message); }
 
@@ -238,8 +256,8 @@ namespace mlib.tools {
           if (qry.name == "query") {
             nkey = var_key + qry.get_attr("name");
             query q = new query(doc_key, nkey, qry.text, qry.get_attr("des"), for_pg);
-            foreach (xml_node f in qry.nodes("filter"))
-              q.add_filter(f.get_attr("name"), f.text);
+            foreach (xml_node f in qry.nodes("cond"))
+              q.add_cond(f.get_attr("name"), f.text);
             _queries.Add(nkey, q);
           } else if (qry.name == "query_do") {
             nkey = var_key + qry.get_attr("name");

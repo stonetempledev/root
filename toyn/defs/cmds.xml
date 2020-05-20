@@ -23,10 +23,11 @@ SINTASSI DICHIARAZIONE object, subobj
       <rows>
         <row name="base" title="Base Actions" des="azioni basilari ed essenziali"/>
         <row name="sys" title="System Actions" des="comandi di sistema speciali, per manutenzione ed amministrazione"/>
+        <row name="users" title="Gestione Utenti" des="elenco utenti, aggiunta, modifica, etc..."/>
         <row name="elements" title="Docs Actions" des="gestione della tua documentazione"/>
         <row name="backups" title="Gestione Backups database" des="comandi per la gestione dei backups del database"/>
         <row name="def-objects" title="Definizione e Gestione Oggetti Utenti" des="comandi per la gestione degli oggetti definiti da/per l'utente" />
-        <sql-select qry="select object_type_id, object_type, object_list_des, object_notes from objects_types where user_id = {@field='user_id'} order by 1">
+        <sql-select qry="select object_type_id, object_type, object_list_des, object_notes from objects_types order by 1">
           <row name="objects-{@field='object_type'}" title="OGGETTO: {@field='object_list_des'}" des="{@field='object_notes'}"/>
         </sql-select>
       </rows>
@@ -34,9 +35,11 @@ SINTASSI DICHIARAZIONE object, subobj
     <table name="base-cmds" cols="group,code,sub-code,action,action-opt,object,syn-object,subobj,des,page,type,call,compile">
       <rows>
         <!-- base -->
-        <row group="base" action="view" action-opt="true" object="user" syn-object="utente" des="visualizza i dettagli sull'utente loggato" call="true"/>
         <row group="base" action="exit" des="effettua il log out dall'ambiente" call="true"/>
         <row group="base" action="view" action-opt="true" object="home-page" syn-object="homepage,home page" page="home.aspx" des="apre la home page" call="true"/>
+        <!-- users -->
+        <row group="users" action="view" action-opt="true" object="user" page="users.aspx" syn-object="utente" des="visualizza i dettagli sull'utente loggato" call="true"/>
+        <row group="users" action="view" action-opt="true" object="users" page="users.aspx" syn-object="utenti" des="elenco degli utenti registrati" call="true" type="admin"/>
         <!-- sys -->
         <row group="sys" action="view" action-opt="true" object="cmds" syn-object="comandi" des="elenco di tutti i comandi disponibili" call="true"/>
         <row group="sys" action="view" action-opt="true" object="vars" syn-object="variabili" des="elenco delle variabili di sistema" type="admin" call="true"/>
@@ -60,7 +63,7 @@ SINTASSI DICHIARAZIONE object, subobj
         <!-- objects -->
         <row group="def-objects" action="rebuild" object="objects" page="def_objects.aspx" des="ridefinizione delle risorse interne per l'utilizzo degli oggetti" type="admin"/>
         <!-- objects -->
-        <sql-select qry="select object_type_id, object_type, object_list_des, object_cmd_list, object_cmd_syn_list, object_notes from objects_types where user_id = {@field='user_id'} order by 1">
+        <sql-select qry="select object_type_id, object_type, object_list_des, object_cmd_list, object_cmd_syn_list, object_notes from objects_types order by 1">
           <row group="objects-{@field='object_type'}" code="{@field='object_type'}" sub-code="list"
                action="view" action-opt="true" object="{@field='object_cmd_list'}" syn-object="{@field='object_cmd_syn_list'}"
                page="objects.aspx" des="visualizza elenco '{@field='object_list_des'}'" call="true"/>

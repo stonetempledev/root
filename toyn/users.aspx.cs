@@ -21,7 +21,7 @@ using mlib.tools;
 using mlib.xml;
 using toyn;
 
-public partial class _objects : tl_page {
+public partial class _users : tl_page {
 
   protected cmd _cmd = null;
 
@@ -36,7 +36,7 @@ public partial class _objects : tl_page {
 
     try {
 
-      objects ob = new objects();
+      users us = new users();
 
       if (json_request.there_request(this)) {
         json_result res = new json_result(json_result.type_result.ok);
@@ -61,14 +61,20 @@ public partial class _objects : tl_page {
       // check cmd
       if (_cmd == null) return;
 
-      // view
-      if (_cmd.action == "view" && _cmd.group.Substring(0, 8) == "objects-") {
-        object_type ot = ob.get_object_type( _cmd.code);
-        if (_cmd.sub_code == "list") {
-          page_title.InnerText = ot.list_des;
-          page_des.InnerText = ot.notes;
+      // user
+      StringBuilder sb = new StringBuilder();
+      if (_cmd.action == "view" && _cmd.obj == "user") {
+        page_title.InnerText = "Utente loggato";
+        sb.Append(core.parse_html_block("logged-user", new Dictionary<string, object>() { { "us", user } }));
+      }  // users
+      else if (_cmd.action == "view" && _cmd.obj == "users") {
+        page_title.InnerText = "Elenco utenti";
+        foreach (user u in us.list_users()) {
+          sb.Append(core.parse_html_block("user", new Dictionary<string, object>() { { "us", u } }));
         }
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
+
+      content.InnerHtml = sb.ToString();
 
     } catch (Exception ex) { log.log_err(ex); if (!json_request.there_request(this)) master.err_txt(ex.Message); }
   }

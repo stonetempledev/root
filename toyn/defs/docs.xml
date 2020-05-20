@@ -70,12 +70,12 @@ union select h.parent_id, h.elements_contents_id, h.livello + 1 as livello, h.in
  join elements_types et on et.element_type = h.element_type
  left join vw_elements_attrs a on a.element_id = h.element_id 
  where h.[user_id] = {@field='user_id'} and h.ref_element_id = {@field='element_id'}
-  {@field_cond='parent_id','parent-filter'}
+  {@cond_val='parent_id','parent-filter'}
  order by h.livello, h.element_id]]>
-      <filter name="parent-filter">
+      <cond name="parent-filter">
         <![CDATA[and h.livello >= (select top 1 livello from vw_elements_c 
    where ref_element_id = {@field='element_id'} and [user_id] = {@field='user_id'} and element_id = {@field='parent_id'} order by livello)]]>
-      </filter>
+      </cond>
     </query>
     <query name="parent-elements">
       <![CDATA[select parent_id from vw_elements_c where dt_del is null and ref_element_id = {@field='id_element'} and parent_id > 0]]>

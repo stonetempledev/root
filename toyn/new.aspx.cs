@@ -44,7 +44,7 @@ public partial class login : tl_page {
         int user_id = int.Parse(db_conn.exec(string.Format(@"insert into users (nome, email, pwd, dt_ins, tmp_key, activate_key, activated)
          values ('{0}', '{1}', '{2}', getdate(), '{3}', '{4}', 2);"
           , user_name.Value, user_mail.Value, cry.encode_tobase64(user_pass.Value), tkey, cry.rnd_str(32)), true));
-        this.user = new mlib.tiles.user(user_id, user_name.Value, user_mail.Value, mlib.tiles.user.type_user.normal);
+        this.user = new user(user_id, user_name.Value, user_mail.Value, user.type_user.normal);
 
         // salvo il documento di benvenuto
         docs el = new docs();

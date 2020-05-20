@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace mlib.tiles {
+namespace toyn {
   public class cmd {
     string _cmd, _group, _code, _sub_code, _type, _page; List<string> _keys; List<string> _subcmds;
     public cmd(string txt) { _cmd = txt; _type = ""; _page = ""; _keys = parse_cmds(_cmd); _subcmds = new List<string>(); }

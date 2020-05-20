@@ -5,6 +5,7 @@ using System.Web;
 using System.Data.Common;
 using System.Xml;
 using System.Linq;
+using System.Text;
 using mlib.tools;
 
 namespace mlib.db {
@@ -26,10 +27,10 @@ namespace mlib.db {
     protected DbTransaction _trans = null;
     protected Dictionary<string, string> _keys = null;
 
-    public db_provider (mlib.tools.config.conn cnn) :
+    public db_provider(mlib.tools.config.conn cnn) :
       this(cnn.name, cnn.conn_string, cnn.provider, cnn.timeout > 0 ? cnn.timeout : -1, cnn.des, cnn.date_format) { }
 
-    public db_provider (string name, string conn_string, string prov_name, int timeout = -1, string des = ""
+    public db_provider(string name, string conn_string, string prov_name, int timeout = -1, string des = ""
       , string date_format = "", string key = "", string sql_key = "") {
       _dbType = db_provider.type_from_provider(conn_string, prov_name); _name = name;
       _timeout = timeout; _conn_string = conn_string; _provider = prov_name; _des = des;
@@ -42,11 +43,11 @@ namespace mlib.db {
       }
     }
 
-    public static db_provider create_provider (mlib.tools.config.conn cnn) {
+    public static db_provider create_provider(mlib.tools.config.conn cnn) {
       return create_provider(cnn.name, cnn.conn_string, cnn.provider, cnn.timeout > 0 ? cnn.timeout : -1, cnn.des, cnn.date_format, cnn.key, cnn.sql_key);
     }
 
-    public static db_provider create_provider (string name, string conn_string, string provider, int timeout = -1, string des = "", string date_format = "", string key = "", string sql_key = "") {
+    public static db_provider create_provider(string name, string conn_string, string provider, int timeout = -1, string des = "", string date_format = "", string key = "", string sql_key = "") {
       dbType type = db_provider.type_from_provider(conn_string, provider);
       return type == dbType.access ? new db_access(name, conn_string, provider, timeout, des, date_format, key, sql_key)
           : type == dbType.odbc ? new db_odbc(name, conn_string, provider, timeout, des, date_format, key, sql_key)
@@ -55,13 +56,13 @@ namespace mlib.db {
           : new db_provider(name, conn_string, provider, timeout, des, date_format, key, sql_key);
     }
 
-    protected static DbProviderFactory get_factory (dbType tp) {
+    protected static DbProviderFactory get_factory(dbType tp) {
       return DbProviderFactories.GetFactory(tp == dbType.oledb || tp == dbType.access ? "System.Data.OleDb"
           : tp == dbType.odbc ? "System.Data.Odbc" : tp == dbType.sqlserver ? "System.Data.SqlClient"
           : tp == dbType.mysql ? "MySql.Data.MySqlClient" : "");
     }
 
-    static public dbType type_from_provider (string conn_string, string provider_name) {
+    static public dbType type_from_provider(string conn_string, string provider_name) {
       return provider_name == "System.Data.SqlClient" ? dbType.sqlserver :
         (provider_name == "MySql.Data.MySqlClient" ? dbType.mysql :
         (provider_name == "System.Data.OleDb" ? (conn_string.ToLower().IndexOf("provider=microsoft.jet.oledb.4.0") >= 0 ? dbType.access : dbType.oledb) :
@@ -76,14 +77,14 @@ namespace mlib.db {
     public string name { get { return _name; } }
     public Dictionary<string, string> conn_keys { get { return _keys; } }
 
-    static public catField cat_field (fieldType tp) {
+    static public catField cat_field(fieldType tp) {
       return tp == fieldType.VARCHAR || tp == fieldType.CHAR || tp == fieldType.XML || tp == fieldType.TEXT ? catField.TEXT :
         tp == fieldType.DATETIME ? catField.DATE : catField.NUMERIC;
     }
 
     #region tools
 
-    static public string list_in (DataRow dr, string fields) {
+    static public string list_in(DataRow dr, string fields) {
       if (dr == null) return "";
       string res = "";
       foreach (string fld in fields.Split(new char[] { ',' })) {
@@ -92,9 +93,9 @@ namespace mlib.db {
       return res;
     }
 
-    static public string str_val (object fld, string def = "") { return fld == null || fld == DBNull.Value ? def : fld.ToString(); }
+    static public string str_val(object fld, string def = "") { return fld == null || fld == DBNull.Value ? def : fld.ToString(); }
 
-    static public int int_val (object fld, int def = 0) { return fld == null || fld == DBNull.Value ? def : Convert.ToInt32(fld); }
+    static public int int_val(object fld, int def = 0) { return fld == null || fld == DBNull.Value ? def : Convert.ToInt32(fld); }
 
     static public long long_val(object fld, long def = 0) { return fld == null || fld == DBNull.Value ? def : Convert.ToInt64(fld); }
 
@@ -102,7 +103,7 @@ namespace mlib.db {
 
     static public DateTime? dt_val(object fld) { return fld == null || fld == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(fld); }
 
-    public static string row_to_csv (DataRow dr) {
+    public static string row_to_csv(DataRow dr) {
       string res = "";
       foreach (DataColumn dc in dr.Table.Columns) {
         if (dc.DataType == typeof(decimal) || dc.DataType == typeof(double))
@@ -139,7 +140,7 @@ namespace mlib.db {
       return true;
     }
 
-    public void begin_trans (bool open_key = false) {
+    public void begin_trans(bool open_key = false) {
       try {
         if (!is_opened()) throw new Exception("begin trans - la connessione non è aperta");
         if (_trans != null) throw new Exception("begin transaction annullata la transazione è già aperta!");
@@ -150,7 +151,7 @@ namespace mlib.db {
       } catch (Exception ex) { log.log_err(ex); throw ex; }
     }
 
-    public void commit () {
+    public void commit() {
       try {
         if (!is_opened()) throw new Exception("commit annullata la connessione non è aperta!");
         if (_trans == null) throw new Exception("commit annullata la transazione non è aperta!");
@@ -161,7 +162,7 @@ namespace mlib.db {
       } catch (Exception ex) { log.log_err(ex); throw ex; }
     }
 
-    public void rollback () {
+    public void rollback() {
       try {
         if (!is_opened()) throw new Exception("rollback annullata la connessione non è aperta!");
         if (_trans == null) throw new Exception("rollback annullata la transazione non è aperta!");
@@ -172,11 +173,11 @@ namespace mlib.db {
       } catch (Exception ex) { log.log_err(ex); }
     }
 
-    public bool open_conn () { return open_conn(false); }
+    public bool open_conn() { return open_conn(false); }
 
-    public bool open_conn_trans () { return open_conn(true); }
+    public bool open_conn_trans() { return open_conn(true); }
 
-    protected bool open_conn (bool withBeginTrans) {
+    protected bool open_conn(bool withBeginTrans) {
       if (_conn != null)
         return false;
 
@@ -192,7 +193,7 @@ namespace mlib.db {
       return true;
     }
 
-    protected static DbConnection create_conn (string provider, string conn_string) {
+    protected static DbConnection create_conn(string provider, string conn_string) {
       if (string.IsNullOrEmpty(conn_string)) throw new Exception("non è stata specificata la stringa di connessione!");
 
       DbProviderFactory factory = DbProviderFactories.GetFactory(provider);
@@ -201,15 +202,15 @@ namespace mlib.db {
       return connection;
     }
 
-    public bool is_opened () { return _conn != null; }
+    public bool is_opened() { return _conn != null; }
 
-    public bool is_trans () { return _trans != null; }
+    public bool is_trans() { return _trans != null; }
 
-    public void close_conn () { close_conn(true); }
+    public void close_conn() { close_conn(true); }
 
-    public void close_conn_roll () { close_conn(false); }
+    public void close_conn_roll() { close_conn(false); }
 
-    protected virtual void close_conn (bool cmt) {
+    protected virtual void close_conn(bool cmt) {
       if (_conn == null) return;
 
       if (is_trans()) {
@@ -223,18 +224,18 @@ namespace mlib.db {
       _conn = null;
     }
 
-    public virtual DataSet dt_set (string sql, bool throwerr = true, bool open_key = false) { return data_set(sql, throwerr, "", open_key); }
-    public virtual DataSet dt_set (string sql, string table_name, bool throwerr = true, bool open_key = false) { return data_set(sql, throwerr, table_name, open_key); }
+    public virtual DataSet dt_set(string sql, bool throwerr = true, bool open_key = false) { return data_set(sql, throwerr, "", open_key); }
+    public virtual DataSet dt_set(string sql, string table_name, bool throwerr = true, bool open_key = false) { return data_set(sql, throwerr, table_name, open_key); }
     //public virtual DataTable dt_table (string sql, core cr, Dictionary<string, object> flds = null) {
     //  return data_table(cr.parse(sql, flds));
     //}
-    public virtual DataTable dt_table (string sql, bool throwerr = true, bool open_key = false) {
+    public virtual DataTable dt_table(string sql, bool throwerr = true, bool open_key = false) {
       return data_table(sql, "", throwerr, open_key);
     }
-    public virtual DataTable dt_table (string sql, string table_name, bool throwerr = true, bool open_key = false) { return data_table(sql, table_name, throwerr, open_key); }
-    public virtual DataTable dt_schema (string sql, string table_name = "", bool throwerr = true) { return open_schema(sql, throwerr, table_name); }
-    public virtual DataRow first_row (string sql, bool throwerr = true, bool open_key = false) { DataTable dt = dt_table(sql, throwerr, open_key); return dt != null && dt.Rows.Count > 0 ? dt.Rows[0] : null; }
-    public virtual DbDataReader dt_reader (string sql, bool open_key = false) {
+    public virtual DataTable dt_table(string sql, string table_name, bool throwerr = true, bool open_key = false) { return data_table(sql, table_name, throwerr, open_key); }
+    public virtual DataTable dt_schema(string sql, string table_name = "", bool throwerr = true) { return open_schema(sql, throwerr, table_name); }
+    public virtual DataRow first_row(string sql, bool throwerr = true, bool open_key = false) { DataTable dt = dt_table(sql, throwerr, open_key); return dt != null && dt.Rows.Count > 0 ? dt.Rows[0] : null; }
+    public virtual DbDataReader dt_reader(string sql, bool open_key = false) {
       bool opened = false;
       try {
         if (open_conn()) opened = true;
@@ -249,15 +250,15 @@ namespace mlib.db {
       } catch (Exception ex) { log.log_err_sql(ex, sql); throw ex; } finally { if (opened) close_conn(); }
     }
 
-    protected DataSet data_set (string sql, bool throwerr = true, string table_name = "", bool open_key = false) {
+    protected DataSet data_set(string sql, bool throwerr = true, string table_name = "", bool open_key = false) {
       return (DataSet)open_set(sql, throwerr, true, table_name, open_key);
     }
 
-    protected DataTable data_table (string sql, string table_name = "", bool throwerr = true, bool open_key = false) {
+    protected DataTable data_table(string sql, string table_name = "", bool throwerr = true, bool open_key = false) {
       return (DataTable)open_set(sql, throwerr, false, table_name, open_key);
     }
 
-    protected object open_set (string sql, bool throwerr = true, bool dataset = true, string table_name = "", bool open_key = false) {
+    protected object open_set(string sql, bool throwerr = true, bool dataset = true, string table_name = "", bool open_key = false) {
       bool opened = false;
       try {
         opened = open_conn();
@@ -281,7 +282,7 @@ namespace mlib.db {
       } catch (Exception ex) { log.log_err(sql); log.log_err(ex); if (throwerr) throw ex; else return null; } finally { if (opened) close_conn(); }
     }
 
-    protected DataTable open_schema (string sql, bool throwerr = true, string table_name = "") {
+    protected DataTable open_schema(string sql, bool throwerr = true, string table_name = "") {
       bool opened = false;
       try {
         opened = open_conn();
@@ -303,18 +304,18 @@ namespace mlib.db {
       } catch (Exception ex) { log.log_err(sql); log.log_err(ex); if (throwerr) throw ex; else return null; } finally { if (opened) close_conn(); }
     }
 
-    public bool check_exists (config.query qry, core cr, Dictionary<string, object> flds = null) {
+    public bool check_exists(config.query qry, core cr, Dictionary<string, object> flds = null) {
       if (qry.queries.Count > 1)
         for (int n = 0; n < qry.queries.Count - 1; n++) exec(qry.queries[n]);
       DataTable dt = dt_table(cr.parse(qry.queries[qry.queries.Count() - 1], flds));
       return dt != null && dt.Rows.Count > 0;
     }
 
-    public DataTable dt_qry (config.query qry, core cr, Dictionary<string, object> flds = null) {
+    public DataTable dt_qry(config.query qry, core cr, Dictionary<string, object> flds = null) {
       return dt_table(cr.parse(qry.text, flds));
     }
 
-    public string exec_qry (config.query qry, core cr, Dictionary<string, object> flds = null, bool getidentity = false) {
+    public string exec_qry(config.query qry, core cr, Dictionary<string, object> flds = null, bool getidentity = false) {
       string res = null;
       if (qry.tp == config.query.tp_query.do_while) {
         foreach (DataRow dr in dt_table(qry.text_do).Rows)
@@ -325,11 +326,31 @@ namespace mlib.db {
       return res;
     }
 
-    public string exec (string sql, bool getidentity = false, bool noidentity = false, bool open_key = false) {
+    public void exec_script(string sql_script, bool open_trans = false) {
+      bool opened = false, trans = false;
+      try {
+        if (open_conn()) opened = true;
+
+        if (open_trans && this.check_begin_trans()) trans = true; 
+
+        StringBuilder sb = new StringBuilder();
+        foreach (string line in sql_script.Split(new string[2] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries)) {
+          if (line.ToUpper().Trim() == "GO") {
+            if(sb.Length > 0) this.exec(sb.ToString());
+            sb.Clear();
+          } else sb.AppendLine(line);
+        }
+
+        if (trans) this.commit();
+      } catch (Exception ex) { if (trans) this.rollback(); log.log_err_sql(ex, sql_script); throw ex; } finally { if (opened) close_conn(); }
+
+    }
+
+    public string exec(string sql, bool getidentity = false, bool noidentity = false, bool open_key = false) {
       return execute(sql, getidentity, noidentity, open_key);
     }
 
-    protected string execute (string sql, bool getidentity = false, bool noidentity = false, bool open_key = false) {
+    protected string execute(string sql, bool getidentity = false, bool noidentity = false, bool open_key = false) {
       if (getidentity && _dbType != dbType.sqlserver)
         throw new Exception("GET IDENTITY supportato solo in SQLServer");
 
@@ -368,13 +389,13 @@ namespace mlib.db {
       } catch (Exception ex) { log.log_err_sql(ex, cur_sql); throw ex; } finally { if (opened) close_conn(); }
     }
 
-    public string key_conn (string key) { return _keys.ContainsKey(key.ToLower()) ? _keys[key.ToLower()] : ""; }
+    public string key_conn(string key) { return _keys.ContainsKey(key.ToLower()) ? _keys[key.ToLower()] : ""; }
 
-    public virtual System.Data.Common.DbParameter get_par (schema_field col) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità getParameter"); }
+    public virtual System.Data.Common.DbParameter get_par(schema_field col) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità getParameter"); }
 
-    public virtual System.Data.Common.DbCommand dt_command (string sql) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità openDataCommand"); }
+    public virtual System.Data.Common.DbCommand dt_command(string sql) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità openDataCommand"); }
 
-    static public System.Xml.XmlDocument set_todoc (System.Data.DataTable dt) {
+    static public System.Xml.XmlDocument set_todoc(System.Data.DataTable dt) {
 
       // salvo xml 
       System.Xml.XmlDocument docSet = new System.Xml.XmlDocument();
@@ -416,73 +437,73 @@ namespace mlib.db {
       return docResult;
     }
 
-    public bool like (string str, string wildcard) {
+    public bool like(string str, string wildcard) {
       wildcard = wildcard.Replace("%", "*");
       return new System.Text.RegularExpressions.Regex("^" + System.Text.RegularExpressions.Regex.Escape(wildcard).Replace(@"\*", ".*").Replace(@"\?", ".") + "$",
           System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline).IsMatch(str);
     }
 
-    static public string name_field (string field) { return (field.IndexOf('.') >= 0 ? field.Substring(field.IndexOf('.') + 1) : field).Replace("[", "").Replace("]", ""); }
+    static public string name_field(string field) { return (field.IndexOf('.') >= 0 ? field.Substring(field.IndexOf('.') + 1) : field).Replace("[", "").Replace("]", ""); }
 
     #endregion
 
     #region base special functions
 
-    public virtual void add_field (schema_field tblField, string tableName) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità add_field"); }
+    public virtual void add_field(schema_field tblField, string tableName) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità add_field"); }
 
-    public virtual void del_field (string field, string table) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità del_field"); }
+    public virtual void del_field(string field, string table) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità del_field"); }
 
-    public virtual void upd_field (schema_field tblField, string tableName) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità upd_field"); }
+    public virtual void upd_field(schema_field tblField, string tableName) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità upd_field"); }
 
-    public virtual bool exist_field (string table, string col) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità exist_field"); }
+    public virtual bool exist_field(string table, string col) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità exist_field"); }
 
-    public virtual bool exist_table (string tableName) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità exist_table"); }
+    public virtual bool exist_table(string tableName) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità exist_table"); }
 
-    public virtual List<string> tables (string likeName = "", string list = "") { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità tables"); }
+    public virtual List<string> tables(string likeName = "", string list = "") { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità tables"); }
 
-    public virtual List<string> synonims (string likeName) { return new List<string>(); }
+    public virtual List<string> synonims(string likeName) { return new List<string>(); }
 
-    public virtual string module_text (string procName) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità module_text"); }
+    public virtual string module_text(string procName) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità module_text"); }
 
-    public virtual List<string> functions (string likeName = "") { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità functions"); }
+    public virtual List<string> functions(string likeName = "") { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità functions"); }
 
-    public virtual void drop_function (string func) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità drop_function"); }
+    public virtual void drop_function(string func) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità drop_function"); }
 
-    public virtual List<string> store_procedures (string likeName = "") { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità store_procedures"); }
+    public virtual List<string> store_procedures(string likeName = "") { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità store_procedures"); }
 
-    public virtual bool there_schema (string schema) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità there_schema"); }
+    public virtual bool there_schema(string schema) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità there_schema"); }
 
-    public virtual void create_schema (string schemaName) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità create_schema"); }
+    public virtual void create_schema(string schemaName) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità create_schema"); }
 
-    public virtual bool exist_function (string function) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità exist_function"); }
+    public virtual bool exist_function(string function) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità exist_function"); }
 
-    public virtual bool exist_procedure (string procedure) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità exist_procedure"); }
+    public virtual bool exist_procedure(string procedure) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità exist_procedure"); }
 
-    public virtual void drop_procedure (string proc) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità drop_procedure"); }
+    public virtual void drop_procedure(string proc) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità drop_procedure"); }
 
-    public virtual void drop_table (string table) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità drop_table"); }
+    public virtual void drop_table(string table) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità drop_table"); }
 
-    public virtual void rename_table (string old_name, string new_name) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità rename_table"); }
+    public virtual void rename_table(string old_name, string new_name) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità rename_table"); }
 
-    public virtual void truncate_table (string table) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità truncate_table"); }
+    public virtual void truncate_table(string table) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità truncate_table"); }
 
-    public virtual void set_identity (string table, bool on) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità set_identity"); }
+    public virtual void set_identity(string table, bool on) { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità set_identity"); }
 
     // truncate table
-    public virtual void clean_table (string table, string where = null) {
+    public virtual void clean_table(string table, string where = null) {
       exec("DELETE FROM " + table + ""
           + (where != null && where != "" ? " WHERE " + where : ""));
     }
 
-    public schema_field field_table (string table, string nameField) {
+    public schema_field field_table(string table, string nameField) {
       List<schema_field> list = table_fields(table, nameField);
       return list.Count == 0 ? null : list[0];
     }
 
     // tableFields
-    public virtual List<schema_field> table_fields (string table, string nameField = "") { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità tableFields"); }
+    public virtual List<schema_field> table_fields(string table, string nameField = "") { throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità tableFields"); }
 
-    public schema_field find_field (List<schema_field> list, string fieldName) {
+    public schema_field find_field(List<schema_field> list, string fieldName) {
       for (int i = 0; i < list.Count; i++)
         if (list[i].name.ToLower() == fieldName.ToLower())
           return list[i];
@@ -490,7 +511,7 @@ namespace mlib.db {
       return null;
     }
 
-    public idx_table find_index (List<idx_table> list, string indexName, string tableName) {
+    public idx_table find_index(List<idx_table> list, string indexName, string tableName) {
       for (int i = 0; i < list.Count; i++)
         if (list[i].name.ToLower() == indexName.ToLower()
             && list[i].table_name.ToLower() == tableName.ToLower())
@@ -499,7 +520,7 @@ namespace mlib.db {
       return null;
     }
 
-    public bool remove_field (List<schema_field> list, string fieldName) {
+    public bool remove_field(List<schema_field> list, string fieldName) {
       bool result = false;
 
       for (int i = 0; i < list.Count; i++) {
@@ -513,65 +534,65 @@ namespace mlib.db {
       return result;
     }
 
-    public virtual void drop_field (schema_field field, string tableName) {
+    public virtual void drop_field(schema_field field, string tableName) {
       throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità dropFieldToTable");
     }
 
-    public virtual void drop_index (string indexName, string tableName) {
+    public virtual void drop_index(string indexName, string tableName) {
       throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità dropIndex");
     }
 
-    public virtual void drop_foreign (string foreignName, string tableName) {
+    public virtual void drop_foreign(string foreignName, string tableName) {
       throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità dropForeignKey");
     }
 
-    public virtual void alter_field (schema_field tblfield, string tableName) {
+    public virtual void alter_field(schema_field tblfield, string tableName) {
       throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità alterFieldTable");
     }
 
-    public virtual void create_table (XmlNode tableNode, dbType tp_original) {
+    public virtual void create_table(XmlNode tableNode, dbType tp_original) {
       create_table(tableNode, true, "", null, tp_original);
     }
 
-    public virtual void create_table (XmlNode tableNode, string nameCreated, List<string> flds_null = null) {
+    public virtual void create_table(XmlNode tableNode, string nameCreated, List<string> flds_null = null) {
       create_table(tableNode, true, nameCreated, flds_null);
     }
 
-    public virtual void create_table (XmlNode tableNode, bool createIndexes = true, string nameCreated = "", List<string> flds_null = null, dbType tp_original = dbType.none) {
+    public virtual void create_table(XmlNode tableNode, bool createIndexes = true, string nameCreated = "", List<string> flds_null = null, dbType tp_original = dbType.none) {
       throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità createTable");
     }
 
-    public virtual idx_table create_index (idx_table index) {
+    public virtual idx_table create_index(idx_table index) {
       throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità createIndex");
     }
 
-    public virtual List<idx_table> table_idxs (string table, bool? uniques = null, string index_name = "") {
+    public virtual List<idx_table> table_idxs(string table, bool? uniques = null, string index_name = "") {
       throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità tableIndexes");
     }
 
-    public idx_table table_pk (string table) { return table_idxs(table).FirstOrDefault(x => x.primary); }
+    public idx_table table_pk(string table) { return table_idxs(table).FirstOrDefault(x => x.primary); }
 
-    public virtual void repair_autoincrements () {
+    public virtual void repair_autoincrements() {
       throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità repairAutoIncrements");
     }
 
-    public string field_value (object val, string null_val = null) {
+    public string field_value(object val, string null_val = null) {
       return val == DBNull.Value || val == null ? null_val
         : (val.GetType().FullName == "System.DateTime" ? ((DateTime)val).ToString("yyyy-MM-dd HH:mm:ss.fffffff")
           : val.ToString());
     }
 
-    public virtual string val_toqry (string value, fieldType coltype, dbType type, string nullstr = null, bool add_operator = false, bool tostring = false) {
+    public virtual string val_toqry(string value, fieldType coltype, dbType type, string nullstr = null, bool add_operator = false, bool tostring = false) {
       throw new Exception("il provider " + _dbType.ToString() + " non supporta la funzionalità valueToQuery");
     }
 
-    public virtual string val_toqry (string value, fieldType coltype, string nullstr = null, bool add_operator = false, bool tostring = false) {
+    public virtual string val_toqry(string value, fieldType coltype, string nullstr = null, bool add_operator = false, bool tostring = false) {
       return val_toqry(value, coltype, _dbType, nullstr, add_operator, tostring);
     }
 
-    public virtual string quadra (string element) { return element; }
+    public virtual string quadra(string element) { return element; }
 
-    public string original_typefld (string type, dbType tp_original) {
+    public string original_typefld(string type, dbType tp_original) {
       return _dbType == tp_original ? type : schema_field.type_to_original(_dbType, schema_field.original_to_type(tp_original, type));
     }
 
@@ -579,42 +600,42 @@ namespace mlib.db {
 
     #region tools
 
-    public string get_list (string sql, string field) { return string.Join(",", dt_table(sql).Rows.Cast<DataRow>().Select(r => r[field].ToString())); }
+    public string get_list(string sql, string field) { return string.Join(",", dt_table(sql).Rows.Cast<DataRow>().Select(r => r[field].ToString())); }
 
-    public long get_count (string sql) {
+    public long get_count(string sql) {
       return dt_table(sql).Rows[0][0] != null && dt_table(sql).Rows[0][0] != DBNull.Value
         ? Convert.ToInt64(dt_table(sql).Rows[0][0]) : 0;
     }
 
-    public long get_n_rows (string sql) { DataTable dt = dt_table(sql); return dt != null ? dt.Rows.Count : -1; }
+    public long get_n_rows(string sql) { DataTable dt = dt_table(sql); return dt != null ? dt.Rows.Count : -1; }
 
-    public object get_value (string sql) { return dt_table(sql).Rows[0][0]; }
+    public object get_value(string sql) { return dt_table(sql).Rows[0][0]; }
 
-    public DateTime? get_date (string sql) {
+    public DateTime? get_date(string sql) {
       object val = dt_table(sql).Rows[0][0];
       return val == null || val == DBNull.Value ? (DateTime?)null : DateTime.Parse(val.ToString());
     }
 
-    public string get_string (string sql, string null_val = null) {
+    public string get_string(string sql, string null_val = null) {
       object v = dt_table(sql).Rows[0][0];
       return v != null && v != DBNull.Value ? v.ToString() : null_val;
     }
 
-    public static DateTime? max_date (DateTime? dt_1, DateTime? dt_2) {
+    public static DateTime? max_date(DateTime? dt_1, DateTime? dt_2) {
       if (dt_1.HasValue && dt_2.HasValue) return dt_1 > dt_2 ? dt_1 : dt_2;
       else return dt_1.HasValue ? dt_1 : dt_2.HasValue ? dt_2 : (DateTime?)null;
     }
 
-    public static string join_fields (DataRow row) {
+    public static string join_fields(DataRow row) {
       return string.Join(", ", row.Table.Columns.Cast<DataColumn>().Select(col => col.ColumnName + ": " + (row[col.ColumnName] != DBNull.Value
         ? row[col.ColumnName].ToString().Replace("\n", " ").Replace("\r", " ") : "")));
     }
 
-    public static string join_fields (Dictionary<string, string> fields) {
+    public static string join_fields(Dictionary<string, string> fields) {
       return string.Join(", ", fields.Select(kv => kv.Key + ": " + (kv.Value != null ? kv.Value : "")));
     }
 
-    public virtual string enc_qry (string val) { return val.Replace("'", "''"); }
+    public virtual string enc_qry(string val) { return val.Replace("'", "''"); }
 
     #endregion
   }

@@ -50,14 +50,14 @@ namespace mlib {
       load_config(doc, doc_key, conn, keys, page: true);
     }
 
-    public List<xml_node> parse_nodes(List<xml_node> l, Dictionary<string, object> keys, DataRow dr = null) { 
+    public List<xml_node> parse_nodes(List<xml_node> l, Dictionary<string, object> keys, DataRow dr = null) {
       l.ForEach(x => parse_node(x, keys, dr)); return l;
     }
 
     public xml_node parse_node(xml_node n, Dictionary<string, object> keys, DataRow dr = null) {
 
       // text
-      if(!string.IsNullOrEmpty(n.text)) n.text = parse(n.text, keys, dr);
+      if (!string.IsNullOrEmpty(n.text)) n.text = parse(n.text, keys, dr);
 
       // attributes
       foreach (string a in n.get_attrs())
@@ -88,12 +88,12 @@ namespace mlib {
       for (int i = 0; i < flds.GetLength(0); i++)
         dict.Add(flds[i, 0], flds[i, 1]);
       config.query q = _config.get_query(key);
-      return parse(q.text, dict, conds: q.filters);
+      return parse(q.text, dict, conds: q.conds);
     }
 
     public string parse_query(string key, Dictionary<string, object> flds) {
       config.query q = _config.get_query(key);
-      return parse(q.text, flds, conds: q.filters);
+      return parse(q.text, flds, conds: q.conds);
     }
 
     public string parse_html_block(string key) { return parse(_config.get_html_block(key).content); }
@@ -106,7 +106,8 @@ namespace mlib {
     }
 
     public string parse_html_block(string key, Dictionary<string, object> flds) {
-      return parse(_config.get_html_block(key).content, flds);
+      config.html_block b = _config.get_html_block(key);
+      return parse(b.content, flds, conds: b.conds);
     }
 
     #endregion
@@ -151,12 +152,29 @@ namespace mlib {
                   } else value = get_val(par, flds, dr);
                   break;
                 }
-              // {@field_cond='<FIELD NAME>','<COND NAME>'}
-              case "field_cond": {
+              // {@cond_val='<FIELD NAME>','<COND NAME>'}
+              case "cond_val": {
                   string par21 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[0]
                     , par22 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[1]
                     , val = get_val(par21, flds, dr);
                   if (val == "") {
+                    value = "";
+                  } else {
+                    if (conds == null)
+                      throw new Exception("non sono stati specificate le condizioni per l'istruzione '{@" + cmd + "='" + par + "'}'");
+                    if (!conds.ContainsKey(par22))
+                      throw new Exception("la condizione '" + par22 + "' non è specificata per l'istruzione '{@" + cmd + "='" + par + "'}'");
+                    value = parse(conds[par22], flds, dr);
+                  }
+
+                  break;
+                }
+              // {@cond_bool='<FIELD NAME>','<COND NAME>'}
+              case "cond_bool": {
+                  string par21 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[0]
+                    , par22 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[1]
+                    , val = get_val(par21, flds, dr);
+                  if (val == "" || !bool.Parse(val)) {
                     value = "";
                   } else {
                     if (conds == null)
@@ -208,6 +226,13 @@ namespace mlib {
               case "setting": value = app_setting(par); break;
               // {@date='<FORMAT STRING>'}
               case "date": value = DateTime.Now.ToString(par); break;
+              // {@date_field='<FIELD NAME>','<FORMAT STRING>'}
+              case "date_field": {
+                  string par21 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[0]
+                    , par22 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[1];
+                  DateTime? dt = db_provider.dt_val(get_val(par21, flds, dr));
+                  value = dt.HasValue ? dt.Value.ToString(par22) : ""; break;
+                }
               // {@date_fld='<FIELD NAME>','<FORMAT STRING>'}
               case "date_fld": {
                   string par21 = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries)[0]

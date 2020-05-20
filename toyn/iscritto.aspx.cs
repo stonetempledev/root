@@ -8,7 +8,7 @@ using System.Web.Security;
 using System.Data;
 using mlib.db;
 using mlib.tools;
-using mlib.tiles;
+using toyn;
 
 public partial class login : tl_page {
 
@@ -19,7 +19,7 @@ public partial class login : tl_page {
       if (dr == null) { FormsAuthentication.SignOut(); Response.Redirect("login.aspx"); return; }
 
       this.user = new user(db_provider.int_val(dr["user_id"]), db_provider.str_val(dr["nome"])
-        , db_provider.str_val(dr["email"]), mlib.tiles.user.type_user.normal);
+        , db_provider.str_val(dr["email"]), user.type_user.normal);
 
       db_conn.exec(string.Format(@"update users set activated = 3 where tmp_key = '{0}';", qry_val("tkey")));
 

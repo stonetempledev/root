@@ -16,7 +16,6 @@ using System.Xml;
 using mlib.db;
 using mlib.tools;
 using mlib.xml;
-using mlib.tiles;
 
 public partial class _router : tl_page {
 
@@ -30,7 +29,7 @@ public partial class _router : tl_page {
         string cmd = qry_val("cmd");
         if (string.IsNullOrEmpty(cmd)) return;
 
-        cmd c = master.check_cmd(cmd);
+        toyn.cmd c = master.check_cmd(cmd);
         if (c == null)
           throw new Exception("Comando '" + cmd + "' non riconosciuto!");
 
@@ -81,15 +80,6 @@ public partial class _router : tl_page {
 
         } else if (c.action == "exit") {
           log_out("login.aspx");
-        } else if (c.action == "view" && c.obj == "user") {
-          sb.AppendFormat(@"<h3 style='color:white;text-transform:uppercase;background-color:royalblue;'>Dettagli utente loggato</h3>");
-          sb.Append("<div class='list-group'>");
-          string row_var = "<li class='list-group-item'><b style='text-transform: uppercase;'>{0}</b>: {1}</li>";
-          sb.AppendFormat(row_var, "nome", user.name);
-          sb.AppendFormat(row_var, "email", user.email);
-          sb.AppendFormat(row_var, "tipo utente", user.type.ToString());
-          sb.AppendFormat(row_var, "id utente", user.id);
-          sb.Append("</div>");
         } else if (c.action == "crypt") {
           if (!string.IsNullOrEmpty(c.obj) && !string.IsNullOrEmpty(c.sub_obj())) {
             sb.AppendFormat(@"<span class='h1'><span class='badge badge-primary d-block' style='white-space:normal;font-weight:normal;'>parola criptata</span></span>

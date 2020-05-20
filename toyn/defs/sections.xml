@@ -42,10 +42,10 @@ insert into macro_sections (title, notes, [order], [user_id])
     <query name="load-macro-sections">
       <![CDATA[select ms.macro_section_id, ms.title, ms.notes, ms.[order]
  from macro_sections ms
- where ms.[user_id] = {@field='user_id'} {@field_cond='id','id-filter'} order by [order]]]>
-      <filter name="id-filter">
+ where ms.[user_id] = {@field='user_id'} {@cond_val='id','id-filter'} order by [order]]]>
+      <cond name="id-filter">
         <![CDATA[and ms.macro_section_id = {@field='id'}]]>
-      </filter>
+      </cond>
     </query>
     <query name="del-macro-section">
       <![CDATA[delete from macro_sections where macro_section_id = {@field='id'};
@@ -136,14 +136,14 @@ insert into sections (macro_section_id, [type], title, notes, cols, [order])
   from sections s
   join macro_sections ms on ms.macro_section_id = s.macro_section_id
   left join vw_sections_attrs sa on sa.section_id = s.section_id
-  where ms.[user_id] = {@field='user_id'} {@field_cond='id','id-filter'} {@field_cond='id_ms','id-filter-ms'} 
+  where ms.[user_id] = {@field='user_id'} {@cond_val='id','id-filter'} {@cond_val='id_ms','id-filter-ms'} 
   order by s.macro_section_id, s.[order]]]>
-      <filter name="id-filter">
+      <cond name="id-filter">
         <![CDATA[and s.section_id = {@field='id'}]]>
-      </filter>
-      <filter name="id-filter-ms">
+      </cond>
+      <cond name="id-filter-ms">
         <![CDATA[and s.macro_section_id = {@field='id_ms'}]]>
-      </filter>
+      </cond>
     </query>
     <query name="upd-section">
       <![CDATA[update sections set title = {@txtqry='title'}, notes = {@txtqry='notes'}, cols = {@field='cols','NULL'}, dt_upd = getdate()
