@@ -1,0 +1,13 @@
+﻿<config namespace="page">
+  <queries>
+    <query name="save-backup-note">
+      <![CDATA[delete from backups where name_file = {@txtqry='name_file'};
+      insert into backups (name_file, notes)
+       values ({@txtqry='name_file'}, left({@txtqry='notes'}, 500))]]>
+    </query>
+    <query name="get-backup-notes">
+      <![CDATA[select name_file, notes from backups]]>
+    </query>
+  </queries>
+</config>
+

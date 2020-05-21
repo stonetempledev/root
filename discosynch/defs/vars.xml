@@ -1,0 +1,9 @@
+﻿<config>
+
+  <vars des="base">
+    <var name="db-connection" machine="dell-pc">conns.home</var>
+    <var name="tmp-folder">{@basepath}\tmp</var>
+    <var name="tmp-url">{@baseurl}tmp</var>
+  </vars>
+
+</config>

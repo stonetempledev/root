@@ -1,31 +1,31 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "toyn", "http://localhost/toyn", "{ED59C2AC-404F-434A-890E-9A721AAC5F36}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "deepanotes", "http://localhost/deepanotes", "{ED59C2AC-404F-434A-890E-9A721AAC5F36}"
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "false"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
 		ProjectReferences = "{DF53A516-E84C-464B-844B-B8C7D0E56974}|mlib.dll;"
-		Debug.AspNetCompiler.VirtualPath = "/toyn"
-		Debug.AspNetCompiler.PhysicalPath = "..\toyn\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\toyn\"
+		Debug.AspNetCompiler.VirtualPath = "/deepanotes"
+		Debug.AspNetCompiler.PhysicalPath = "..\deepanotes\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\deepanotes\"
 		Debug.AspNetCompiler.Updateable = "true"
 		Debug.AspNetCompiler.ForceOverwrite = "true"
 		Debug.AspNetCompiler.FixedNames = "false"
 		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/toyn"
-		Release.AspNetCompiler.PhysicalPath = "..\toyn\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\toyn\"
+		Release.AspNetCompiler.VirtualPath = "/deepanotes"
+		Release.AspNetCompiler.PhysicalPath = "..\deepanotes\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\deepanotes\"
 		Release.AspNetCompiler.Updateable = "true"
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		SlnRelativePath = "..\toyn\"
+		SlnRelativePath = "..\deepanotes\"
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mlib", "..\mlib\mlib.csproj", "{DF53A516-E84C-464B-844B-B8C7D0E56974}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "molinotes", "..\molinotes\molinotes.csproj", "{8770A572-097A-4C1B-B854-6F75717DD0F5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "discosynch", "..\discosynch\discosynch.csproj", "{8770A572-097A-4C1B-B854-6F75717DD0F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
