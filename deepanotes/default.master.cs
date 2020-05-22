@@ -92,9 +92,13 @@ public partial class _default : tl_master {
       string action = r.field("action"), obj = r.field("object")
         , synobj = r.field("syn-object"), subobj = r.field("subobj");
       bool action_opt = r.fld_bool("action-opt");
-      if (is_like_cmd(action, c.action) && is_like_cmd(obj, c.obj, synobj) && is_like_cmd(subobj, c.sub_obj())) { tr = r; c.obj = obj; break; }
+      if (is_like_cmd(action, c.action) && is_like_cmd(obj, c.obj, synobj) && is_like_cmd(subobj, c.sub_obj())) {
+        tr = r; c.obj = obj.Contains("{") ? c.obj : obj; break;
+      }
       if (action_opt) {
-        if (is_like_cmd(obj, c2.obj, synobj) && is_like_cmd(subobj, c2.sub_obj())) { tr = r; c2.action = action; c2.obj = obj; c = c2; break; }
+        if (is_like_cmd(obj, c2.obj, synobj) && is_like_cmd(subobj, c2.sub_obj())) {
+          tr = r; c2.action = action; c2.obj = obj.Contains("{") ? c.obj : obj; c = c2; break;
+        }
       }
     }
     if (tr == null) return null;

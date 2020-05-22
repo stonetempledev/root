@@ -31,12 +31,5 @@ namespace toyn {
       return val;
     }
 
-    // EMPHASIES
-
-    public List<emphasis> load_emphasies() {
-      return db_conn.dt_table(core.parse_query("base.emphasies")).Rows.Cast<DataRow>()
-        .Select(x => new emphasis() { style = db_provider.str_val(x["style"]), title = db_provider.str_val(x["title"])
-          , order = db_provider.int_val(x["order"]) }).ToList();
-    }
   }
 }

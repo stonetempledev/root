@@ -24,6 +24,7 @@ SINTASSI DICHIARAZIONE object, subobj
         <row name="base" title="Base Actions" des="azioni basilari ed essenziali"/>
         <row name="sys" title="System Actions" des="comandi di sistema speciali, per manutenzione ed amministrazione"/>
         <row name="users" title="Gestione Utenti" des="elenco utenti, aggiunta, modifica, etc..."/>
+        <row name="deepa-notes" title="Gestione Deepa Notes" des="comandi per la gestione dei contenuti"/>
         <row name="backups" title="Gestione Backups database" des="comandi per la gestione dei backups del database"/>
       </rows>
     </table>
@@ -45,6 +46,8 @@ SINTASSI DICHIARAZIONE object, subobj
         <row group="sys" action="crypt" object="{phrase}" subobj="{password}" des="cripta la frase specificata nel sistema interno con password" type="admin" compile="true"/>
         <row group="sys" action="decrypt" object="{phrase}" subobj="{password}" des="decripta la frase generata dal sistema interno con password" type="admin" compile="true"/>
         <row group="sys" action="check" object="conn" des="verifica connessione al database" type="admin" call="true"/>
+        <!-- deepa-notes -->
+        <row group="deepa-notes" action="view" object="notes" syn-object="note" page="ds.aspx" des="vista contenuti deppa notes" call="true"/>
         <!-- backups -->
         <row group="backups" action="gen" action-opt="true" object="backup" page="backups.aspx" des="genera backup del database" type="admin" call="true"/>
         <row group="backups" action="view" action-opt="true" object="backups" page="backups.aspx" des="elenco dei backups generati" type="admin" call="true"/>
