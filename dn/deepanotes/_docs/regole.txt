@@ -1,0 +1,8 @@
+﻿REGOLE FILES
+
+ . [titolo].[stato].[user].task: attività (lo stato di default è 'da fare')
+
+REGOLE CARTELLE
+
+ . [stato].[user].tasks: attività raggruppate per stato per averle tutte in un unico punto sul disco
+ . [titolo].[stato].[user].task: attività (lo stato se non specificato di default è 'da fare')

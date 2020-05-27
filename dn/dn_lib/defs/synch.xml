@@ -1,0 +1,54 @@
+﻿<config>
+  <queries>
+    <query name="folders">
+      <![CDATA[select sf.synch_folder_id, sf.[title], sf.[code], sf.[des], sf.synch_path, sf.client_path, sf.[user], sf.[password]
+ from synch_folders sf order by sf.[title]]]>
+    </query>
+    <query name="settings">
+      <![CDATA[select s.[name], s.[des], s.[value]
+ from synch_settings s order by s.[name]]]>
+    </query>
+    <!-- synch folder & files -->
+    <query name="clean-readed">
+      <![CDATA[update fs_folders set readed = null;
+      update fs_files set readed = null;]]>
+    </query>
+    <query name="del-unreaded">
+      <![CDATA[delete from fs_folders where readed is null;
+      delete from fs_files where readed is null;]]>
+    </query>
+    <query name="ins-folder">
+      <![CDATA[declare @id bigint; declare @tp varchar(10);
+      select top 1 @id = folder_id from fs_folders where parent_id {@field='cmp_p'} {@field='parent_id'} and folder_name = {@txtqry='folder_name'};
+      if(@id is null)
+      begin
+        insert into fs_folders (synch_folder_id, parent_id, folder_name, readed)
+          values ({@field='synch_folder_id'}, {@field='parent_id'}, {@txtqry='folder_name'}, 1);
+        select @id = @@IDENTITY, @tp = 'insert';  
+      end
+      else
+      begin
+       update fs_folders set readed = 1 where folder_id = @id;
+       select @tp = 'update';
+      end
+      select @id, @tp;]]>
+    </query>
+    <query name="ins-file">
+      <![CDATA[declare @id bigint; declare @tp varchar(10);
+      select top 1 @id = file_id from fs_files where folder_id = {@field='folder_id'} and file_name = {@txtqry='file_name'};
+      if(@id is null)
+      begin
+        insert into fs_files (folder_id, file_name, readed)
+          values ({@field='folder_id'}, {@txtqry='file_name'}, 1);
+        select @id = @@IDENTITY, @tp = 'insert';  
+      end
+      else 
+      begin
+       update fs_files set readed = 1 where file_id = @id;
+       select @tp = 'update';
+      end
+      select @id, @tp;]]>
+    </query>
+  </queries>
+</config>
+

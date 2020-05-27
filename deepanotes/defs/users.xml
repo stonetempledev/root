@@ -1,9 +1,0 @@
-﻿<config>
-  <queries>
-    <query name="users">
-      <![CDATA[select u.user_id, u.nome, u.email, u.dt_activate, u.activated, u.dt_upd
- from users u order by u.nome]]>
-    </query>
-  </queries>
-</config>
-

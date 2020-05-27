@@ -1,0 +1,4 @@
+﻿/ lettura cartelle-files
+ . non funziona ancora bene
+ . files di root
+. synch cartelle-files

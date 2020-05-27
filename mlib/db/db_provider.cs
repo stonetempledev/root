@@ -331,12 +331,12 @@ namespace mlib.db {
       try {
         if (open_conn()) opened = true;
 
-        if (open_trans && this.check_begin_trans()) trans = true; 
+        if (open_trans && this.check_begin_trans()) trans = true;
 
         StringBuilder sb = new StringBuilder();
         foreach (string line in sql_script.Split(new string[2] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries)) {
           if (line.ToUpper().Trim() == "GO") {
-            if(sb.Length > 0) this.exec(sb.ToString());
+            if (sb.Length > 0) this.exec(sb.ToString());
             sb.Clear();
           } else sb.AppendLine(line);
         }
@@ -378,14 +378,16 @@ namespace mlib.db {
         DbDataReader reader = cmd.ExecuteReader();
         if (reader.HasRows) {
           reader.Read();
-          string result = reader[0] != DBNull.Value ? Convert.ToString(reader[0]) : "-1";
+          string result = "";
+          for (int i = 0; i < reader.FieldCount; i++)
+            result += (i > 0 ? ";" : "") + (reader[i] != DBNull.Value ? Convert.ToString(reader[i]) : "");
 
           reader.Close();
 
           return result;
         } else reader.Close();
 
-        return "-1";
+        return "";
       } catch (Exception ex) { log.log_err_sql(ex, cur_sql); throw ex; } finally { if (opened) close_conn(); }
     }
 

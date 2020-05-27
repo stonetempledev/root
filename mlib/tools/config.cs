@@ -206,7 +206,7 @@ namespace mlib.tools {
       } catch (Exception ex) { throw new Exception("chiave conns.'" + nkey + "' - " + ex.Message); }
     }
 
-    public void load_doc(string doc_key, string vars_key, xml_doc doc, db_provider conn, Dictionary<string, object> keys, bool for_pg = false) {
+    public void load_doc(string doc_key, string vars_key, xml_doc doc, db_provider conn, Dictionary<string, object> keys = null, bool for_pg = false) {
 
       string var_key = !string.IsNullOrEmpty(vars_key) ? vars_key + "." : "";
 

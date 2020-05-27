@@ -24,7 +24,7 @@ namespace mlib {
 
     public core(string base_path, string base_url = "") {
       _base_path = base_path;
-      _base_url = !string.IsNullOrEmpty(base_url) ? base_url : app_setting("base_url");
+      _base_url = !string.IsNullOrEmpty(base_url) ? base_url : app_setting("base_url", false);
       _config = new config(this);
     }
 
@@ -39,7 +39,7 @@ namespace mlib {
       } catch (Exception ex) { _cfg_keys.Clear(); throw new Exception("caricamento documento '" + doc.path + "': " + ex.Message); }
     }
 
-    public void load_config(xml_doc doc, string doc_key, db_provider conn, Dictionary<string, object> keys, string vars_key = "", bool page = false) {
+    public void load_config(xml_doc doc, string doc_key, db_provider conn, Dictionary<string, object> keys = null, string vars_key = "", bool page = false) {
       try {
         if (!_cfg_keys.Keys.Contains(doc_key)) _cfg_keys.Add(doc_key, "doc_path");
         _config.load_doc(doc_key, vars_key, doc, conn, keys, page);
@@ -75,8 +75,10 @@ namespace mlib {
     public List<string> config_keys { get { return _cfg_keys.Keys.ToList(); } }
 
     public string app_setting(string name, bool throw_err = true) {
-      if (throw_err && System.Configuration.ConfigurationManager.AppSettings[name] == null)
-        throw new Exception("non c'è la variabile '" + name + "' nel config!");
+      if (System.Configuration.ConfigurationManager.AppSettings[name] == null) {
+        if(throw_err) throw new Exception("non c'è la variabile '" + name + "' nel config!");
+        return "";
+      }
       return parse(System.Configuration.ConfigurationManager.AppSettings[name] != null ?
         System.Configuration.ConfigurationManager.AppSettings[name].ToString() : "");
     }
