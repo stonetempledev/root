@@ -18,7 +18,7 @@
     </asp:ContentPlaceHolder>
   </head>
   <body>
-    <form id="frm_main" runat='server'>
+    <form id="frm_main" autocomplete="off" runat='server'>
     <div>
       <asp:ContentPlaceHolder ID="contents" runat="server">
       </asp:ContentPlaceHolder>

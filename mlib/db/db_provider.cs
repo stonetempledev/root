@@ -101,7 +101,10 @@ namespace mlib.db {
 
     static public int? int_n_val(object fld) { return fld == null || fld == DBNull.Value ? (int?)null : Convert.ToInt32(fld); }
 
-    static public DateTime? dt_val(object fld) { return fld == null || fld == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(fld); }
+    static public DateTime? dt_val(object fld) {
+      return fld == null || fld == DBNull.Value || (fld is string && fld.ToString() == "")
+        ? (DateTime?)null : Convert.ToDateTime(fld);
+    }
 
     public static string row_to_csv(DataRow dr) {
       string res = "";

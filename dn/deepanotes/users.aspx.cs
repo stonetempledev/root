@@ -45,11 +45,35 @@ public partial class _users : tl_page {
 
           json_request jr = new json_request(this);
 
-          //// set_title_hp
-          //if (jr.action == "set_title_hp") {
-          //  string new_title = hpb.set_main_title(jr.val_str("new_title"));
-          //  res.contents = !string.IsNullOrEmpty(new_title) ? new_title : "la " + user.name + " home page";
-          //}
+          // add_user
+          if (jr.action == "add_user") {
+            string user_name = jr.val_str("user_name"), email = jr.val_str("email")
+              , password = jr.val_str("password"), c_password = jr.val_str("c_password");
+
+            string tkey, akey;
+            us.add_utente(user_name, email, password, c_password, out tkey, out akey, 3);
+
+            send_mail(email, "conferma iscrizione al deepa-notes",
+              string.Format(@"<h2>{0}.</h2><p>Sei stato iscritto al <a href='{1}'>Deepa-Notes</a>!</p>
+                <p><i>Ecco la password: {3}</i></p>
+                <h3><a href='{1}confirm.aspx?akey={2}'>entra per confermare la tua iscrizione!</a></h3>"
+              , user_name, core.base_url, akey, password));
+          } // del_user
+          else if (jr.action == "del_user") {
+            us.del_utente(jr.val_int("id"));
+          } // disable_user
+          else if (jr.action == "disable_user") {
+            us.disable_utente(jr.val_int("id"));
+          } // active_user
+          else if (jr.action == "active_user") {
+            us.riactive_utente(jr.val_int("id"));
+            user u = us.get_user(jr.val_int("id"));
+
+            send_mail(u.email, "attivazione al deepa-notes",
+              string.Format(@"<h2>{0}.</h2><pSei stato iscritto al <a href='{1}'>Deepa-Notes</a>!</p>
+                <h3><a href='{1}login.aspx?nm={0}'>clicca qui per entrare, ma devi ricordare la password!</a></h3>"
+              , u.name, core.base_url));
+          }
 
         } catch (Exception ex) { log.log_err(ex); res = new json_result(json_result.type_result.error, ex.Message); }
 
@@ -64,17 +88,26 @@ public partial class _users : tl_page {
       // user
       StringBuilder sb = new StringBuilder();
       if (_cmd.action == "view" && _cmd.obj == "user") {
+        cmd_add.Value = master.url_cmd("add user");
         page_title.InnerText = "Utente loggato";
         sb.Append(core.parse_html_block("logged-user", new Dictionary<string, object>() { { "us", user } }));
+        view.InnerHtml = sb.ToString();
+
       }  // users
       else if (_cmd.action == "view" && _cmd.obj == "users") {
+        cmd_add.Value = master.url_cmd("add user");
         page_title.InnerText = "Elenco utenti";
-        foreach (user u in us.list_users()) {
+        foreach (user u in us.list_users())
           sb.Append(core.parse_html_block("user", new Dictionary<string, object>() { { "us", u } }));
-        }
+        view.InnerHtml = sb.ToString();
+      } // add user
+      else if (_cmd.action == "add" && _cmd.obj == "user") {
+        cmd_users.Value = master.url_cmd("view utenti");
+        page_title.InnerText = "Nuovo utente";
+        view.Visible = false;
+        add.Visible = true;
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
-      content.InnerHtml = sb.ToString();
 
     } catch (Exception ex) { log.log_err(ex); if (!json_request.there_request(this)) master.err_txt(ex.Message); }
   }

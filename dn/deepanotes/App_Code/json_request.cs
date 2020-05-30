@@ -43,5 +43,5 @@ public class json_request
     _jo = JObject.Parse(json);
 	}
 
-  public static bool there_request(tl_page page) { return page.Request.Headers["toyn-post"] != null; }
+  public static bool there_request(tl_page page) { return page.Request.Headers["dn-post"] != null; }
 }

@@ -31,6 +31,8 @@
       this.lw_msg = new System.Windows.Forms.ListView();
       this.first = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
       this.tmr_synch = new System.Windows.Forms.Timer(this.components);
+      this.btn_max = new System.Windows.Forms.Button();
+      this.btn_min = new System.Windows.Forms.Button();
       this.SuspendLayout();
       // 
       // lbl_title
@@ -38,6 +40,7 @@
       this.lbl_title.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.lbl_title.BackColor = System.Drawing.Color.PaleTurquoise;
+      this.lbl_title.Cursor = System.Windows.Forms.Cursors.Hand;
       this.lbl_title.Font = new System.Drawing.Font("Segoe UI Light", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.lbl_title.Location = new System.Drawing.Point(-1, 0);
       this.lbl_title.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
@@ -71,7 +74,7 @@
       this.btn_ok.ForeColor = System.Drawing.Color.RoyalBlue;
       this.btn_ok.Location = new System.Drawing.Point(611, 0);
       this.btn_ok.Name = "btn_ok";
-      this.btn_ok.Size = new System.Drawing.Size(36, 31);
+      this.btn_ok.Size = new System.Drawing.Size(36, 33);
       this.btn_ok.TabIndex = 3;
       this.btn_ok.Text = "X";
       this.btn_ok.UseVisualStyleBackColor = false;
@@ -101,9 +104,42 @@
       // 
       // tmr_synch
       // 
-      this.tmr_synch.Enabled = true;
       this.tmr_synch.Interval = 10000;
       this.tmr_synch.Tick += new System.EventHandler(this.tmr_synch_Tick);
+      // 
+      // btn_max
+      // 
+      this.btn_max.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.btn_max.BackColor = System.Drawing.Color.PaleTurquoise;
+      this.btn_max.Cursor = System.Windows.Forms.Cursors.Hand;
+      this.btn_max.FlatAppearance.BorderSize = 0;
+      this.btn_max.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+      this.btn_max.Font = new System.Drawing.Font("Segoe UI Emoji", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.btn_max.ForeColor = System.Drawing.Color.RoyalBlue;
+      this.btn_max.Location = new System.Drawing.Point(571, 0);
+      this.btn_max.Name = "btn_max";
+      this.btn_max.Size = new System.Drawing.Size(36, 33);
+      this.btn_max.TabIndex = 5;
+      this.btn_max.Text = "_";
+      this.btn_max.UseVisualStyleBackColor = false;
+      this.btn_max.Click += new System.EventHandler(this.btn_min_Click);
+      // 
+      // btn_min
+      // 
+      this.btn_min.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.btn_min.BackColor = System.Drawing.Color.PaleTurquoise;
+      this.btn_min.Cursor = System.Windows.Forms.Cursors.Hand;
+      this.btn_min.FlatAppearance.BorderSize = 0;
+      this.btn_min.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+      this.btn_min.Font = new System.Drawing.Font("Segoe UI Emoji", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.btn_min.ForeColor = System.Drawing.Color.RoyalBlue;
+      this.btn_min.Location = new System.Drawing.Point(531, 0);
+      this.btn_min.Name = "btn_min";
+      this.btn_min.Size = new System.Drawing.Size(36, 33);
+      this.btn_min.TabIndex = 6;
+      this.btn_min.Text = "_";
+      this.btn_min.UseVisualStyleBackColor = false;
+      this.btn_min.Click += new System.EventHandler(this.btn_min_Click_1);
       // 
       // frm_synch
       // 
@@ -112,6 +148,8 @@
       this.BackColor = System.Drawing.Color.White;
       this.ClientSize = new System.Drawing.Size(646, 441);
       this.ControlBox = false;
+      this.Controls.Add(this.btn_min);
+      this.Controls.Add(this.btn_max);
       this.Controls.Add(this.lw_msg);
       this.Controls.Add(this.btn_ok);
       this.Controls.Add(this.lbl_title);
@@ -137,6 +175,8 @@
     private System.Windows.Forms.ListView lw_msg;
     private System.Windows.Forms.ColumnHeader first;
     private System.Windows.Forms.Timer tmr_synch;
+    private System.Windows.Forms.Button btn_max;
+    private System.Windows.Forms.Button btn_min;
   }
 }
 

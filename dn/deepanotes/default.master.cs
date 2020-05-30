@@ -37,7 +37,7 @@ public partial class _default : tl_master {
         u_id = 0; u_tp = user.type_user.admin;
       } else {
         DataRow dr = tlp.db_conn.first_row(@"select nome, email, isnull(activated, 0) as activated 
-        from users where nome = '" + u_name + "';");
+          from users where user_id = " + u_id.ToString());
         if (dr == null || Convert.ToInt16(dr["activated"]) != 1) { tlp.log_out("login.aspx"); return; }
         u_email = dr["email"].ToString(); u_tp = user.type_user.normal;
       }
@@ -107,6 +107,10 @@ public partial class _default : tl_master {
     c.sub_code = tr.field("sub-code");
     c.type = tr.field("type");
     c.page = tr.field("page");
+
+    cmd_action.Value = c.action;
+    cmd_obj.Value = c.obj;
+
     return c;
   }
 

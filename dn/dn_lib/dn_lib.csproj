@@ -45,6 +45,7 @@
     <Compile Include="synch\synch.cs" />
     <Compile Include="synch\synch_folder.cs" />
     <Compile Include="synch\synch_setting.cs" />
+    <Compile Include="task.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="defs\base.xml" />

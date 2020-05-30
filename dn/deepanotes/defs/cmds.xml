@@ -1,11 +1,11 @@
-﻿<!-- GRUPPI COMANDI TOYN
+﻿<!-- GRUPPI COMANDI DEEPA-NOTES
 
 name: codice gruppo comandi
 title: titolo gruppo di comandi 
 des: descrizione gruppo di comandi
 
 -->
-<!-- COMANDI TOYN
+<!-- COMANDI DEEPA-NOTES
 
 group: gruppo d'appartenenza dell'azione
 action: azione principale obbligatoria
@@ -36,6 +36,7 @@ SINTASSI DICHIARAZIONE object, subobj
         <!-- users -->
         <row group="users" action="view" action-opt="true" object="user" page="users.aspx" syn-object="utente" des="visualizza i dettagli sull'utente loggato" call="true"/>
         <row group="users" action="view" action-opt="true" object="users" page="users.aspx" syn-object="utenti" des="elenco degli utenti registrati" call="true" type="admin"/>
+        <row group="users" action="add" object="user" page="users.aspx" syn-object="utente" des="aggiunta utente" call="true" type="admin"/>
         <!-- sys -->
         <row group="sys" action="view" action-opt="true" object="cmds" syn-object="comandi" des="elenco di tutti i comandi disponibili" call="true"/>
         <row group="sys" action="view" action-opt="true" object="vars" syn-object="variabili" des="elenco delle variabili di sistema" type="admin" call="true"/>
@@ -48,7 +49,7 @@ SINTASSI DICHIARAZIONE object, subobj
         <row group="sys" action="check" object="conn" des="verifica connessione al database" type="admin" call="true"/>
         <row group="sys" action="view" action-opt="true" object="synch" subobj="settings" page="synch.aspx" des="verifica impostazioni di sincronizzazione cartelle" type="admin" call="true"/>
         <!-- deepa-notes -->
-        <row group="deepa-notes" action="view" object="notes" syn-object="note" page="notes.aspx" des="vista contenuti deppa notes" call="true"/>
+        <row group="deepa-notes" action="view" object="notes" syn-object="note" page="notes.aspx" des="vista contenuti deepa-notes" call="true"/>
         <!-- backups -->
         <row group="backups" action="gen" action-opt="true" object="backup" page="backups.aspx" des="genera backup del database" type="admin" call="true"/>
         <row group="backups" action="view" action-opt="true" object="backups" page="backups.aspx" des="elenco dei backups generati" type="admin" call="true"/>

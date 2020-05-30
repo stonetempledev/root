@@ -12,13 +12,13 @@
   <script src="js/bs-4.3.1/js/bootstrap.bundle.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="js/mdb-4.16.0/js/mdb.min.js"></script>
   <script src="js/common.js" type="text/javascript"></script>
-  <title>toyn</title>
+  <title>deepa-notes</title>
   <head runat="server">
     <asp:ContentPlaceHolder ID="head" runat="server">
     </asp:ContentPlaceHolder>
   </head>
   <body>
-    <form id="frm_main" runat='server'>
+    <form id="frm_main" runat='server' autocomplete="off">
     <div>
       <asp:ContentPlaceHolder ID="contents" runat="server">
       </asp:ContentPlaceHolder>

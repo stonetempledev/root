@@ -6,13 +6,13 @@
     <div class='row'>
       <div class="col">
         <h2 id='txt_title' runat='server'>
-          Entra in toyn!</h2>
+          Entra nella deepa-notes!</h2>
       </div>
     </div>
     <div class='row' style='padding-top: 20px;'>
       <div class="col">
         <label class='h4'>
-          Password <small>(dev'essere lunga almeno 8 caratteri)</small></label>
+          Password <small>(dev'essere lunga almeno 3 caratteri)</small></label>
         <input id="user_pass" type="password" runat='server' class="form-control" placeholder="Password" />
       </div>
     </div>

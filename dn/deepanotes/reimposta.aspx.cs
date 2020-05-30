@@ -28,7 +28,7 @@ public partial class reimposta : tl_page {
   protected void Go_Click (object sender, EventArgs e) {
     try {
       if (user_pass.Value == "") err_msg("devi scrivere la password!");
-      else if (user_pass.Value.Length < 8) err_msg("la password dev'essere almeno di 8 caratteri!");
+      else if (user_pass.Value.Length < 3) err_msg("la password dev'essere almeno di 3 caratteri!");
       else if (user_pass2.Value == "") err_msg("devi confermare la password!");
       else if (user_pass.Value != user_pass2.Value) err_msg("la conferma della password è andata male!");
       else {

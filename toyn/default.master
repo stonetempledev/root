@@ -347,7 +347,7 @@
   </script>
 </head>
 <body>
-  <form mainform='true' runat="server" novalidate>
+  <form mainform='true' runat="server" autocomplete="off" novalidate>
   <input id='__action' type='hidden' runat='server' />
   <input id='__args' type='hidden' runat='server' />
   <input id='__utype' type='hidden' runat='server' />

@@ -5,8 +5,8 @@
 <html lang="en">
 <head runat="server">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
-  <title>toyn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
+  <title>deepa-notes</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700&amp;display=swap">
   <link href="js/fontawesome-5.13.0/css/all.min.css" rel="stylesheet">
   <link href="js/bs-4.3.1/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
@@ -30,7 +30,7 @@
 
       // init sidebar menu
       var sb_init = $("[sidebar-tp=menu]").attr("sidebar-init");
-      sh_init(sb_init ? (sb_init == "show" && (ds != "sm" && ds != "xs") ? "show" : "hide"): "hide");
+      sh_init(sb_init ? (sb_init == "show" && (ds != "sm" && ds != "xs") ? "show" : "hide") : "hide");
     });
 
     function get_dev_size() { return $('#dev-size-detector').find('div:visible').first().attr('id'); }
@@ -175,7 +175,7 @@
           url: location,
           data: JSON.stringify(doc),
           contentType: "application/json; charset=utf-8",
-          headers: { "toyn-post": "true" },
+          headers: { "dn-post": "true" },
           dataType: "json", async: false,
           success: function (data) { result = data; },
           error: function (req, txt_status, err) {
@@ -202,27 +202,27 @@
 
     function set_sub_cmds(voices) {
       var html = "";
-      voices.forEach(function (o) { html += "<a class='dropdown-item' href='javascript:" + o.fnc + "'>" + o.title + "</a>"; });
+      voices.forEach(function (o) { html += "<a class='dropdown-item' href='javascript:" + o.fnc + "'><h4>" + o.title + "</h4></a>"; });
 
       $("#grp_vai").append("<div class='input-group-append'>"
         + "<button id='btn_sub' class='btn btn-sm m-0 ml-2 mt-1 p-0' style='height:35px;width:45px;' type='button' data-toggle='dropdown'>"
         + " <span class='white-text h5'><i class='fas fa-bars'></i></span></button>"
-        + "  <div class='dropdown-menu dropdown-menu-right'>" + html + "  </div></div>");
+        + "  <div class='dropdown-menu dropdown-menu-right mr-2'>" + html + "  </div></div>");
     }
 
     // messaggi temporanei...
 
     var _err = false;
     function class_navbar() { return $("#__utype").val() == "admin" ? "bg-warning" : "bg-primary"; }
-    function status_txt_ms(txt) { status_txt(txt, 4000); }
-    function status_txt(txt, ms) {
+    function status_txt_ms(txt, fnc_end) { status_txt(txt, 4000, fnc_end); }
+    function status_txt(txt, ms, fnc_end) {
       $("#navbar").removeClass(class_navbar() + " bg-danger").addClass("bg-success");
       $("#grp_vai").removeClass("d-flex").addClass("d-none");
       $("#lbl_status").show().text(txt);
       $("#grp_err").removeClass("d-flex").addClass("d-none");
-      if (ms) end_status_to(ms);
+      if (ms) end_status_to(ms, fnc_end);
     }
-    function end_status_to(ms) { window.setTimeout(function () { end_status(); }, ms ? ms : 500); }
+    function end_status_to(ms, fnc_end) { window.setTimeout(function () { if (fnc_end) fnc_end(); else end_status(); }, ms ? ms : 500); }
     function end_status() {
       if (!_err) {
         $("#navbar").removeClass("bg-success bg-danger").addClass(class_navbar());
@@ -334,7 +334,7 @@
         }
         // desktop
         else {
-          $("[sidebar-tp=menu]").removeClass().addClass("d-none sidebar"); 
+          $("[sidebar-tp=menu]").removeClass().addClass("d-none sidebar");
           $("[sidebar-tp=body]").removeClass().addClass("col-md-12 ml-sm-auto");
         }
         $("[sidebar-tp=icon]").removeClass().addClass("fas fa-angle-double-right");
@@ -347,10 +347,13 @@
   </script>
 </head>
 <body>
-  <form mainform='true' runat="server" novalidate>
+  <form mainform='true' runat="server" novalidate autocomplete="off" >
   <input id='__action' type='hidden' runat='server' />
   <input id='__args' type='hidden' runat='server' />
   <input id='__utype' type='hidden' runat='server' />
+  <!-- cmd -->
+  <input id='cmd_action' type='hidden' runat='server' />
+  <input id='cmd_obj' type='hidden' runat='server' />
   <!-- bootstrap: ottiene la dimensione dello schermo -->
   <div id="dev-size-detector">
     <div id="xs" class="d-block d-sm-none">

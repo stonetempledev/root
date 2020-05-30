@@ -39,10 +39,20 @@ namespace dn_lib {
       return res.Split(new char[] { ';' })[0] != "" ? long.Parse(res.Split(new char[] { ';' })[0]) : -1;
     }
 
-    public long ins_file(long folder_id, string file_name, out string tp) {
+    public long ins_file(int synch_folder_id, long? folder_id, string file_name, out string tp) {
       tp = "";
-      string res = db_conn.exec(core.parse_query("synch.ins-file", new string[,] { { "folder_id", folder_id.ToString() }
+      string res = db_conn.exec(core.parse_query("synch.ins-file", new string[,] { { "synch_folder_id", synch_folder_id.ToString() }
+        , { "folder_id", !folder_id.HasValue ? "null" : folder_id.ToString() }, { "cmp_f", !folder_id.HasValue ? "is" : "=" }
         , { "file_name", file_name }}), true, true);
+      tp = res.Split(new char[] { ';' })[1];
+      return res.Split(new char[] { ';' })[0] != "" ? long.Parse(res.Split(new char[] { ';' })[0]) : -1;
+    }
+
+    public long ins_task(task t, out string tp) {
+      tp = "";
+      if (t == null) return 0;
+      string res = db_conn.exec(core.parse_query("synch.ins-task", new Dictionary<string, object>() { { "task", t }
+      , { "folder_id", t.folder_id.HasValue ? t.folder_id.Value : 0 }, { "file_id", t.file_id.HasValue ? t.file_id.Value : 0 }}), true, true);
       tp = res.Split(new char[] { ';' })[1];
       return res.Split(new char[] { ';' })[0] != "" ? long.Parse(res.Split(new char[] { ';' })[0]) : -1;
     }

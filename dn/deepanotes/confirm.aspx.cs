@@ -19,7 +19,7 @@ public partial class confirm : tl_page {
       where activate_key = '{0}';", qry_val("akey")));
 
       lbl_user.Value = dr["nome"].ToString();
-      txt_title.InnerText = string.Format("{0}, ora sei iscritto al toyn!", dr["nome"]);
+      txt_title.InnerText = string.Format("{0}, ora sei iscritto al deepa-notes!", dr["nome"]);
       txt_body.InnerText = string.Format("Per entrare digita l'utente '{0}' e la password giusta!", dr["nome"]);
       c_down.Visible = true;
     } catch (Exception ex) {

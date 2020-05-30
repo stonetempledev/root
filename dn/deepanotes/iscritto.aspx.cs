@@ -26,10 +26,10 @@ public partial class login : tl_page {
       string upass = get_cache_var("tmp_password");
       set_cache_var("tmp_password", "");
 
-      send_mail(dr["email"].ToString(), "conferma iscrizione al toyn",
-        string.Format(@"<h2>Ciao {0}!</h2><p>Ti sei appena iscritto al <a href='{1}'>TOYN</a>!</p>
-          <p><i>Se ti sei già dimenticato la password eccola qua: {3}</i></p>
-          <h3><a href='{1}confirm.aspx?akey={2}'>Clicca qui per confermare la tua iscrizione!</a></h3>"
+      send_mail(dr["email"].ToString(), "conferma iscrizione al deepa-notes",
+        string.Format(@"<h2>{0}.</h2><p>Ti sei iscritto al <a href='{1}'>Deepa-Notes</a>!</p>
+          <p><i>Ecco la password: {3}</i></p>
+          <h3><a href='{1}confirm.aspx?akey={2}'>entra per confermare la tua iscrizione!</a></h3>"
         , dr["nome"], core.base_url, dr["activate_key"], upass));
 
       txt_title.InnerText = string.Format("Ciao {0}!", dr["nome"]);

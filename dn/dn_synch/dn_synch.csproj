@@ -120,6 +120,7 @@
     <Content Include="..\dn_lib\defs\synch.xml">
       <Link>defs\synch.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="..\dn_lib\defs\vars.xml">
       <Link>defs\vars.xml</Link>

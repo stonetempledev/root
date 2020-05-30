@@ -19,7 +19,7 @@ public partial class reiscritto : tl_page {
       db_conn.exec(string.Format(@"update users set activate_key = null 
         where activated = 1 and activate_key = '{0}';", qry_val("akey")));
 
-      txt_title.InnerText = string.Format("{0} hai aggiornato la password del toyn!", dr["nome"]);
+      txt_title.InnerText = string.Format("{0} hai aggiornato la password della deepa-notes!", dr["nome"]);
       txt_body.InnerHtml = "<a href='login.aspx?nm=" + dr["nome"].ToString() + "'>Puoi entrare con la tua nuova password...</a>";
     } catch (Exception ex) {
       log.log_err(ex);

@@ -16,7 +16,7 @@
     <var name=".net-user">admin</var>
     <var name=".net-pwd">Homme33!</var>
     <var name=".net-folder">\\192.168.1.3\lantern\_bck\deepanotes</var>
-    <var name=".libs-folders">C:\_todd\root\dn\_images,C:\_todd\root\dn\dn_client,C:\_todd\root\dn\dn_lib,C:\_todd\root\dn\dn_synch</var>
+    <var name=".libs-folders">C:\_todd\root\mlib,C:\_todd\root\discosynch</var>
     <var name=".sql-command"><![CDATA[BACKUP DATABASE [deepanotes] TO DISK = '##TMP-FILE##' with init]]></var>
     <var name=".sql-command-restore">
       <![CDATA[ALTER DATABASE [deepanotes] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
