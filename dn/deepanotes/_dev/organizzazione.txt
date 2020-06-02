@@ -1,0 +1,18 @@
+﻿my desktop
+ appunti
+ pannello
+ estrazione dati\
+ procedure\
+ pannello-checker
+al volo
+ _fixini
+ _insospeso
+ _segnalazioni
+ *.task
+storico attivita
+storico fixini
+docuteck
+data
+ accounts
+ links
+ appunti

@@ -22,8 +22,7 @@ using mlib.xml;
 using dn_lib;
 using deepanotes;
 
-public partial class _synch : tl_page
-{
+public partial class _synch : tl_page {
 
   protected cmd _cmd = null;
 
@@ -65,23 +64,25 @@ public partial class _synch : tl_page
       if (_cmd != null && _cmd.action == "view" && _cmd.obj == "synch" && _cmd.sub_obj() == "settings") {
         page_title.InnerText = "Synch Settings";
         page_des.InnerText = "impostazioni di sincronizzazione delle cartelle di rete con il deepa-notes";
+        StringBuilder sb = new StringBuilder();
+        
+        // synch machines
+        sb.Append(hb.section_title("Synch Machines", "pc con cartelle condivise con i contenuti") + hb.open_list());
+        foreach (synch_machine sm in ob.list_synch_machine()) {
+          sb.Append(hb.list_item(sm.pc_name, sm.pc_des, sub_items: new string[] { "ip: <b>" + sm.ip_address + "</b>, <b>" + (sm.active ? "ATTIVO" : "DISATTIVO") + "</b>"
+           + ", stato: <b>" + (sm.state == synch_machine.states.start ? "<span class='green-text'>STA GIRANDO</span>" : "<span class='deep-orange-text'>FERMO</span>") + "</b>"
+           + ", secondi scan: <b>" + sm.s_synch.ToString() + "</b>, cartelle: <b>" + sm.c_folders.ToString() + "</b>, files: <b>" + sm.c_files.ToString() + "</b>"}));
+        }
+        sb.Append(hb.close_list());
 
         // folders
-        StringBuilder sb = new StringBuilder(hb.section_title("Synch Folders", "cartelle di riferimento con i contenuti")
+        sb.Append(hb.section_title("Synch Folders", "cartelle di riferimento con i contenuti")
           + hb.open_list());
-        foreach (synch_folder sf in ob.list_synch_folders()) {
-          sb.Append(hb.list_item(sf.title, sf.des, sub_items: new string[] { "code: " + sf.code, "synch path: <b>" + sf.synch_path + "</b>, client path: <b>" + sf.client_path + "</b>"}));
+        foreach (dn_lib.synch_folder sf in ob.list_synch_folders(Environment.MachineName)) {
+          sb.Append(hb.list_item(sf.title, sf.des, sub_items: new string[] { "pc: <span class='h6'>" + sf.pc_name + "</span>, local path: <b>" + sf.local_path + "</b>, http path: <b>" + sf.http_path + "</b>" }));
         }
         sb.Append(hb.close_list());
-        content.InnerHtml = sb.ToString();
 
-        // settings
-        sb.Append(hb.section_title("Synch Settings", "impostazioni servizio di sincronizzazione contenuti")
-          + hb.open_list());
-        foreach (synch_setting s in ob.list_settings()) {
-          sb.Append(hb.list_item(s.name, s.des, sub_items: new string[] { "valore: " + s.value }));
-        }
-        sb.Append(hb.close_list());
         content.InnerHtml = sb.ToString();
 
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");

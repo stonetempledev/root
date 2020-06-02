@@ -25,7 +25,7 @@ public partial class _default : tl_page {
 
   protected override void OnLoad (EventArgs e) {
     base.OnLoad(e);
-    this.master.elab_cmd("view notes");
+    this.master.elab_cmd("attivita");
   }
 
   protected override void OnUnload (EventArgs e) {

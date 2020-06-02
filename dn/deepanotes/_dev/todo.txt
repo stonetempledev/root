@@ -1,6 +1,6 @@
-﻿. pcs - machine name - ip, etc....
- . dn_synch multipli che girano da più machine name diverse
-/ task
+﻿/ .task - vista attivita
+. .md
  . contenuti
-. tasks
-. client synch in un unico eseguibbile!
+ . procedure
+ . appunti
+ . links

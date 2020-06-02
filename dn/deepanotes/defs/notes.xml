@@ -1,0 +1,21 @@
+﻿<config>
+  <queries>
+    <query name="folders-tree">
+      <![CDATA[with dn_folders_tree (synch_folder_id, folder_id, parent_id, folder_name, lvl)
+as
+ (select synch_folder_id, folder_id, parent_id, folder_name, 1 as lvl 
+  from dn_folders where parent_id is null
+  union all select dn_folders.synch_folder_id, dn_folders.folder_id, dn_folders.parent_id, dn_folders.folder_name, dn_folders_tree.lvl + 1
+   from dn_folders 
+   inner join dn_folders_tree on dn_folders.parent_id = dn_folders_tree.folder_id)
+select t.*
+ from (
+  select 'synch_folder' as tp, sf.synch_folder_id, null as folder_id, null as parent_id, sf.title, sf.des, sf.http_path, 0 as lvl
+   from synch_folders sf
+  union select 'folder' as tp, ft.synch_folder_id, ft.folder_id, ft.parent_id, ft.folder_name as title, null as des, null as http_path, ft.lvl
+   from dn_folders_tree ft) t
+  order by t.lvl]]>
+    </query>
+  </queries>
+</config>
+

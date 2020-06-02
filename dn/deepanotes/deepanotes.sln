@@ -25,8 +25,6 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "deepanotes", "http://localh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dn_synch", "..\dn_synch\dn_synch.csproj", "{8770A572-097A-4C1B-B854-6F75717DD0F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dn_client", "..\dn_client\dn_client.csproj", "{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mlib", "..\..\mlib\mlib.csproj", "{DF53A516-E84C-464B-844B-B8C7D0E56974}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dn_lib", "..\dn_lib\dn_lib.csproj", "{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}"
@@ -61,16 +59,6 @@ Global
 		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Release|Mixed Platforms.Build.0 = Release|x86
 		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Release|x86.ActiveCfg = Release|x86
 		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Release|x86.Build.0 = Release|x86
-		{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}.Debug|x86.ActiveCfg = Debug|x86
-		{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}.Debug|x86.Build.0 = Debug|x86
-		{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}.Release|Any CPU.ActiveCfg = Release|x86
-		{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}.Release|Mixed Platforms.Build.0 = Release|x86
-		{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}.Release|x86.ActiveCfg = Release|x86
-		{5F39F7C4-1819-44C2-94C7-5F09E101BCB4}.Release|x86.Build.0 = Release|x86
 		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF53A516-E84C-464B-844B-B8C7D0E56974}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

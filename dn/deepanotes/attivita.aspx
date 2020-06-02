@@ -1,7 +1,25 @@
-<%@ Page Language="C#" MasterPageFile="~/default.master" AutoEventWireup="true" CodeFile="notes.aspx.cs"
-  Inherits="_notes" ClientIDMode="Static" %>
+<%@ Page Language="C#" MasterPageFile="~/default.master" AutoEventWireup="true" CodeFile="attivita.aspx.cs"
+  Inherits="_attivita" ClientIDMode="Static" %>
 
 <asp:Content ContentPlaceHolderID="head" runat="Server">
+  <style>
+    .primo *
+    {
+      color: steelblue;
+    }
+    .secondo *
+    {
+      color: skyblue;
+    }
+    .terzo * 
+    {
+      color: lightcyan;
+    }
+    .quarto *
+    {
+      color: whitesmoke;
+    }
+  </style>
   <script type="text/javascript" language="javascript">
 
     $(document).ready(function () {
@@ -15,7 +33,7 @@
   <div class="container-fluid">
     <div class="row mb-4">
       <!-- sidebar menu -->
-      <nav sidebar-tp='menu' class='d-none' sidebar-init='hide'>
+      <nav sidebar-tp='menu' class='d-none' sidebar-init='show'>
         <div id='menu' class='sidebar-sticky' runat='server'>
         </div>
       </nav>

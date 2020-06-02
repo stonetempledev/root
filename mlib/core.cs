@@ -195,13 +195,19 @@ namespace mlib {
                 }
               // {@txtqry='<FIELD NAME>'}
               case "txtqry": {
-                  string val = get_val(par, flds, dr).ToString().Replace("'", "''").Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
+                  string val = get_val(par, flds, dr).Replace("'", "''").Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
                   value = val != "" ? string.Format("'{0}'", val) : "NULL";
+                  break;
+                }
+              // {@dateqry='<FIELD NAME>'}
+              case "dateqry": {
+                  DateTime dt;
+                  value = DateTime.TryParse(get_val(par, flds, dr), out dt) ? db_provider.dt_qry(dt) : "NULL";
                   break;
                 }
               // {@txtvoid='<FIELD NAME>'}
               case "txtvoid": {
-                  string val = get_val(par, flds, dr).ToString().Replace("'", "''").Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
+                  string val = get_val(par, flds, dr).Replace("'", "''").Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
                   value = val != "" ? string.Format("'{0}'", val) : "''";
                   break;
                 }

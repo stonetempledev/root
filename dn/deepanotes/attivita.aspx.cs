@@ -21,7 +21,7 @@ using mlib.tools;
 using mlib.xml;
 using deepanotes;
 
-public partial class _notes : tl_page {
+public partial class _attivita : tl_page {
 
   protected cmd _cmd = null;
 
@@ -58,8 +58,34 @@ public partial class _notes : tl_page {
         return;
       }
 
-      // view
-      if (_cmd != null && _cmd.action == "view" && _cmd.obj == "notes") {
+      // tasks
+      if (_cmd != null && _cmd.action == "view" && _cmd.obj == "tasks") {
+        // carico la struttura folders
+        List<synch_folder> sf = ob.load_folders();
+
+        // menu
+        StringBuilder sb = new StringBuilder();
+        sb.Append(@"<ul class='nav flex-column'>
+            <li class='primo'><a class='h5' href='#'>Primo Livello</a></li>
+            <ul>
+              <li class='secondo'><a href='#'>Secondo Livello</a></li>
+              <li class='secondo'><a href='#'>Secondo Livello</a></li>
+              <ul>
+                <li class='terzo'><a href='#'>terzo livello</a></li>
+                <li class='terzo'><a href='#'>terzo livello</a></li>
+                <li class='terzo'><a href='#'>terzo livello</a></li>
+                <li class='terzo'><a href='#'>terzo livello</a></li>
+                <ul>
+                  <li class='quarto'><a href='#'>quarto livello</a></li>
+                  <li class='quarto'><a href='#'>quarto livello</a></li>
+                </ul>
+              </ul>
+            </ul>
+          </ul>");
+        menu.InnerHtml = sb.ToString();
+
+        // vista attivita
+
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
     } catch (Exception ex) { log.log_err(ex); if (!json_request.there_request(this)) master.err_txt(ex.Message); }

@@ -1,12 +1,29 @@
 ﻿<config>
   <queries>
     <query name="folders">
-      <![CDATA[select sf.synch_folder_id, sf.[title], sf.[code], sf.[des], sf.synch_path, sf.client_path, sf.[user], sf.[password]
- from synch_folders sf order by sf.[title]]]>
+      <![CDATA[select sf.synch_folder_id, sf.pc_name, sf.[title], sf.[des], sf.local_path, sf.http_path, sf.[user], sf.[password]
+        from synch_folders sf where sf.pc_name = {@txtqry='pc_name'} order by sf.[title]]]>
     </query>
-    <query name="settings">
-      <![CDATA[select s.[name], s.[des], s.[value]
- from synch_settings s order by s.[name]]]>
+    <!-- synch machine -->
+    <query name="synch-machines">
+      <![CDATA[select sm.synch_machine_id, sm.pc_name, sm.pc_des, sm.ip_address, sm.state, sm.seconds
+        , sm.active, sm.dt_start, sm.dt_stop, sm.dt_lastsynch, sm.c_folders, sm.c_files, sm.c_deleted, sm.s_synch
+       from synch_machines sm]]>
+    </query>
+    <query name="start-synch-machine">
+      <![CDATA[select synch_machine_id, pc_name, pc_des, seconds, active, state
+       from synch_machines where pc_name = {@txtqry='pc_name'}]]>
+    </query>
+    <query name="start-machine">
+      <![CDATA[update synch_machines set state = 'start', ip_address = {@txtqry='ip_address'}, dt_start = getdate() where synch_machine_id = {@field='id'}]]>
+    </query>
+    <query name="stop-machine">
+      <![CDATA[update synch_machines set state = null, dt_stop = getdate() where synch_machine_id = {@field='id'}]]>
+    </query>
+    <query name="last-synch-machine">
+      <![CDATA[update synch_machines set dt_lastsynch = getdate(), c_folders = {@null='folders'}, c_files = {@null='files'}
+         , c_deleted = {@null='deleted'}, s_synch = {@null='seconds'}
+        where synch_machine_id = {@field='id'}]]>
     </query>
     <!-- synch folder, files, tasks -->
     <query name="clean-readed">
@@ -56,13 +73,14 @@
       select top 1 @id = task_id from dn_tasks where isnull(folder_id, 0) = {@field='folder_id'} and isnull(file_id, 0) = {@field='file_id'};
       if(@id is null)
       begin
-        insert into dn_tasks (folder_id, file_id, title, [user], stato, readed)
-          values ({@null='task.folder_id'}, {@null='task.file_id'}, {@txtqry='task.title'}, {@txtqry='task.user'}, {@txtqry='task.stato'}, 1);
+        insert into dn_tasks (folder_id, file_id, title, [user], stato, dt_upd, readed)
+          values ({@null='task.folder_id'}, {@null='task.file_id'}, {@txtqry='task.title'}
+            , {@txtqry='task.user'}, {@txtqry='task.stato'}, {@dateqry='task.dt_upd'}, 1);
         select @id = @@IDENTITY, @tp = 'insert';  
       end
       else 
       begin
-       update dn_tasks set readed = 1 where task_id = @id;
+       update dn_tasks set readed = 1, dt_upd = {@dateqry='task.dt_upd'} where task_id = @id;
        select @tp = 'update';
       end
       select @id, @tp;]]>

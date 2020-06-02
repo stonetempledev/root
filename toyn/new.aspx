@@ -15,14 +15,14 @@
     <div class='row'>
       <div class="col">
         <h2>
-          Entra in toyn!</h2>
+          Nuova registrazione Toyn!</h2>
       </div>
     </div>
     <div class='row' style='padding-top: 40px;'>
       <div class="col">
         <label class='h4'>
           Email</label>
-        <input id="user_mail" type="text" runat="server" class="form-control" placeholder="Email"
+        <input id="user_mail" type="text" runat="server" class="form-control" placeholder="Email" autocomplete="nope"
           autofocus="" />
       </div>
     </div>
@@ -30,21 +30,21 @@
       <div class="col">
         <label class='h4'>
           il tuo nomignolo <small>(deve contenere SOLO caratteri alfanumerici)</small></label>
-        <input id="user_name" type="text" runat="server" class="form-control" placeholder="Nomignolo" />
+        <input id="user_name" type="text" runat="server" class="form-control" placeholder="Nomignolo" autocomplete="nope"/>
       </div>
     </div>
     <div class='row' style='padding-top: 20px;'>
       <div class="col">
         <label class='h4'>
           Password <small>(dev'essere lunga almeno 8 caratteri e senza spazi)</small></label>
-        <input id="user_pass" type="password" runat='server' class="form-control" placeholder="Password" />
+        <input id="user_pass" type="password" runat='server' class="form-control" placeholder="Password" autocomplete="new-password"/>
       </div>
     </div>
     <div class='row' style='padding-top: 20px;'>
       <div class="col">
         <label class='h4'>
           Conferma la password</label>
-        <input id="user_pass2" type="password" runat='server' class="form-control" placeholder="Conferma Password" />
+        <input id="user_pass2" type="password" runat='server' class="form-control" placeholder="Conferma Password" autocomplete="new-password"/>
       </div>
     </div>
     <div class='row' style='padding-top: 40px;'>

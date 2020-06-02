@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
+using System.Net;
 using mlib;
 using mlib.db;
 using mlib.tools;
@@ -65,5 +66,11 @@ namespace fsynch {
     }
 
     public static synch create_synch() { return new synch(_conn, _c, _c.config); }
+
+    public static string local_ip() {
+      try {
+        return Dns.GetHostByName(Dns.GetHostName()).AddressList[0].ToString();
+      } catch { return ""; }
+    }
   }
 }

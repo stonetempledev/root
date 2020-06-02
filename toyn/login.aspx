@@ -49,7 +49,7 @@
       <div class="col">
         <label class='h4'>
           Nome <small>(o nomignolo)</small></label>
-        <input id="user_mail" type="text" runat="server" class="form-control" placeholder="Nome o nomignolo"
+        <input id="user_mail" type="text" runat="server" class="form-control" placeholder="Nome o nomignolo" autocomplete="nope"
           autofocus="" />
       </div>
     </div>
@@ -57,7 +57,7 @@
       <div class="col">
         <label class='h4'>
           Password</label>
-        <input id="user_pass" type="password" runat='server' class="form-control" placeholder="Password" />
+        <input id="user_pass" type="password" runat='server' class="form-control" placeholder="Password" autocomplete="new-password"/>
       </div>
     </div>
     <div class='row' style='padding-top: 40px;'>

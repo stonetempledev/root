@@ -49,7 +49,7 @@ SINTASSI DICHIARAZIONE object, subobj
         <row group="sys" action="check" object="conn" des="verifica connessione al database" type="admin" call="true"/>
         <row group="sys" action="view" action-opt="true" object="synch" subobj="settings" page="synch.aspx" des="verifica impostazioni di sincronizzazione cartelle" type="admin" call="true"/>
         <!-- deepa-notes -->
-        <row group="deepa-notes" action="view" object="notes" syn-object="note" page="notes.aspx" des="vista contenuti deepa-notes" call="true"/>
+        <row group="deepa-notes" action="view" action-opt="true" object="tasks" syn-object="attivita" page="attivita.aspx" des="vista attivita deepa-notes" call="true"/>
         <!-- backups -->
         <row group="backups" action="gen" action-opt="true" object="backup" page="backups.aspx" des="genera backup del database" type="admin" call="true"/>
         <row group="backups" action="view" action-opt="true" object="backups" page="backups.aspx" des="elenco dei backups generati" type="admin" call="true"/>
