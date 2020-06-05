@@ -10,7 +10,7 @@ namespace deepanotes {
     public int? parent_id { get; set; }
     public string folder_name { get; set; }
 
-    protected List<folder> folders { get; set; }
+    public List<folder> folders { get; protected set; }
     public folder add_folder(folder f) { this.folders.Add(f); return f; }
 
     public folder(int synch_folder_id, int folder_id, int? parent_id, string folder_name) {

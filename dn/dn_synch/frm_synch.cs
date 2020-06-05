@@ -281,41 +281,46 @@ namespace fsynch {
     }
 
     /*
-      elimina prodotto.task
-      elimina prodotto.molina.task
-      elimina prodotto.molina.in corso.task
-      elimina prodotto.200531.task
-      elimina prodotto.molina.200531.task
-      elimina prodotto.molina.in corso.200531.task
+      elimina prodotto.task.*
+      elimina prodotto.molina.task.*
+      elimina prodotto.molina.in corso.task.*
+      elimina prodotto.200531.task.*
+      elimina prodotto.molina.200531.task.*
+      elimina prodotto.molina.in corso.200531.task.*
      * */
     protected task parse_task(string path, DateTime dt, long? folder_id = null, long? file_id = null) {
-      if (Path.GetExtension(path) != ".task")
-        return null;
+      try {
+        if (!folder_id.HasValue && !file_id.HasValue) throw new Exception("il task dev'essere un file o un folder");
 
-      string title = "", user = "", state = "";
-      DateTime? dt_upd = null;
-      string[] parts = Path.GetFileName(path).Split(new char[] { '.' });
-      if (parts.Length == 1) {
-        return null;
-      } else if (parts.Length == 2) {
-        title = parts[0];
-      } else if (parts.Length == 3) {
-        title = parts[0];
-        if (!parse_date(parts[1], out dt_upd))
+        string[] parts = Path.GetFileName(path).Split(new char[] { '.' });
+        if (parts.Length <= 1) return null;
+        else if (folder_id.HasValue && parts[parts.Length - 1] != "task") return null;
+        else if (file_id.HasValue && parts[parts.Length - 1] != "task" && parts[parts.Length - 2] != "task") return null;
+
+        bool penultimo = file_id.HasValue && parts.Length >= 3 && parts[parts.Length - 2] == "task";
+        int ref_parts = !penultimo ? 2 : 3;
+        string title = "", user = "", state = "";
+        DateTime? dt_upd = null;
+        if (parts.Length == ref_parts) {
+          title = parts[0];
+        } else if (parts.Length == ref_parts + 1) {
+          title = parts[0];
+          if (!parse_date(parts[1], out dt_upd))
+            user = parts[1];
+        } else if (parts.Length == ref_parts + 2) {
+          title = parts[0];
           user = parts[1];
-      } else if (parts.Length >= 4) {
-        title = parts[0];
-        user = parts[1];
-        if (!parse_date(parts[2], out dt_upd))
+          if (!parse_date(parts[2], out dt_upd))
+            state = parts[2];
+        } else if (parts.Length >= ref_parts + 3) {
+          title = parts[0];
+          user = parts[1];
           state = parts[2];
-      } else if (parts.Length >= 5) {
-        title = parts[0];
-        user = parts[1];
-        state = parts[2];
-        parse_date(parts[3], out dt_upd);
-      }
+          parse_date(parts[3], out dt_upd);
+        } else return null;
 
-      return new task(file_id, folder_id, title, user, state, dt_upd.HasValue ? dt_upd : dt);
+        return new task(file_id, folder_id, title, user, state, dt_upd.HasValue ? dt_upd : dt);
+      } catch { return null; }
     }
 
     protected bool parse_date(string txt, out DateTime? dt) {

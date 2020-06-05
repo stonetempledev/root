@@ -5,13 +5,13 @@ using System.Web;
 
 namespace deepanotes {
   public class synch_folder {
-    
+
     public int synch_folder_id { get; set; }
     public string title { get; set; }
     public string des { get; set; }
     public string http_path { get; set; }
 
-    protected List<folder> folders { get; set;}
+    public List<folder> folders { get; protected set; }
     public folder add_folder(folder f) { this.folders.Add(f); return f; }
 
     public synch_folder(int synch_folder_id, string title, string des, string http_path) {

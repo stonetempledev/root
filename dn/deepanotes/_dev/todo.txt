@@ -1,6 +1,21 @@
 ﻿/ .task - vista attivita
+ / albero menu
+ . elenco attività
+  . conteggi, icone, colori
+   in_corso (arancione) - urgente (rosso) - da_fare (azzurro)
+   sospeso (grigio) - incompleto (grigio)
+   fatto (verde)
+
+    in corso play-circle
+    urgente exclamation-circle
+    da fare circle
+    sospeso times-circle
+    incompleto minus-circle
+    fatto check-circle
+
 . .md
  . contenuti
  . procedure
  . appunti
  . links
+. FONDERE TUTTO IN UN UNICA PAGINA - VISTA

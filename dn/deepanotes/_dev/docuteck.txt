@@ -12,14 +12,13 @@
 
 files 
  files .md
- files .task
+ files .task.*
  folders .task
- files .txt
 
 nome file/folder task
- <title>.task
- <title>.<user>.task
- <title>.<user>.<state>.task
- <title>.<date>.task
- <title>.<user>.<date>.task
- <title>.<user>.<state>.<date>.task
+ <title>.task.*
+ <title>.<user>.task.*
+ <title>.<user>.<state>.task.*
+ <title>.<date>.task.*
+ <title>.<user>.<date>.task.*
+ <title>.<user>.<state>.<date>.task.*

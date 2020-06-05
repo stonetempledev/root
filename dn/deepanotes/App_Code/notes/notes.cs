@@ -21,7 +21,7 @@ namespace deepanotes
             , db_provider.str_val(dr["title"]), db_provider.str_val(dr["des"]), db_provider.str_val(dr["http_path"])));
         } else if (tp == "folder") {
           folder f = new folder(db_provider.int_val(dr["synch_folder_id"]), db_provider.int_val(dr["folder_id"])
-            , db_provider.int_val_null(dr["parent_id"]), db_provider.str_val(dr["http_path"]));
+            , db_provider.int_val_null(dr["parent_id"]), db_provider.str_val(dr["title"]));
           if (!f.parent_id.HasValue) {
             synch_folder p = res.FirstOrDefault(x => x.synch_folder_id == f.synch_folder_id);
             if (p == null) throw new Exception("il synch_folder con id " + f.synch_folder_id.ToString() + " non è stato trovato!");

@@ -1,0 +1,17 @@
+﻿<config>
+  <html-blocks>
+    <html-block name="item-primo">
+      <![CDATA[<li class='voce primo'><a class='h5' href='#'>{@field='title'}</a></li>{@field='childs'}]]>
+    </html-block>
+    <html-block name="item-secondo">
+      <![CDATA[<li class='voce secondo'><a class='h6' href='#'>{@field='title'}</a></li>{@field='childs'}]]>
+    </html-block>
+    <html-block name="item-terzo">
+      <![CDATA[<li class='voce terzo'><a href='#'>{@field='title'}</a></li>{@field='childs'}]]>
+    </html-block>
+    <html-block name="item-quarto">
+      <![CDATA[<li class='voce quarto'><a href='#'>{@field='title'}</a></li>]]>
+    </html-block>
+  </html-blocks>
+  </config>
+

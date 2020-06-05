@@ -21,7 +21,7 @@ using mlib.tools;
 using mlib.xml;
 using deepanotes;
 
-public partial class _attivita : tl_page {
+public partial class _notes : tl_page {
 
   protected cmd _cmd = null;
 
@@ -58,37 +58,34 @@ public partial class _attivita : tl_page {
         return;
       }
 
-      // tasks
-      if (_cmd != null && _cmd.action == "view" && _cmd.obj == "tasks") {
-        // carico la struttura folders
+      // notes
+      if (_cmd != null && _cmd.action == "view" && _cmd.obj == "notes") {
         List<synch_folder> sf = ob.load_folders();
-
-        // menu
-        StringBuilder sb = new StringBuilder();
-        sb.Append(@"<ul class='nav flex-column'>
-            <li class='primo'><a class='h5' href='#'>Primo Livello</a></li>
-            <ul>
-              <li class='secondo'><a href='#'>Secondo Livello</a></li>
-              <li class='secondo'><a href='#'>Secondo Livello</a></li>
-              <ul>
-                <li class='terzo'><a href='#'>terzo livello</a></li>
-                <li class='terzo'><a href='#'>terzo livello</a></li>
-                <li class='terzo'><a href='#'>terzo livello</a></li>
-                <li class='terzo'><a href='#'>terzo livello</a></li>
-                <ul>
-                  <li class='quarto'><a href='#'>quarto livello</a></li>
-                  <li class='quarto'><a href='#'>quarto livello</a></li>
-                </ul>
-              </ul>
-            </ul>
-          </ul>");
-        menu.InnerHtml = sb.ToString();
-
-        // vista attivita
-
+        menu.InnerHtml = parse_menu(sf);
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
     } catch (Exception ex) { log.log_err(ex); if (!json_request.there_request(this)) master.err_txt(ex.Message); }
+  }
+
+  protected string parse_menu(List<synch_folder> sfs) {
+    StringBuilder sb = new StringBuilder();
+    int lvl = 0;
+    foreach (synch_folder sf in sfs)
+      sb.Append(core.parse_html_block(block_level(lvl)
+        , new string[,] { { "title", sf.title }, { "childs", parse_folders(sf.folders, lvl + 1) } }));
+    return string.Format("<ul class='nav flex-column'>{0}</ul>", sb.ToString());
+  }
+
+  protected string parse_folders(List<folder> fs, int lvl) {
+    StringBuilder sb = new StringBuilder();
+    foreach (folder f in fs)
+      sb.Append(core.parse_html_block(block_level(lvl)
+        , new string[,] { { "title", f.folder_name }, { "childs", parse_folders(f.folders, lvl + 1) } }));
+    return sb.Length > 0 ? string.Format("<ul>{0}</ul>", sb.ToString()) : "";
+  }
+
+  protected string block_level(int lvl) {
+    return "item-" + (lvl == 0 ? "primo" : (lvl == 1 ? "secondo" : (lvl == 2 ? "terzo" : "quarto")));
   }
 
   protected override void OnLoad(EventArgs e) {

@@ -1,8 +1,25 @@
-<%@ Page Language="C#" MasterPageFile="~/default.master" AutoEventWireup="true" CodeFile="attivita.aspx.cs"
-  Inherits="_attivita" ClientIDMode="Static" %>
+<%@ Page Language="C#" MasterPageFile="~/default.master" AutoEventWireup="true" CodeFile="notes.aspx.cs"
+  Inherits="_notes" ClientIDMode="Static" %>
 
 <asp:Content ContentPlaceHolderID="head" runat="Server">
   <style>
+    .voce
+    {
+      padding-top: 3px;
+      padding-bottom: 3px;
+      
+    }
+    .voce:after
+    {
+      content: " ";
+      border-bottom: 1px solid darkslategray;
+      position:absolute;
+      left:0px;
+      z-index:1;
+      width:1000px;
+      margin-top:3px;
+      display:block;
+    }
     .primo *
     {
       color: steelblue;
@@ -11,9 +28,9 @@
     {
       color: skyblue;
     }
-    .terzo * 
+    .terzo *
     {
-      color: lightcyan;
+      color: lightblue;
     }
     .quarto *
     {

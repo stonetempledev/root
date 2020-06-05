@@ -14,6 +14,7 @@ select t.*
    from synch_folders sf
   union select 'folder' as tp, ft.synch_folder_id, ft.folder_id, ft.parent_id, ft.folder_name as title, null as des, null as http_path, ft.lvl
    from dn_folders_tree ft) t
+  where not exists (select top 1 1 from dn_tasks where folder_id = t.folder_id)
   order by t.lvl]]>
     </query>
   </queries>
