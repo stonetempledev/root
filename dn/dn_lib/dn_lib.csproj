@@ -41,16 +41,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="bo_lib.cs" />
+    <Compile Include="notes\file.cs" />
+    <Compile Include="notes\folder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="synch\synch.cs" />
     <Compile Include="synch\synch_folder.cs" />
     <Compile Include="synch\synch_machine.cs" />
     <Compile Include="synch\synch_setting.cs" />
-    <Compile Include="task.cs" />
+    <Compile Include="notes\task.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="defs\base.xml" />
     <Content Include="defs\conns.xml" />
+    <Content Include="defs\notes.xml" />
     <Content Include="defs\synch.xml" />
     <Content Include="defs\vars.xml" />
   </ItemGroup>

@@ -73,8 +73,8 @@
       select top 1 @id = task_id from dn_tasks where isnull(folder_id, 0) = {@field='folder_id'} and isnull(file_id, 0) = {@field='file_id'};
       if(@id is null)
       begin
-        insert into dn_tasks (folder_id, file_id, title, [user], stato, dt_upd, readed)
-          values ({@null='task.folder_id'}, {@null='task.file_id'}, {@txtqry='task.title'}
+        insert into dn_tasks (synch_folder_id, folder_id, file_id, title, [user], stato, dt_upd, readed)
+          values ({@field='task.synch_folder_id'}, {@null='task.folder_id'}, {@null='task.file_id'}, {@txtqry='task.title'}
             , {@txtqry='task.user'}, {@txtqry='task.stato'}, {@dateqry='task.dt_upd'}, 1);
         select @id = @@IDENTITY, @tp = 'insert';  
       end

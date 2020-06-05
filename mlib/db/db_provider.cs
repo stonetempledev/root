@@ -99,6 +99,8 @@ namespace mlib.db {
 
     static public long long_val(object fld, long def = 0) { return fld == null || fld == DBNull.Value ? def : Convert.ToInt64(fld); }
 
+    static public long? long_val_null(object fld) { return fld == null || fld == DBNull.Value ? (long?)null : Convert.ToInt64(fld); }
+
     static public int? int_val_null(object fld) { return fld == null || fld == DBNull.Value ? (int?)null : Convert.ToInt32(fld); }
 
     static public DateTime? dt_val(object fld) {

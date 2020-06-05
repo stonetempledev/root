@@ -20,6 +20,7 @@ using mlib.db;
 using mlib.tools;
 using mlib.xml;
 using deepanotes;
+using dn_lib;
 
 public partial class _notes : tl_page {
 
@@ -78,7 +79,7 @@ public partial class _notes : tl_page {
 
   protected string parse_folders(List<folder> fs, int lvl) {
     StringBuilder sb = new StringBuilder();
-    foreach (folder f in fs)
+    foreach (folder f in fs.Where(x => x.task == null))
       sb.Append(core.parse_html_block(block_level(lvl)
         , new string[,] { { "title", f.folder_name }, { "childs", parse_folders(f.folders, lvl + 1) } }));
     return sb.Length > 0 ? string.Format("<ul>{0}</ul>", sb.ToString()) : "";

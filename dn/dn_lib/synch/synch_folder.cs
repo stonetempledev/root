@@ -16,11 +16,43 @@ namespace dn_lib {
     public string http_path { get; set; }
     public string user { get; set; }
     public string password { get; set; }
-    
+
+    public List<folder> folders { get; protected set; }
+    public folder add_folder(folder f) { this.folders.Add(f); return f; }
+
+    public List<file> files { get; protected set; }
+    public file add_file(file f) { this.files.Add(f); return f; }
+
     public synch_folder(int id, string pc_name, string title, string des, string local_path, string http_path, string user, string password) {
       this.id = id; this.pc_name = pc_name; this.title = title; this.des = des;
       this.local_path = local_path; this.http_path = http_path;  
       this.user = user; this.password = password;
+    }
+
+    public synch_folder(int id, string title, string des, string http_path) {
+      this.id = id; this.title = title; this.des = des; this.http_path = http_path;
+      this.folders = new List<folder>();
+      this.files = new List<file>();
+    }
+
+    public folder get_folder(long folder_id) {
+      folder res = this.folders.FirstOrDefault(f => f.folder_id == folder_id);
+      if (res != null) return res;
+      foreach (folder f in folders) {
+        res = f.get_folder(folder_id);
+        if (res != null) return res;
+      }
+      return null;
+    }
+
+    public file get_file(long file_id) {
+      file res = this.files.FirstOrDefault(f => f.id == file_id);
+      if (res != null) return res;
+      foreach (folder f in folders) {
+        res = f.get_file(file_id);
+        if (res != null) return res;
+      }
+      return null;
     }
 
   }

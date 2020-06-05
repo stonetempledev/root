@@ -49,8 +49,7 @@ namespace dn_lib {
       tp = "";
       if (t == null) return 0;
       string res = db_conn.exec(core.parse_query("synch.ins-task", new Dictionary<string, object>() { { "task", t }
-        , { "folder_id", t.folder_id.HasValue ? t.folder_id.Value : 0 }, { "file_id", t.file_id.HasValue ? t.file_id.Value : 0 }
-        , { "dt_upd", t.dt_upd.HasValue ? t.dt_upd.Value.ToString("yyyy-mm-dd") : "" }}), true, true);
+        , { "folder_id", t.folder_id.HasValue ? t.folder_id.Value : 0 }, { "file_id", t.file_id.HasValue ? t.file_id.Value : 0 } }), true, true);
       tp = res.Split(new char[] { ';' })[1];
       return res.Split(new char[] { ';' })[0] != "" ? long.Parse(res.Split(new char[] { ';' })[0]) : -1;
     }
