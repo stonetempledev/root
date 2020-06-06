@@ -40,13 +40,18 @@
   <script type="text/javascript" language="javascript">
 
     $(document).ready(function () {
-
+      if ($("#folder_id").val()) {
+        window.setTimeout(function () {
+          $("#menu").scrollTop($("[tp-item='folder'][item-id='" + $("#folder_id").val() + "']").position().top + 100);
+        }, 300);
+      }
     });
 
 
   </script>
 </asp:Content>
 <asp:Content ContentPlaceHolderID="contents" runat="Server">
+  <input id='folder_id' type='hidden' runat='server' />
   <div class="container-fluid">
     <div class="row mb-4">
       <!-- sidebar menu -->

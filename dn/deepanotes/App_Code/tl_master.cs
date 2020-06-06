@@ -25,7 +25,14 @@ public class tl_master : System.Web.UI.MasterPage {
   public virtual string get_val (string id) { return ""; }
   public virtual void set_val (string id, string val) { }
 
-  public string url_cmd (string cmd, string page = "") { return (page == "" ? config.get_var("vars.router-page").value : page) + "?cmd=" + HttpUtility.UrlEncode(cmd); }
+  public string url_cmd (string cmd, string page = "", string[,] pars = null) { 
+    string upars = "";
+    if (pars != null) {
+      for (int i = 0; i < pars.GetLength(0); i++)
+        upars += "&" + pars[i, 0] + "=" + HttpUtility.UrlEncode(pars[i, 1]);
+    }
+    return (page == "" ? config.get_var("vars.router-page").value : page) + "?cmd=" + HttpUtility.UrlEncode(cmd) + upars;
+  }
 
   public virtual void set_status_txt(string text) { }
 

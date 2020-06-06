@@ -61,32 +61,41 @@ public partial class _notes : tl_page {
 
       // notes
       if (_cmd != null && _cmd.action == "view" && _cmd.obj == "notes") {
-        List<synch_folder> sf = ob.load_folders();
-        menu.InnerHtml = parse_menu(sf);
+        int? fi = qry_val("id") != "" ? qry_int("id") : (int?)null
+          , sfi = qry_val("sf") != "" ? qry_int("sf") : (int?)null;
+        List<synch_folder> sf = ob.load_folders(fi, sfi);
+        menu.InnerHtml = parse_menu(sf, sfi.HasValue);
+        folder_id.Value = qry_val("id");
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
     } catch (Exception ex) { log.log_err(ex); if (!json_request.there_request(this)) master.err_txt(ex.Message); }
   }
 
-  protected string parse_menu(List<synch_folder> sfs) {
+  protected string parse_menu(List<synch_folder> sfs, bool open_home) {
     StringBuilder sb = new StringBuilder();
-    int lvl = 0;
     foreach (synch_folder sf in sfs)
-      sb.Append(core.parse_html_block(block_level(lvl)
-        , new string[,] { { "title", sf.title }, { "childs", parse_folders(sf.folders, lvl + 1) } }));
+      sb.Append(core.parse_html_block(block_level(0)
+        , new string[,] { { "id", sf.id.ToString() }, { "tp", "synch-folder" }
+          , { "url_open_home", open_home ? master.url_cmd("notes") : "" }
+          , { "url_synch_folder", master.url_cmd("notes", pars: new string[,] { {"sf",sf.id.ToString() } }) }
+          , { "title", sf.title }, { "childs", parse_folders(sf.folders, 1) } }));
     return string.Format("<ul class='nav flex-column'>{0}</ul>", sb.ToString());
   }
 
   protected string parse_folders(List<folder> fs, int lvl) {
     StringBuilder sb = new StringBuilder();
-    foreach (folder f in fs.Where(x => x.task == null))
-      sb.Append(core.parse_html_block(block_level(lvl)
-        , new string[,] { { "title", f.folder_name }, { "childs", parse_folders(f.folders, lvl + 1) } }));
+    foreach (folder f in fs.Where(x => x.task == null)) {
+      string url_open_folder = lvl >= 3 && f.folders.Where(x => x.task == null).Count() > 0
+        ? master.url_cmd("notes", pars: new string[,] { { "id", f.parent_id.ToString() } }) : "";
+      sb.Append(core.parse_html_block(block_level(lvl), new string[,] { { "id", f.folder_id.ToString() }, { "tp", "folder" }
+       , { "title", f.folder_name }, { "childs", parse_folders(f.folders, lvl + 1) }
+       , { "url_open_folder", url_open_folder }}));
+    }
     return sb.Length > 0 ? string.Format("<ul>{0}</ul>", sb.ToString()) : "";
   }
 
   protected string block_level(int lvl) {
-    return "item-" + (lvl == 0 ? "primo" : (lvl == 1 ? "secondo" : (lvl == 2 ? "terzo" : "quarto")));
+    return "item-" + (lvl == 0 ? "synch-folder" : (lvl == 1 ? "secondo" : (lvl == 2 ? "terzo" : "quarto")));
   }
 
   protected override void OnLoad(EventArgs e) {

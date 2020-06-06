@@ -11,19 +11,23 @@ namespace deepanotes {
     public notes() {
     }
 
-    public List<synch_folder> load_folders() {
+    public List<synch_folder> load_folders(int? folder_id = null, int? synch_folder_id = null) {
+
+      string[,] pars = new string[,] { { "folder_id", folder_id.HasValue ? folder_id.Value.ToString() : "null" } 
+        , { "synch_folder_id", synch_folder_id.HasValue ? synch_folder_id.Value.ToString() : "null" } };
 
       // folders
       List<synch_folder> res = new List<synch_folder>();
-      foreach (DataRow dr in db_conn.dt_table(core.parse_query("notes.folders")).Rows) {
+      foreach (DataRow dr in db_conn.dt_table(core.parse_query("notes.folders", pars)).Rows) {
         string tp = db_provider.str_val(dr["tp"]);
+        int lf = db_provider.int_val(dr["lvl"]);
         if (tp == "synch_folder") {
           res.Add(new synch_folder(db_provider.int_val(dr["synch_folder_id"])
             , db_provider.str_val(dr["title"]), db_provider.str_val(dr["des"]), db_provider.str_val(dr["http_path"])));
         } else if (tp == "folder") {
           folder f = new folder(db_provider.int_val(dr["synch_folder_id"]), db_provider.int_val(dr["folder_id"])
             , db_provider.int_val_null(dr["parent_id"]), db_provider.str_val(dr["title"]));
-          if (!f.parent_id.HasValue) {
+          if (lf == 1) {
             synch_folder p = res.FirstOrDefault(x => x.id == f.synch_folder_id);
             if (p == null) throw new Exception("il synch_folder con id " + f.synch_folder_id.ToString() + " non è stato trovato!");
             p.add_folder(f);
@@ -40,18 +44,18 @@ namespace deepanotes {
       }
 
       // files
-      foreach (DataRow dr in db_conn.dt_table(core.parse_query("notes.files")).Rows) {
-        int synch_folder_id = db_provider.int_val(dr["synch_folder_id"]);
-        long folder_id = db_provider.long_val(dr["folder_id"]);
+      foreach (DataRow dr in db_conn.dt_table(core.parse_query("notes.files", pars)).Rows) {
+        int sfi = db_provider.int_val(dr["synch_folder_id"]);
+        long fi = db_provider.long_val(dr["folder_id"]);
         file f = new file(db_provider.int_val(dr["synch_folder_id"]), db_provider.long_val(dr["folder_id"])
             , db_provider.long_val(dr["file_id"]), db_provider.str_val(dr["file_name"])
             , db_provider.dt_val(dr["dt_ins"]).Value);
-        if (folder_id > 0) res.First(x => x.id == synch_folder_id).get_folder(folder_id).add_file(f);
-        else res.First(x => x.id == synch_folder_id).add_file(f);
+        if (fi > 0) res.First(x => x.id == sfi).get_folder(fi).add_file(f);
+        else res.First(x => x.id == sfi).add_file(f);
       }
 
       // tasks
-      foreach (DataRow dr in db_conn.dt_table(core.parse_query("notes.tasks")).Rows) {
+      foreach (DataRow dr in db_conn.dt_table(core.parse_query("notes.tasks", pars)).Rows) {
         task t = new task(db_provider.int_val(dr["synch_folder_id"]), db_provider.long_val(dr["task_id"])
           , db_provider.long_val_null(dr["file_id"]), db_provider.long_val_null(dr["folder_id"])
           , db_provider.str_val(dr["title"]), db_provider.str_val(dr["user"]), db_provider.str_val(dr["stato"])

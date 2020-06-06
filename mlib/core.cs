@@ -104,7 +104,9 @@ namespace mlib {
       Dictionary<string, object> dict = new Dictionary<string, object>();
       for (int i = 0; i < flds.GetLength(0); i++)
         dict.Add(flds[i, 0], flds[i, 1]);
-      return parse(_config.get_html_block(key).content, dict);
+
+      config.html_block b = _config.get_html_block(key);
+      return parse(b.content, dict, conds: b.conds);
     }
 
     public string parse_html_block(string key, Dictionary<string, object> flds) {

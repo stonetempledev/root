@@ -1,16 +1,23 @@
 ﻿<config>
   <html-blocks>
-    <html-block name="item-primo">
-      <![CDATA[<li class='voce primo'><a class='h5' href='#'>{@field='title'}</a></li>{@field='childs'}]]>
+    <html-block name="item-synch-folder">
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce primo'>
+        {@cond_val='url_open_home','open_home'}<a class='h5' href="{@field='url_synch_folder'}">{@field='title'}</a></li>{@field='childs'}]]>
+      <cond name="open_home">
+        <![CDATA[<a class='fas fa-chevron-circle-left mr-2' href="{@field='url_open_home'}"></a>]]>
+      </cond>
     </html-block>
     <html-block name="item-secondo">
-      <![CDATA[<li class='voce secondo'><a class='h6' href='#'>{@field='title'}</a></li>{@field='childs'}]]>
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce secondo'><a class='h6' href='#'>{@field='title'}</a></li>{@field='childs'}]]>
     </html-block>
     <html-block name="item-terzo">
-      <![CDATA[<li class='voce terzo'><a href='#'>{@field='title'}</a></li>{@field='childs'}]]>
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce terzo'><a href='#'>{@field='title'}</a></li>{@field='childs'}]]>
     </html-block>
     <html-block name="item-quarto">
-      <![CDATA[<li class='voce quarto'><a href='#'>{@field='title'}</a></li>]]>
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce quarto'><a href='#'>{@field='title'}</a>{@cond_val='url_open_folder','open_folder'}</li>]]>
+      <cond name="open_folder">
+        <![CDATA[<small><a class='fas fa-chevron-circle-right ml-2' href="{@field='url_open_folder'}"></a></small>]]>
+      </cond>
     </html-block>
   </html-blocks>
   </config>
