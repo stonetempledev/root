@@ -17,6 +17,13 @@ namespace dn_lib {
     public List<file> files { get; protected set; }
     public file add_file(file f) { this.files.Add(f); return f; }
 
+    public List<task> tasks {
+      get {
+        return folders.Where(f => f.task != null).Select(x => x.task)
+          .Concat(files.Where(f => f.task != null).Select(x => x.task)).ToList();
+      }
+    }
+
     public folder(int synch_folder_id, int folder_id, int? parent_id, string folder_name) {
       this.synch_folder_id = synch_folder_id; this.folder_id = folder_id;
       this.parent_id = parent_id; this.folder_name = folder_name;
@@ -26,7 +33,7 @@ namespace dn_lib {
 
     public folder get_folder(long folder_id) {
       folder res = this.folders.FirstOrDefault(f => f.folder_id == folder_id);
-      if(res != null) return res;
+      if (res != null) return res;
       foreach (folder f in folders) {
         res = f.get_folder(folder_id);
         if (res != null) return res;

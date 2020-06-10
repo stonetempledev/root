@@ -32,7 +32,6 @@ SINTASSI DICHIARAZIONE object, subobj
       <rows>
         <!-- base -->
         <row group="base" action="exit" des="effettua il log out dall'ambiente" call="true"/>
-        <row group="base" action="view" action-opt="true" object="home-page" syn-object="homepage,home page" page="home.aspx" des="apre la home page" call="true"/>
         <!-- users -->
         <row group="users" action="view" action-opt="true" object="user" page="users.aspx" syn-object="utente" des="visualizza i dettagli sull'utente loggato" call="true"/>
         <row group="users" action="view" action-opt="true" object="users" page="users.aspx" syn-object="utenti" des="elenco degli utenti registrati" call="true" type="admin"/>

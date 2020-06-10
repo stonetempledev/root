@@ -8,10 +8,44 @@ using dn_lib;
 
 namespace deepanotes {
   public class notes : bo {
+
+    public List<synch_folder> synch_folders { get; protected set; }
+    public List<task> tasks { get; protected set; }
+
     public notes() {
     }
 
-    public List<synch_folder> load_folders(int? folder_id = null, int? synch_folder_id = null) {
+    public void load_notes(int? folder_id = null, int? synch_folder_id = null) {
+
+      // folders structure
+      this.synch_folders = load_folders(folder_id, synch_folder_id);
+
+      // tasks
+      string[,] pars = new string[,] { { "folder_id", folder_id.HasValue ? folder_id.Value.ToString() : "null" } 
+        , { "synch_folder_id", synch_folder_id.HasValue ? synch_folder_id.Value.ToString() : "null" }
+        , { "filter_sf", !synch_folder_id.HasValue && folder_id.HasValue ? " ft.tp <> 'synch_folder' and " : "" } };
+
+      this.tasks = new List<task>();
+      foreach (DataRow dr in db_conn.dt_table(core.parse_query("notes.tasks", pars)).Rows) {
+        task t = new task(db_provider.int_val(dr["synch_folder_id"]), db_provider.long_val(dr["task_id"])
+          , db_provider.long_val_null(dr["file_id"]), db_provider.long_val_null(dr["folder_id"])
+          , db_provider.str_val(dr["title"]), db_provider.str_val(dr["user"]), db_provider.str_val(dr["stato"])
+          , db_provider.str_val(dr["task_state"]) != "" ? (task.task_state)Enum.Parse(typeof(task.task_state), db_provider.str_val(dr["task_state"])) : task.task_state.none
+          , db_provider.dt_val(dr["dt_upd"]), db_provider.int_val(dr["order"]), db_provider.str_val(dr["class"])
+          , db_provider.str_val(dr["title_singolare"]), db_provider.str_val(dr["title_plurale"]));
+        this.tasks.Add(t);
+      }
+
+      // task -> synch_folders
+      foreach (task t in this.tasks) {
+        if (t.folder_id.HasValue && !t.file_id.HasValue)
+          this.synch_folders.First(x => x.id == t.synch_folder_id).get_folder(t.folder_id.Value).task = t;
+        else this.synch_folders.First(x => x.id == t.synch_folder_id).get_file(t.file_id.Value).task = t;
+      }
+
+    }
+
+    protected List<synch_folder> load_folders(int? folder_id = null, int? synch_folder_id = null) {
 
       string[,] pars = new string[,] { { "folder_id", folder_id.HasValue ? folder_id.Value.ToString() : "null" } 
         , { "synch_folder_id", synch_folder_id.HasValue ? synch_folder_id.Value.ToString() : "null" } };
@@ -52,18 +86,6 @@ namespace deepanotes {
             , db_provider.dt_val(dr["dt_ins"]).Value);
         if (fi > 0) res.First(x => x.id == sfi).get_folder(fi).add_file(f);
         else res.First(x => x.id == sfi).add_file(f);
-      }
-
-      // tasks
-      foreach (DataRow dr in db_conn.dt_table(core.parse_query("notes.tasks", pars)).Rows) {
-        task t = new task(db_provider.int_val(dr["synch_folder_id"]), db_provider.long_val(dr["task_id"])
-          , db_provider.long_val_null(dr["file_id"]), db_provider.long_val_null(dr["folder_id"])
-          , db_provider.str_val(dr["title"]), db_provider.str_val(dr["user"]), db_provider.str_val(dr["stato"])
-          , db_provider.str_val(dr["task_state"]) != "" ? (task.task_state)Enum.Parse(typeof(task.task_state), db_provider.str_val(dr["task_state"])) : task.task_state.none
-          , db_provider.dt_val(dr["dt_upd"]));
-        if (t.folder_id.HasValue)
-          res.First(x => x.id == t.synch_folder_id).get_folder(t.folder_id.Value).task = t;
-        else res.First(x => x.id == t.synch_folder_id).get_file(t.file_id.Value).task = t;
       }
 
       return res;

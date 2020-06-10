@@ -7,18 +7,17 @@
     {
       padding-top: 3px;
       padding-bottom: 3px;
-      
     }
     .voce:after
     {
       content: " ";
       border-bottom: 1px solid darkslategray;
-      position:absolute;
-      left:0px;
-      z-index:1;
-      width:1000px;
-      margin-top:3px;
-      display:block;
+      position: absolute;
+      left: 0px;
+      z-index: 1;
+      width: 1000px;
+      margin-top: 3px;
+      display: block;
     }
     .primo *
     {
@@ -47,6 +46,9 @@
       }
     });
 
+    function open_attivita(id_folder) { window.location = set_param("sf", "", set_param("id", id_folder, window.location.href)); }
+
+    function open_attivita_synch(synch_folder_id) { window.location = set_param("id", "", set_param("sf", synch_folder_id, window.location.href)); }
 
   </script>
 </asp:Content>

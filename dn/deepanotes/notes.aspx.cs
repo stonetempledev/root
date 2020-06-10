@@ -63,22 +63,72 @@ public partial class _notes : tl_page {
       if (_cmd != null && _cmd.action == "view" && _cmd.obj == "notes") {
         int? fi = qry_val("id") != "" ? qry_int("id") : (int?)null
           , sfi = qry_val("sf") != "" ? qry_int("sf") : (int?)null;
-        List<synch_folder> sf = ob.load_folders(fi, sfi);
-        menu.InnerHtml = parse_menu(sf, sfi.HasValue);
+        ob.load_notes(fi, sfi);
+        menu.InnerHtml = parse_menu(ob.synch_folders, sfi.HasValue || fi.HasValue);
         folder_id.Value = qry_val("id");
+
+        content.InnerHtml = parse_tasks(ob);
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
     } catch (Exception ex) { log.log_err(ex); if (!json_request.there_request(this)) master.err_txt(ex.Message); }
   }
 
+  protected string parse_tasks(notes n) {
+    StringBuilder sb = new StringBuilder();
+
+    sb.Append(core.parse_html_block("title-attivita"));
+
+    List<int> orders = n.tasks.Select(x => x.order).Distinct().ToList();
+    orders.Sort();
+    foreach (int order in orders) {
+      bool first = true;
+      List<task> sub_tasks = n.tasks.Where(x => x.order == order).OrderByDescending(xx => xx.dt_upd).ToList();
+      foreach (task t in sub_tasks) {
+        
+        // title
+        if (first) {
+          sb.Append(core.parse_html_block("open-title-sub-attivita", new string[,] { 
+          { "title", sub_tasks.Count == 1 ? t.title_singolare : t.title_plurale }, { "cls", t.cls } }));
+          first = false;
+        }
+
+        // task
+        sb.Append(parse_task(t));
+      }
+      if(!first) sb.Append(core.parse_html_block("close-title-sub-attivita"));
+    }
+
+    return sb.ToString();
+  }
+
+  protected string parse_task(task t) {
+    return string.Format(@"<div><h4><span class='badge badge-{0}'>{1}{2}{4}
+        <small class='mr-2'>{3}</small></span></h4></div>"
+      , t.cls, t.title, !string.IsNullOrEmpty(t.title_singolare) ? " - " + t.title_singolare : ""
+      , t.dt_upd.HasValue ? "aggiornata " + t.dt_upd.Value.ToString("dddd dd MMMM yyyy") : ""
+      , !string.IsNullOrEmpty(t.user) ? " - assegnata a " + t.user : "");
+  }
+
   protected string parse_menu(List<synch_folder> sfs, bool open_home) {
     StringBuilder sb = new StringBuilder();
-    foreach (synch_folder sf in sfs)
+    foreach (synch_folder sf in sfs) {
+
+      // tasks
+      List<task> l = sf.tasks; int order = l.Count > 0 ? l.Min(x => x.order) : -1, cc = order >= 0 ? l.Count(x => x.order == order) : 0;
+      string t_plurale = cc > 0 ? l.First(x => x.order == order).title_plurale : ""
+        , t_singolare = cc > 0 ? l.First(x => x.order == order).title_singolare : ""
+        , color = cc > 0 ? l.First(x => x.order == order).cls : "";
+
       sb.Append(core.parse_html_block(block_level(0)
         , new string[,] { { "id", sf.id.ToString() }, { "tp", "synch-folder" }
           , { "url_open_home", open_home ? master.url_cmd("notes") : "" }
           , { "url_synch_folder", master.url_cmd("notes", pars: new string[,] { {"sf",sf.id.ToString() } }) }
-          , { "title", sf.title }, { "childs", parse_folders(sf.folders, 1) } }));
+          , { "title", sf.title }, { "childs", parse_folders(sf.folders, 1) }
+          , { "block-attivita", cc > 0 ? core.parse_html_block("spin-attivita-synch"
+            , new string[,] { { "class_spin", color }, { "synch_folder_id", sf.id.ToString() }
+              , { "title", cc == 1 ? "una attività " + t_singolare :  cc.ToString() + " attività " + t_plurale }
+              , { "c_attivita", cc.ToString() }} ) : "" }}));
+    }
     return string.Format("<ul class='nav flex-column'>{0}</ul>", sb.ToString());
   }
 
@@ -87,9 +137,19 @@ public partial class _notes : tl_page {
     foreach (folder f in fs.Where(x => x.task == null)) {
       string url_open_folder = lvl >= 3 && f.folders.Where(x => x.task == null).Count() > 0
         ? master.url_cmd("notes", pars: new string[,] { { "id", f.parent_id.ToString() } }) : "";
+
+      // tasks
+      List<task> l = f.tasks; int order = l.Count > 0 ? l.Min(x => x.order) : -1, cc = order >= 0 ? l.Count(x => x.order == order) : 0; 
+      string t_plurale = cc > 0 ? l.First(x => x.order == order).title_plurale : ""
+        , t_singolare = cc > 0 ? l.First(x => x.order == order).title_singolare : ""
+        , color = cc > 0 ? l.First(x => x.order == order).cls : "";
+
       sb.Append(core.parse_html_block(block_level(lvl), new string[,] { { "id", f.folder_id.ToString() }, { "tp", "folder" }
-       , { "title", f.folder_name }, { "childs", parse_folders(f.folders, lvl + 1) }
-       , { "url_open_folder", url_open_folder }}));
+        , { "title", f.folder_name }, { "childs", parse_folders(f.folders, lvl + 1) }, { "url_open_folder", url_open_folder }
+        , { "block-attivita", cc > 0 ? core.parse_html_block("spin-attivita"
+          , new string[,] { { "class_spin", color }, { "folder_id", f.folder_id.ToString() }
+            , { "title", cc == 1 ? "una attività " + t_singolare :  cc.ToString() + " attività " + t_plurale }
+            , { "c_attivita", cc.ToString() }} ) : "" }}));
     }
     return sb.Length > 0 ? string.Format("<ul>{0}</ul>", sb.ToString()) : "";
   }

@@ -23,6 +23,13 @@ namespace dn_lib {
     public List<file> files { get; protected set; }
     public file add_file(file f) { this.files.Add(f); return f; }
 
+    public List<task> tasks {
+      get {
+        return folders.Where(f => f.task != null).Select(x => x.task)
+          .Concat(files.Where(f => f.task != null).Select(x => x.task)).ToList();
+      }
+    }
+
     public synch_folder(int id, string pc_name, string title, string des, string local_path, string http_path, string user, string password) {
       this.id = id; this.pc_name = pc_name; this.title = title; this.des = des;
       this.local_path = local_path; this.http_path = http_path;  

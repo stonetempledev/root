@@ -80,11 +80,16 @@
       end
       else 
       begin
-       update dn_tasks set readed = 1, dt_upd = {@dateqry='task.dt_upd'} where task_id = @id;
+       update dn_tasks set readed = 1, dt_upd = {@dateqry='task.dt_upd'}
+         , title = {@txtqry='task.title'}, [user] = {@txtqry='task.user'}, stato = {@txtqry='task.stato'}
+        where task_id = @id;
        select @tp = 'update';
       end
       select @id, @tp;]]>
     </query>
+    <query name="task-users"><![CDATA[select distinct lower(nome) as nome from users]]></query>
+    <query name="task-states"><![CDATA[select lower(free_txt) as free_txt, lower(task_state) as task_state 
+      from dn_task_free_states]]></query>
   </queries>
 </config>
 

@@ -21,6 +21,11 @@ namespace fsynch {
     protected db_provider _conn = null;
     protected synch_machine _sm = null;
 
+    // tasks
+    protected DateTime? _loaded = null;
+    protected List<string> _users = null;
+    protected Dictionary<string, string> _states = null;
+
     // synch folders
     synch _s = null;
     List<synch_folder> _folders = null;
@@ -208,12 +213,24 @@ namespace fsynch {
     #region load folders
 
     protected void reload_folders(bool first = false) {
+      if (!_loaded.HasValue || (_loaded.HasValue && (DateTime.Now - _loaded.Value).TotalMinutes > 5)) {
+        _loaded = DateTime.Now;
+
+        _users = main._conn.dt_table(main._c.parse_query("synch.task-users")).Rows.Cast<DataRow>()
+          .Select(r => db_provider.str_val(r["nome"])).ToList();
+
+        _states = main._conn.dt_table(main._c.parse_query("synch.task-states")).AsEnumerable()
+          .ToDictionary<DataRow, string, string>(r => db_provider.str_val(r["free_txt"]), r => db_provider.str_val(r["task_state"]));
+      }
+
+
       int seconds, folders, files, deleted;
-      reload_folders(out seconds, out folders, out files, out deleted, first);
+      reload_folders(_users, _states, out seconds, out folders, out files, out deleted, first);
       if (_sm != null) _s.last_synch_machine(_sm.synch_machine_id, folders, files, deleted, seconds);
     }
 
-    protected void reload_folders(out int seconds, out int folders, out int files, out int deleted, bool first = false) {
+    protected void reload_folders(List<string> users, Dictionary<string, string> states
+      , out int seconds, out int folders, out int files, out int deleted, bool first = false) {
       seconds = folders = files = deleted = 0;
       try {
         DateTime start = DateTime.Now;
@@ -231,7 +248,7 @@ namespace fsynch {
         synch_results res = new synch_results();
         foreach (synch_folder f in _folders) {
           if (first) log_debug(string.Format("leggo la cartella {0}", f.local_path));
-          res = init_synch_folder(f.id, f.local_path);
+          res = init_synch_folder(f.id, f.local_path, users, states);
         }
         folders = res.folders; files = res.files;
         deleted = _s.del_unreaded();
@@ -240,7 +257,9 @@ namespace fsynch {
       } catch (Exception ex) { log_err(ex.Message); } finally { }
     }
 
-    protected synch_results init_synch_folder(int synch_folder_id, string path, long? parent_id = null, synch_results res = null) {
+    protected synch_results init_synch_folder(int synch_folder_id, string path
+      , List<string> users, Dictionary<string, string> states
+      , long? parent_id = null, synch_results res = null) {
       if (res == null) res = new synch_results();
       try {
         // folders
@@ -253,12 +272,12 @@ namespace fsynch {
           if (tp == "insert") log_debug("added folder: " + fp);
 
           // task
-          task t = task.parse_task(synch_folder_id, fp, di.LastWriteTime, folder_id: folder_id);
+          task t = task.parse_task(synch_folder_id, fp, di.LastWriteTime, users, states, folder_id: folder_id);
           _s.ins_task(t, out tp);
           if (tp == "insert") log_debug("added task: " + t.title);
           res.folders++;
 
-          res = init_synch_folder(synch_folder_id, Path.Combine(path, di.Name), folder_id, res);
+          res = init_synch_folder(synch_folder_id, Path.Combine(path, di.Name), users, states, folder_id, res);
         }
 
         // files
@@ -271,7 +290,7 @@ namespace fsynch {
           if (tp == "insert") log_debug("added file: " + fn);
 
           // task
-          task t = task.parse_task(synch_folder_id, fn, fi.LastWriteTime, file_id: file_id);
+          task t = task.parse_task(synch_folder_id, fn, fi.LastWriteTime, users, states, file_id: file_id);
           _s.ins_task(t, out tp);
           if (tp == "insert") log_debug("added task: " + t.title);
           res.files++;

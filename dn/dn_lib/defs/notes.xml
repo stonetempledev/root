@@ -4,7 +4,7 @@
       <![CDATA[select ft.tp, ft.synch_folder_id, ft.folder_id, ft.parent_id, ft.title
        , ft.des, ft.http_path, ft.lvl
       from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft
-      order by ft.lvl]]>
+      order by ft.synch_folder_id, ft.lvl, ft.title]]>
     </query>
 
     <query name="files">
@@ -16,15 +16,18 @@
     </query>
 
     <query name="tasks">
-      <![CDATA[select t2.*
+      <![CDATA[select t3.*, isnull(ts.[order], 99) as [order], isnull(ts.class, 'light') as class
+      , isnull(ts.title_plurale, '') as title_plurale, isnull(ts.title_singolare, '') as title_singolare
+ from (select t2.*
     from (select t.task_id, t.synch_folder_id, isnull(t.folder_id, f.folder_id) as folder_id
 	   , t.file_id, t.title, t.[user], t.stato, t.dt_upd
-	   , (select top 1 task_state from dn_task_states where free_txt = t.stato) as task_state
+	   , (select top 1 task_state from dn_task_free_states where free_txt = t.stato) as task_state
 	  from dn_tasks t
 	  left join dn_files f on f.file_id = t.file_id) t2
     where exists (select top 1 1 from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft 
-	  where ft.synch_folder_id = t2.synch_folder_id 
-     and isnull(ft.folder_id, 0) = isnull(t2.folder_id, 0))]]>
+	  where {@field='filter_sf'} ft.synch_folder_id = t2.synch_folder_id 
+     and isnull(ft.folder_id, 0) = isnull(t2.folder_id, 0))) t3
+ left join dn_task_states ts on ts.task_state = t3.task_state]]>
     </query>
   </queries>
 </config>
