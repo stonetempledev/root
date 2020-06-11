@@ -62,5 +62,18 @@ namespace dn_lib {
       return null;
     }
 
+    //public string get_folder_path(long? folder_id) {
+    //  if (!folder_id.HasValue) return this.title + "/";
+    //  string folders = "";
+    //  while (true) {
+    //    folder f = get_folder(folder_id.Value);
+    //    if (f == null) break;
+    //    folders = f.folder_name + "/" + folders;
+    //    if (!f.parent_id.HasValue) break;
+    //    folder_id = f.parent_id.Value;
+    //  }
+    //  return this.title + "/" + folders;
+    //}
+
   }
 }

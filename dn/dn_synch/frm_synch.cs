@@ -30,13 +30,10 @@ namespace fsynch {
     synch _s = null;
     List<synch_folder> _folders = null;
     protected bool _synch = false;
+    protected int _max_lines = 1000, _min_lines = 700;
 
     // mouse move
     protected bool _md; private Point _ll;
-
-    // lista messaggi
-    protected Font _fbold;
-    protected int _max_rows = 1500, _min_rows = 1200;
 
     public frm_synch(core c, db_provider conn) {
       _c = c; _conn = conn; InitializeComponent();
@@ -108,53 +105,38 @@ namespace fsynch {
       } catch (Exception ex) { log_err(ex.Message); }
     }
 
-    protected void add_msg_err(string txt) {
+    protected void add_msg_err(string txt) { append_line(txt, Color.Tomato); }
+
+    protected void append_line(string txt, Color? clr = null) {
       try {
-        lw_msg.Items.Add(new ListViewItem() { Text = txt, ForeColor = Color.Tomato, Font = _fbold });
-        check_max_rows(); scroll_down(); Application.DoEvents();
+        rt_main.SelectionStart = rt_main.TextLength;
+        rt_main.SelectionLength = 0;
+        if (clr.HasValue) rt_main.SelectionColor = clr.Value;
+        rt_main.AppendText(txt + Environment.NewLine);
+        rt_main.SelectionColor = rt_main.ForeColor;
+        if (rt_main.Lines.Length > _max_lines) {
+          int start_index = rt_main.GetFirstCharIndexFromLine(0);
+          int count = rt_main.GetFirstCharIndexFromLine((rt_main.Lines.Count() - _min_lines) + 1) - start_index;
+          rt_main.Text = rt_main.Text.Remove(start_index, count);
+        }
+        rt_main.ScrollToCaret();
+        
+        Application.DoEvents();
       } catch { }
     }
 
-    protected void add_msg_warning(string txt) {
-      try {
-        lw_msg.Items.Add(new ListViewItem() { Text = txt, ForeColor = Color.Orange, Font = _fbold });
-        check_max_rows(); scroll_down(); Application.DoEvents();
-      } catch { }
-    }
-
-    protected void scroll_down() { if (lw_msg.Items.Count > 0) lw_msg.Items[lw_msg.Items.Count - 1].EnsureVisible(); }
-
-    protected void check_max_rows() {
-      if (lw_msg.Items.Count > _max_rows) {
-        for (int n = 0; n < lw_msg.Items.Count - _min_rows; n++)
-          lw_msg.Items[0].Remove();
-      }
-    }
+    protected void add_msg_warning(string txt) { append_line(txt, Color.LightYellow); }
 
     protected void log_debug(string txt) { try { log.log_info(txt); add_msg(txt); } catch { } }
     protected void log_err(string txt) { try { log.log_err(txt); add_msg_err(txt); } catch { } }
     protected void log_war(string txt) { try { log.log_warning(txt); add_msg_warning(txt); } catch { } }
 
-    protected void add_msg(string txt) {
-      try {
-        lw_msg.Items.Add(new ListViewItem() { Text = txt });
-        check_max_rows(); scroll_down(); Application.DoEvents();
-      } catch { }
-    }
+    protected void add_msg(string txt) { append_line(txt, Color.WhiteSmoke); }
 
     private void frm_synch_Load(object sender, EventArgs e) {
       try {
-        btn_max.Tag = "max";
-        btn_max.Text = "\u2610";
-        enable_double_buffering(lw_msg);
-        _fbold = new Font(lw_msg.Font.FontFamily, lw_msg.Font.Size, FontStyle.Bold);
-        resize_col();
       } catch (Exception ex) { MessageBox.Show(ex.Message, "Attenzione!", MessageBoxButtons.OK, MessageBoxIcon.Error); }
     }
-
-    private void lw_msg_Resize(object sender, EventArgs e) { try { resize_col(); } catch { } }
-
-    protected void resize_col() { try { lw_msg.Columns[0].Width = lw_msg.ClientSize.Width - 5; } catch { } }
 
     private void tmr_synch_Tick(object sender, EventArgs e) {
       try {
@@ -186,18 +168,6 @@ namespace fsynch {
       } catch (Exception ex) { log_err(ex.Message); } finally {
         _synch = false;
       }
-    }
-
-    private void btn_min_Click(object sender, EventArgs e) {
-      try {
-        if (btn_max.Tag.ToString() == "max") {
-          this.WindowState = FormWindowState.Maximized;
-          btn_max.Tag = "normal";
-        } else {
-          this.WindowState = FormWindowState.Normal;
-          btn_max.Tag = "max";
-        }
-      } catch { }
     }
 
     private void btn_min_Click_1(object sender, EventArgs e) {

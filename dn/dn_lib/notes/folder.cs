@@ -10,6 +10,7 @@ namespace dn_lib {
     public int? parent_id { get; set; }
     public string folder_name { get; set; }
     public task task { get; set; }
+    public string path { get; set; }
 
     public List<folder> folders { get; protected set; }
     public folder add_folder(folder f) { this.folders.Add(f); return f; }
@@ -24,9 +25,9 @@ namespace dn_lib {
       }
     }
 
-    public folder(int synch_folder_id, int folder_id, int? parent_id, string folder_name) {
+    public folder(int synch_folder_id, int folder_id, int? parent_id, string folder_name, string folder_path) {
       this.synch_folder_id = synch_folder_id; this.folder_id = folder_id;
-      this.parent_id = parent_id; this.folder_name = folder_name;
+      this.parent_id = parent_id; this.folder_name = folder_name; this.path = folder_path;
       this.folders = new List<folder>();
       this.files = new List<file>();
     }

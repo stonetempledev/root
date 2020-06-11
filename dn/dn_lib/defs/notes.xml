@@ -2,7 +2,7 @@
   <queries>
     <query name="folders">
       <![CDATA[select ft.tp, ft.synch_folder_id, ft.folder_id, ft.parent_id, ft.title
-       , ft.des, ft.http_path, ft.lvl
+       , ft.des, ft.http_path, ft.lvl, dbo.folder_path(ft.folder_id) as folder_path
       from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft
       order by ft.synch_folder_id, ft.lvl, ft.title]]>
     </query>

@@ -15,6 +15,18 @@ namespace deepanotes {
     public notes() {
     }
 
+    public folder find_folder(long folder_id) {
+      foreach (synch_folder sf in this.synch_folders) {
+        folder res = sf.get_folder(folder_id);
+        if (res != null) return res;
+      }
+      return null;
+    }
+
+    public synch_folder find_synch_folder(long synch_folder_id) {
+      return this.synch_folders.FirstOrDefault(x => x.id == synch_folder_id);
+    }
+
     public void load_notes(int? folder_id = null, int? synch_folder_id = null) {
 
       // folders structure
@@ -60,7 +72,7 @@ namespace deepanotes {
             , db_provider.str_val(dr["title"]), db_provider.str_val(dr["des"]), db_provider.str_val(dr["http_path"])));
         } else if (tp == "folder") {
           folder f = new folder(db_provider.int_val(dr["synch_folder_id"]), db_provider.int_val(dr["folder_id"])
-            , db_provider.int_val_null(dr["parent_id"]), db_provider.str_val(dr["title"]));
+            , db_provider.int_val_null(dr["parent_id"]), db_provider.str_val(dr["title"]), db_provider.str_val(dr["folder_path"]));
           if (lf == 1) {
             synch_folder p = res.FirstOrDefault(x => x.id == f.synch_folder_id);
             if (p == null) throw new Exception("il synch_folder con id " + f.synch_folder_id.ToString() + " non è stato trovato!");

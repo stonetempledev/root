@@ -46,10 +46,6 @@
       }
     });
 
-    function open_attivita(id_folder) { window.location = set_param("sf", "", set_param("id", id_folder, window.location.href)); }
-
-    function open_attivita_synch(synch_folder_id) { window.location = set_param("id", "", set_param("sf", synch_folder_id, window.location.href)); }
-
   </script>
 </asp:Content>
 <asp:Content ContentPlaceHolderID="contents" runat="Server">
