@@ -22,7 +22,7 @@
       <![CDATA[
       <h3 class='h2-responsive'>
         <span tp-val='title'>{@field='ms.title'}</span>
-        <small tp-val='notes' class='d-block grey-text'>{@field='ms.notes'}</small></h2>
+        <small tp-val='notes' class='d-block grey-text'>{@field='ms.notes'}</small></h3>
       <div class="dropdown no-arrow mr-1">
         <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
           aria-expanded="false"><i class="fas fa-ellipsis-v grey-text"></i></a>
