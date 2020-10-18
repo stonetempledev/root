@@ -46,18 +46,18 @@ public partial class login : tl_page {
           , user_name.Value, user_mail.Value, cry.encode_tobase64(user_pass.Value), tkey, cry.rnd_str(32)), true));
         this.user = new user(user_id, user_name.Value, user_mail.Value, user.type_user.normal);
 
-        // salvo il documento di benvenuto
+        // ocio! salvo il documento di benvenuto
         docs el = new docs();
-        List<element> els = el.load_xml(@"<element title=""Benvenuto ##user##!""> 
-         <text style=""bold"">Ciao ##user##, benvenuto nel toyn!</text>
-         <text>Ci sono un sacco di funzionalità utili per salvare i tuoi appunti, prendere note, seguire le tue attività.</text>
-         <text>Avrai anche la possibilità di organizzare i tuoi documenti, le tue foto, i tuoi contatti e tutta una serie di informazioni che ti saranno utili.</text>
-         <title ref=""{cmdurl='view cmds'}"">comandi</title>
-         <text>Come prima cosa per cominciare comincia con il visualizzare l'elenco dei comandi a disposizione, poi piano piano col tempo sarai in grado di capire come funziona il toyn!</text></element>"
-          .Replace("##user##", user_name.Value));
-        el.save_elements(els);
+        //        List<element> els = el.load_xml(@"<element title=""Benvenuto ##user##!""> 
+        //         <text style=""bold"">Ciao ##user##, benvenuto nel toyn!</text>
+        //         <text>Ci sono un sacco di funzionalità utili per salvare i tuoi appunti, prendere note, seguire le tue attività.</text>
+        //         <text>Avrai anche la possibilità di organizzare i tuoi documenti, le tue foto, i tuoi contatti e tutta una serie di informazioni che ti saranno utili.</text>
+        //         <title ref=""{cmdurl='view cmds'}"">comandi</title>
+        //         <text>Come prima cosa per cominciare comincia con il visualizzare l'elenco dei comandi a disposizione, poi piano piano col tempo sarai in grado di capire come funziona il toyn!</text></element>"
+        //          .Replace("##user##", user_name.Value));
+        //        el.save_elements(els);
 
-        if(close_trans) db_conn.commit();
+        if (close_trans) db_conn.commit();
 
         set_cache_var("tmp_password", user_pass.Value);
 

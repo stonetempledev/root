@@ -1,0 +1,187 @@
+﻿<config>
+  <queries>
+    <query name="folders">
+      <![CDATA[select sf.synch_folder_id, sf.pc_name, sf.[title], sf.[des], sf.local_path, sf.http_path, sf.[user], sf.[password]
+        from synch_folders sf where sf.pc_name = {@txtqry='pc_name'} order by sf.[title]]]>
+    </query>
+    <!-- synch machine -->
+    <query name="synch-machines">
+      <![CDATA[select sm.synch_machine_id, sm.pc_name, sm.pc_des, sm.ip_address, sm.state, sm.seconds
+        , sm.active, sm.dt_start, sm.dt_stop, sm.dt_lastsynch, sm.c_folders, sm.c_files, sm.c_deleted, sm.s_synch
+       from synch_machines sm]]>
+    </query>
+    <query name="start-synch-machine">
+      <![CDATA[select synch_machine_id, pc_name, pc_des, seconds, active, state
+       from synch_machines where pc_name = {@txtqry='pc_name'}]]>
+    </query>
+    <query name="start-machine">
+      <![CDATA[update synch_machines set state = 'start', ip_address = {@txtqry='ip_address'}, dt_start = getdate() where synch_machine_id = {@field='id'}]]>
+    </query>
+    <query name="stop-machine">
+      <![CDATA[update synch_machines set state = null, dt_stop = getdate() where synch_machine_id = {@field='id'}]]>
+    </query>
+    <query name="last-synch-machine">
+      <![CDATA[update synch_machines set dt_lastsynch = getdate(), c_folders = {@null='folders'}, c_files = {@null='files'}
+         , c_deleted = {@null='deleted'}, s_synch = {@null='seconds'}
+        where synch_machine_id = {@field='id'}]]>
+    </query>
+    <!-- synch folder, files, tasks -->
+    <query name="clean-readed">
+      <![CDATA[update dn_folders set readed = null;
+      update dn_files set readed = null;
+      update dn_tasks set readed = null;]]>
+    </query>
+    <query name="del-unreaded">
+      <![CDATA[delete from dn_folders where readed is null;
+      delete from dn_files where readed is null;
+      delete from dn_tasks where readed is null;]]>
+    </query>
+    <query name="ins-folder">
+      <![CDATA[declare @id bigint; declare @tp varchar(10); declare @cc int;
+      select top 1 @id = folder_id from dn_folders 
+       where synch_folder_id = {@field='synch_folder_id'} and parent_id {@field='cmp_p'} {@field='parent_id'} 
+        and folder_name = {@txtqry='folder_name'};
+      if(@id is null)
+      begin
+        insert into dn_folders (synch_folder_id, parent_id, folder_name, readed, dt_ins, dt_upd)
+          values ({@field='synch_folder_id'}, {@field='parent_id'}, {@txtqry='folder_name'}, 1, {@dateqry='dt_ins'}, {@dateqry='dt_upd'});
+        select @id = @@IDENTITY, @tp = 'insert', @cc = 1;  
+      end
+      else
+      begin
+       update dn_folders set readed = 1 where folder_id = @id ;
+       set ROWCOUNT 0;
+       update dn_folders set dt_ins = {@dateqry='dt_ins'}, dt_upd = {@dateqry='dt_upd'} 
+        where folder_id = @id and ( isnull(dt_ins, getdate()) <> isnull({@dateqry='dt_ins'}, getdate())
+         or isnull(dt_upd, getdate()) <> isnull({@dateqry='dt_upd'}, getdate()));
+       select @tp = 'update', @cc = @@ROWCOUNT;
+      end
+      select @id, @tp, @cc;]]>
+    </query>
+    <query name="ins-file">
+      <![CDATA[declare @id bigint; declare @tp varchar(10); declare @cc int;
+      select top 1 @id = file_id from dn_files where synch_folder_id = {@field='synch_folder_id'} and folder_id {@field='cmp_f'} {@field='folder_id'} and file_name = {@txtqry='file_name'};
+      if(@id is null)
+      begin
+        insert into dn_files (synch_folder_id, folder_id, file_name, extension, readed, dt_ins, dt_upd)
+          values ({@field='synch_folder_id'}, {@field='folder_id'}, {@txtqry='file_name'}, {@txtqry='extension'}, 1, {@dateqry='dt_ins'}, {@dateqry='dt_upd'});
+        select @id = @@IDENTITY, @tp = 'insert', @cc = 1;  
+      end
+      else 
+      begin
+       update dn_files set readed = 1 where file_id = @id;
+       set ROWCOUNT 0;
+       update dn_files set dt_ins = {@dateqry='dt_ins'}, dt_upd = {@dateqry='dt_upd'} 
+        where file_id = @id and ( isnull(dt_ins, getdate()) <> isnull({@dateqry='dt_ins'}, getdate())
+         or isnull(dt_upd, getdate()) <> isnull({@dateqry='dt_upd'}, getdate()));
+       select @tp = 'update', @cc = @@ROWCOUNT;
+      end
+      select @id, @tp, @cc;]]>
+    </query>
+    <query name="ins-task">
+      <![CDATA[declare @id bigint; declare @tp varchar(10); declare @cc int;
+      select top 1 @id = task_id from dn_tasks where isnull(folder_id, 0) = {@field='folder_id'} and isnull(file_id, 0) = {@field='file_id'};
+      if(@id is null)
+      begin
+        insert into dn_tasks (synch_folder_id, folder_id, file_id, title, [user], dt_ins, dt_upd, readed, stato, priorita, tipo, stima)
+          values ({@field='task.synch_folder_id'}, {@null='task.folder_id'}, {@null='task.file_id'}, left({@txtqry='task.title'}, 150)
+            , {@txtqry='task.user'}, {@dateqry='task.dt_ins'}, {@dateqry='task.dt_upd'}, 1
+            , {@txtqry='stato.stato'}, {@txtqry='priorita.priorita'}, {@txtqry='tipo.tipo'}, {@txtqry='stima.stima'});
+        select @id = @@IDENTITY, @tp = 'insert', @cc = 1;  
+      end
+      else 
+      begin
+       update dn_tasks set readed = 1 where task_id = @id;
+       set ROWCOUNT 0;
+       update dn_tasks set dt_ins = {@dateqry='task.dt_ins'}, dt_upd = {@dateqry='task.dt_upd'}
+         , title = left({@txtqry='task.title'}, 150), [user] = {@txtqry='task.user'}
+         , stato = {@txtqry='stato.stato'}, priorita = {@txtqry='priorita.priorita'}
+         , tipo = {@txtqry='tipo.tipo'}, stima = {@txtqry='stima.stima'}
+        where task_id = @id
+         and (isnull(dt_ins, getdate()) <> isnull({@dateqry='task.dt_ins'}, getdate()) 
+          or isnull(dt_upd, getdate()) < isnull({@dateqry='task.dt_upd'}, getdate())
+          or isnull(title, '') <> isnull({@txtqry='task.title'}, '') or isnull([user], '') <> isnull({@txtqry='task.user'}, '') 
+          or isnull(stato, '') <> isnull({@txtqry='stato.stato'}, '') or isnull(priorita, '') <> isnull({@txtqry='priorita.priorita'}, '') 
+          or isnull(tipo, '') <> isnull({@txtqry='tipo.tipo'}, '') or isnull(stima, '') <> isnull({@txtqry='stima.stima'}, ''))
+       select @tp = 'update', @cc = @@ROWCOUNT;
+      end
+      select @id, @tp, @cc;]]>
+    </query>
+    <query name="upd-task-date">
+      <![CDATA[update tt set tt.dt_upd = t2.max_dt
+         from dn_tasks tt
+         join ( select t.*
+          from (select dt.task_id, dt.folder_id, dt.dt_upd 
+            , (select max(dt_upd) from dn_files where folder_id = dt.folder_id) as max_dt
+          from dn_tasks dt where dt.folder_id is not null and dt.task_id = {@field='task_id'}) t
+          where t.max_dt is not null and t.dt_upd < t.max_dt ) t2 on t2.task_id = tt.task_id
+         where isnull(tt.dt_upd, 0) <> t2.max_dt;
+        select @@ROWCOUNT;]]>
+    </query>
+    <query name="load-tasks-contents">
+      <![CDATA[select t.task_id, t.folder_id, t.file_id, f.folder_id as file_folder_id, t.title, t.dt_upd, t.dt_readed
+        , sf.local_path, replace(dbo.folder_path(isnull(t.folder_id, f.folder_id)), '/', '\') as folder_path
+		    , f.file_id as file_notes_id, f.file_name, tc.type_content, tc.des_extension as load_extension, tc.open_comment, tc.close_comment, fi.type_info
+        , ff.file_id as file_notes_id_ff, ff.file_name as file_name_ff, ftc.type_content as type_content_ff, ftc.des_extension as load_extension_ff, ftc.open_comment as open_comment_ff, ftc.close_comment as close_comment_ff, ffi.type_info as type_info_ff
+       from dn_tasks t
+       join synch_folders sf on sf.synch_folder_id = t.synch_folder_id
+       left join dn_files f on f.file_id = t.file_id
+       left join dn_files_types tc on tc.extension = f.extension
+	     left join dn_files_info fi on fi.file_name = f.file_name
+       left join dn_files ff on ff.folder_id = t.folder_id
+       left join dn_files_types ftc on ftc.extension = ff.extension
+	     left join dn_files_info ffi on ffi.file_name = ff.file_name
+       where t.dt_readed is null or t.dt_readed <> t.dt_upd
+       order by t.task_id]]>
+    </query>
+    <query name="init-content">
+      <![CDATA[delete from dn_tasks_contents where task_id= {@field='task_id'};
+      delete from dn_tasks_notes where task_id= {@field='task_id'};]]>
+    </query>
+    <query name="ins-content">
+      <![CDATA[insert into dn_tasks_contents (task_id, file_id, extension, content_title, dt_ins, content)
+            values ({@field='task_id'}, {@field='file_id'}, {@txtqry='extension'}, {@txtqry='title'}, getdate(), @content);]]>
+    </query>
+    <query name="ins-notes">
+      <![CDATA[insert into dn_tasks_notes (task_id, file_id, task_notes)
+            values ({@field='task_id'}, {@field='file_id'}, @content);]]>
+    </query>
+    <query name="update-task-readed">
+      <![CDATA[update dn_tasks set dt_readed = dt_upd where task_id = {@field='task_id'}]]>
+    </query>
+    <query name="task-users"><![CDATA[select distinct lower(nome) as nome from users]]></query>
+    <query name="free-labels">
+      <![CDATA[select free_txt, stato, priorita, tipo, stima, (case when [default] = 1 then '1' else '0' end) as [default]
+        from dn_task_free_labels ]]>
+    </query>
+
+    <query name="set-folder-name">
+      <![CDATA[update dn_folders set folder_name = {@txtqry='folder_name'} where folder_id = {@field='folder_id'}]]>
+    </query>
+
+    <query name="set-file-name">
+      <![CDATA[update dn_files set file_name = {@txtqry='file_name'} where file_id = {@field='file_id'}]]>
+    </query>
+
+    <query name="del-folder">
+      <![CDATA[delete from dn_folders where folder_id = {@field='folder_id'}]]>
+    </query>
+
+    <query name="del-file">
+      <![CDATA[delete from dn_files where file_id = {@field='file_id'}]]>
+    </query>
+
+    <query name="task-ins-into-synch">
+      <![CDATA[insert into dn_folders (synch_folder_id, parent_id, folder_name, dt_ins, readed)
+    values ({@field='synch_folder_id'}, null, {@txtqry='name'}, getdate(), 1)]]>
+    </query>
+
+    <query name="task-ins-into-folder">
+      <![CDATA[insert into dn_folders (synch_folder_id, parent_id, folder_name, dt_ins, readed)
+     select synch_folder_id, folder_id, {@txtqry='name'}, getdate(), 1 
+      from dn_folders where folder_id = {@field='folder_id'}]]>
+    </query>
+
+  </queries>
+</config>
+

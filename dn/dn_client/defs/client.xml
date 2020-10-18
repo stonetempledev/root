@@ -1,0 +1,19 @@
+﻿<config>
+  <vars>
+    <var name="tray-icon" machine="home">false</var>
+  </vars>
+  <queries>
+    <query name="opened">
+      <![CDATA[
+if exists (select top 1 1 from clients where machine_ip = {@txtqry='ip_machine'})
+ update clients set dt_upd = getdate() where machine_ip = {@txtqry='ip_machine'};
+else 
+ insert into clients (machine_ip, [state], dt_ins, dt_upd)
+  values ({@txtqry='ip_machine'}, 'opened', getdate(), getdate());]]>
+    </query>
+    <query name="closed">
+      <![CDATA[update clients set state = 'closed', dt_upd = getdate() 
+        where machine_ip = {@txtqry='ip_machine'};]]>
+    </query>
+  </queries>
+</config>

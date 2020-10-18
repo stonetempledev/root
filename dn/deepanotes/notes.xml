@@ -1,0 +1,172 @@
+﻿<config>
+  <html-blocks>
+    <!-- menu -->
+    <html-block name="item-synch-folder">
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce primo'>
+        {@cond_val='url_open_home','open_home'}<a class='h5' href="{@field='url_synch_folder'}">{@field='title'}</a>{@field='block-attivita'}</li>{@field='childs'}]]>
+      <cond name="open_home">
+        <![CDATA[<a class='fas fa-home mr-2' href="{@field='url_open_home'}"></a>]]>
+      </cond>
+    </html-block>
+    <html-block name="item-secondo">
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce secondo'><a class='h6' href="{@field='url_folder'}">{@field='title'}</a>{@field='block-attivita'}</li>{@field='childs'}]]>
+    </html-block>
+    <html-block name="item-terzo">
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce terzo'><a href="{@field='url_folder'}">{@field='title'}</a>{@field='block-attivita'}</li>{@field='childs'}]]>
+    </html-block>
+    <html-block name="item-quarto">
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce quarto'><a href="{@field='url_folder'}">{@field='title'}</a>{@field='block-attivita'}{@cond_val='url_open_folder','open_folder'}</li>]]>
+      <cond name="open_folder">
+        <![CDATA[<small><a class='fas fa-chevron-circle-right ml-2' style='opacity:0.2;' title='apri la cartella' href="{@field='url_open_folder'}"></a></small>]]>
+      </cond>
+    </html-block>
+    <html-block name="spin-attivita">
+      <![CDATA[<a style='opacity: .7;' class="badge badge-pill badge-{@field='class_spin'} ml-2" title="{@field='title'}" href="{@field='url_open_tasks'}">{@field='c_attivita'}</a>]]>
+    </html-block>
+    <html-block name="spin-attivita-synch">
+      <![CDATA[<a style='opacity: .7;' class="badge badge-pill badge-{@field='class_spin'} ml-2" title="{@field='title'}" href="{@field='url_open_tasks'}">{@field='c_attivita'}</a>]]>
+    </html-block>
+    <!-- attivita -->
+    <html-block name="title-attivita">
+      <![CDATA[
+      <div class="btn-group w-100">
+        <button type="button" class="btn btn-primary w-100"><h3>{@field='filter-title'}</h3></button>
+        <button type="button" class="btn btn-primary dropdown-toggle px-3" data-toggle="dropdown" aria-haspopup="true"
+          aria-expanded="false">
+          <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <div class="dropdown-menu">{@field='html-filters'}</div>
+      </div>      
+      <h4 class='ml-2'><small>{@field='filter-des'}</small></h4>
+      <h5 class='ml-2 mt-4'><small>{@field='conteggio'}</small></h5>
+      <hr class='mb-5 mt-5'/>]]>
+    </html-block>
+    <html-block name="title-attivita-folder">
+      <![CDATA[<h1 class='h1-responsive bg-primary text-white text-uppercase'>ATTIVITÀ {@field='title-folder'}</h1>
+      {@cond_val='path-folder','path_folder'}
+      <h5 class='mb-3'><small>{@field='conteggio'}</small></h5>
+      <div class='mb-3'>
+        <a class='text-primary' href="javascript:add_attivita('da_fare')"><i class="fas fa-plus-circle"></i> aggiungi attività da fare</a>
+        <a class='text-success' href="javascript:add_attivita('fatto')"><i class="fas fa-plus-circle"></i> aggiungi attività fatta</a>
+        <a class='text-warning' href="javascript:add_attivita('in_corso')"><i class="fas fa-plus-circle"></i> aggiungi attività in corso</a>
+      </div>]]>
+      <cond name="path_folder">
+        <![CDATA[<div class='badge badge-light d-block mb-3 text-left'>{@field='path-folder'}</div>]]>
+      </cond>
+    </html-block>
+    <html-block name="open-title-sub-attivita">
+      <![CDATA[<blockquote class="blockquote bq-{@field='cls'} mb-5"><p class="bq-title text-uppercase">{@field='count'} ATTIVITÀ {@field='title'}</p><p>]]>
+    </html-block>
+    <html-block name="close-title-sub-attivita">
+      <![CDATA[</p></blockquote>]]>
+    </html-block>
+    <html-block name="task-error">
+      <![CDATA[<div task-id='{@field='task_id'}'>
+        <div class='badge badge-danger mb-3 d-block text-left text-wrap'>
+        <h3>{@field='error'}</h3>
+        <hr/><h5>{@field='source'}</h5>
+        <hr/><h5>{@field='stack'}</h5></div></div>]]>
+    </html-block>
+    <html-block name="task">
+      <![CDATA[<div task-id='{@field='task_id'}' task-assegna="{@field='val-assegna'}" task-priorita='{@field='val-priorita'}' task-stima='{@field='val-stima'}' task-tipo='{@field='val-tipo'}'>
+        <!-- path + menù -->
+        <div class='d-block badge badge-light text-wrap'><span>//{@field='path'}</span>
+          <div class="dropdown no-arrow float-right" title='modifica attività...'>
+            <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
+              aria-expanded="false"><i class="fas fa-ellipsis-v text-muted"></i></a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <h4 class="dropdown-header" style='color: blue; background-color: whitesmoke;'>ATTIVITÀ</h4>
+              <div class="dropdown-item icon-item"><span class='icon-menu' title='modifica attività...'
+                onclick='modify_task({@field='task_id'})'><i class="fas fa-pen text-info"></i></span>
+                  <span class='icon-menu text-danger' title='elimina attività...' onclick="del_task({@field='task_id'})">
+                  <i class="fas fa-trash-alt"></i></span></div>
+            </div>
+          </div>        
+        </div>
+        <!-- barra -->
+        <div class='d-flex badge badge-light p-2'><div class='text-left w-50'>
+            <h5 class='d-inline mr-3' title="clicca per visualizzare o inserire delle note" onclick='open_notes({@field='task_id'})'><span tp-item='btn-notes' class='badge badge-pill badge-light' style='cursor:pointer;'>{@field='title_notes'}</span></h5>
+          </div>
+          <div class='text-right w-50'>{@field='priorita'}{@field='stima'}{@field='tipo'}</div></div>
+        <!-- title + stato attività -->
+        <div class='badge badge-{@field='cls'} mb-3 d-block text-left text-wrap'>
+          <h3><span tp-val='title'>{@field='title'}</span>
+            <div class="dropdown no-arrow mr-1 mt-1 float-right" title="aggiorna stato attività">
+              <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" 
+                aria-haspopup="true" aria-expanded="false">
+                <small class='badge badge-pill badge-{@field='cls'}' style='cursor:pointer;'>{@field='stato'}</small></a>
+              <div class="dropdown-menu dropdown-menu-right shadow">
+                <h4 class="dropdown-header" style='color: blue; background-color: whitesmoke;'>STATO ATTIVITÀ</h4>
+                {@field='menu-states'}
+              </div>
+             </div>
+           </h3>
+           <!-- notes -->
+           <div tp-item='section-notes' class='mt-2' style='display:none;'>
+             <span class='text-dark font-weight-light'>note particolari</span>
+             <textarea tp-item='txt-notes' style='width:100%;border:0pt;' spellcheck="false" wrap='on' class='mt-2 text-muted' rows=7
+              onfocus='focus_task_notes({@field='task_id'})' onblur='blur_task_notes({@field='task_id'})'></textarea>
+           </div>
+           <!-- allegati -->
+           <div tp-item='section-allegati' class='mt-2' style='display:none;'>
+           </div>
+           <!-- footer -->
+           <hr class='m-1'/><h5>{@field='assegnata'}<small class='float-right'>{@field='data'}</small></h5></div></div>]]>
+    </html-block>
+    <html-block name="task-allegati">
+      <![CDATA[<span class='text-dark font-weight-light mb-2' style='display:block;'>allegati</span>{@field='html-allegati'}]]>
+    </html-block>
+    <html-block name="task-allegato">
+      <![CDATA[<h5 class='d-inline mr-3' style='opacity: 0.7;' title="scarica allegato..."><a href="{@field='http-path'}" target='blank' class='badge badge-pill badge-light'>{@field='file-name'}</a></h5>]]>
+    </html-block>
+    <html-block name="task-state">
+      <![CDATA[<h5 class='d-inline mr-3' title="{@field='tooltip'}"><span class='badge badge-pill badge-{@field='cls'}'>{@field='txt'}</span></h5>]]>
+    </html-block>
+    <html-block name="menu-state">
+      <![CDATA[<a class="dropdown-item" href="javascript:task_state({@field='task_id'}, '{@field='assign_stato'}')"><h5>{@field='title'}</h5></a>]]>
+    </html-block>
+  </html-blocks>
+
+  <queries>
+    <query name="menu-states">
+      <![CDATA[select title_singolare, stato from dn_task_stato order by [order]]]>
+    </query>
+    <query name="task-assegna">
+      <![CDATA[select t.title, t.[value]
+      from (select '' as title, '' as [value]
+       union select nome as title, nome as [value] from users
+       ) t order by 2]]>
+    </query>
+    <query name="task-priorita">
+      <![CDATA[select t.title, t.[value]
+      from (select '' as title, '' as [value], -1 as [order]
+       union select title_singolare as title, priorita as [value], [order] from dn_task_priorita
+      ) t order by t.[order]]]>
+    </query>
+    <query name="task-tipi">
+      <![CDATA[select t.title, t.[value]
+      from (select '' as title, '' as [value], -1 as [order]
+       union select title_singolare as title, tipo as [value], [order] from dn_task_tipo
+       ) t order by t.[order]]]>
+    </query>
+    <query name="task-stime">
+      <![CDATA[select t.title, t.[value]
+      from (select '' as title, '' as [value], -1 as [days]
+       union select title_singolare as title, stima as [value], [days] from dn_task_stima 
+       ) t order by t.[days]]]>
+    </query>
+    <query name="folder-local-path">
+      <![CDATA[select sf.local_path + replace(dbo.folder_path(f.folder_id), '/', '\') as folder_path 
+ from dn_folders f 
+ join synch_folders sf on sf.synch_folder_id = f.synch_folder_id
+ where f.folder_id = {@field='folder_id'}]]>
+    </query>
+    <query name="synch-folder-local-path">
+      <![CDATA[select local_path from synch_folders where synch_folder_id = {@field='synch_folder_id'}]]>
+    </query>
+    <query name="filters-tasks">
+      <![CDATA[select task_filter_id, filter_title, filter_notes, filter_def, filter_class
+ from dn_tasks_filters order by filter_order]]>
+    </query>
+  </queries>
+</config>

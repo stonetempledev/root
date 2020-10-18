@@ -24,7 +24,7 @@ SINTASSI DICHIARAZIONE object, subobj
         <row name="base" title="Base Actions" des="azioni basilari ed essenziali"/>
         <row name="sys" title="System Actions" des="comandi di sistema speciali, per manutenzione ed amministrazione"/>
         <row name="users" title="Gestione Utenti" des="elenco utenti, aggiunta, modifica, etc..."/>
-        <row name="elements" title="Docs Actions" des="gestione della tua documentazione"/>
+        <row name="docs" title="Docs Actions" des="gestione della tua documentazione"/>
         <row name="backups" title="Gestione Backups database" des="comandi per la gestione dei backups del database"/>
         <row name="def-objects" title="Definizione e Gestione Oggetti Utenti" des="comandi per la gestione degli oggetti definiti da/per l'utente" />
         <sql-select qry="select object_type_id, object_type, object_list_des, object_notes from objects_types order by 1">
@@ -56,10 +56,9 @@ SINTASSI DICHIARAZIONE object, subobj
         <row group="backups" action="view" action-opt="true" object="backups" page="backups.aspx" des="elenco dei backups generati" type="admin" call="true"/>
         <row group="backups" action="restore" object="backup" subobj="{nome file}" page="backups.aspx" des="ripristino backup del database" type="admin"/>
         <!-- docs -->
-        <row group="elements" action="view" action-opt="true" object="elements" syn-object="docs,docu,docuteck,documenti,documentazione" page="docs.aspx" des="visualizza gli elementi radice" call="true"/>
-        <row group="elements" action="view" object="element" subobj="id:{id element}" page="docs.aspx" des="visualizza l'elemento specifico"/>
-        <row group="elements" action="xml" object="elements" page="docs.aspx" des="edit e salvataggio degli elementi radice" call="true"/>
-        <row group="elements" action="xml" object="element" subobj="id:{id element}" page="docs.aspx" des="edit e salvataggio dell'elemento"/>
+        <row group="docs" action="view" action-opt="true" object="docs" syn-object="docuteck,documenti,documentazione" page="docs.aspx" des="visualizza i documenti" call="true"/>
+        <row group="docs" action="view" action-opt="true" object="doc" subobj="{code}" syn-object="documento" page="docs.aspx" des="visualizza il documento" call="true"/>
+        <row group="docs" action="view" action-opt="true" object="doc-id" subobj="{id}" syn-object="iddoc,doc_id,id_doc" page="docs.aspx" des="visualizza il documento con id" call="true"/>
         <!-- objects -->
         <row group="def-objects" action="rebuild" object="objects" page="def_objects.aspx" des="ridefinizione delle risorse interne per l'utilizzo degli oggetti" type="admin"/>
         <!-- objects -->

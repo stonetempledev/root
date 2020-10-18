@@ -1,0 +1,9 @@
+﻿<config>
+  <queries>
+    <query name="db-conns">
+      <![CDATA[select dc.id_conn, dc.conn_name, dc.conn_type, dc.conn_string, dc.[provider], dc.conn_des
+ from client_db_conns dc
+ order by dc.conn_name, dc.conn_type;]]>
+    </query>
+  </queries>
+</config>

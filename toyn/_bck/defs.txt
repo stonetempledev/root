@@ -1,0 +1,3 @@
+        <row group="elements" action="view" object="element" subobj="id:{id element}" page="docs.aspx" des="visualizza l'elemento specifico"/>
+        <row group="elements" action="xml" object="elements" page="docs.aspx" des="edit e salvataggio degli elementi radice" call="true"/>
+        <row group="elements" action="xml" object="element" subobj="id:{id element}" page="docs.aspx" des="edit e salvataggio dell'elemento"/>
