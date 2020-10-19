@@ -13,7 +13,6 @@ namespace dn_client {
   public partial class frm_main : Form {
 
     public static core _c = null;
-    protected frm_sql _sql = null;
     protected Point _dp = Point.Empty;
 
     public frm_main(core c) {
@@ -40,7 +39,6 @@ namespace dn_client {
         this.Close(); return; 
       }
 
-      if (_sql != null) _sql.Hide();
       this.WindowState = FormWindowState.Minimized;
     }
 
@@ -52,7 +50,6 @@ namespace dn_client {
 
     private void ntf_main_DoubleClick(object sender, EventArgs e) {
       Show();
-      if (_sql != null && !_sql.closed) { _sql.Show(); _sql.WindowState = FormWindowState.Normal; }
       this.WindowState = FormWindowState.Normal;
       ntf_main.Visible = false;
     }
@@ -79,22 +76,12 @@ namespace dn_client {
     }
 
     void MenuExit_Click(object sender, EventArgs e) {
-      if (_sql != null) _sql.force_close = true;
       Application.Exit();
     }
 
     private void lbl_title_DoubleClick(object sender, EventArgs e) {
       if (this.WindowState == FormWindowState.Normal) this.WindowState = FormWindowState.Maximized;
       else if (this.WindowState == FormWindowState.Maximized) this.WindowState = FormWindowState.Normal;
-    }
-
-    private void mi_sqleditor_Click(object sender, EventArgs e) {
-      try {
-        if (_sql == null) {
-          _sql = new frm_sql(_c);
-          _sql.Show();
-        } else { _sql.Show(); _sql.Focus(); Application.DoEvents(); }
-      } catch (Exception ex) { msg_error(ex.Message); }
     }
 
     protected void msg_error(string txt) {

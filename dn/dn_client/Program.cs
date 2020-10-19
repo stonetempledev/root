@@ -8,6 +8,9 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Diagnostics;
 using MySql.Data;
 using MySql.Data.MySqlClient;
 using dlib;
@@ -73,15 +76,13 @@ namespace dn_client {
 
         // test
         //try {
-        //  List<string> files = new List<string>() { "c:\\tmp\\deepanotes.sql", "c:\\tmp\\toyn.docs.sql", "c:\\tmp\\toyn.sql" };
-        //  System.Diagnostics.Process process = new System.Diagnostics.Process();
-        //  System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-        //  startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-        //  startInfo.FileName = "cmd.exe";
-        //  startInfo.Arguments = "/c \"" + files[0] + "\"";
-        //  process.StartInfo = startInfo;
-        //  process.Start(); 
-        //  System.Diagnostics.Process.Start("cmd.exe", "\"c:\\tmp\\toyn.sql\""); 
+        //  string cmd = @"c:\tmp\toyn.sql";
+        //Process.Start(new System.Diagnostics.ProcessStartInfo("cmd", "/c \"" + cmd + "\"") {
+        //  RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
+        //});
+        //Process.Start(new System.Diagnostics.ProcessStartInfo("explorer", "\"" + cmd + "\"") {
+        //  RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
+        //});
         //  return;
         //} catch (Exception ex) { MessageBox.Show(ex.Message); }
 
