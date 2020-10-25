@@ -82,6 +82,18 @@ public partial class _notes : tl_page {
             ob.add_task(jr.val_int("synch_folder_id"), jr.val_int("folder_id"), jr.val_str("stato")
               , jr.val_str("title"), jr.val_str("assegna"), jr.val_str("priorita"), jr.val_str("tipo"), jr.val_str("stima"));
           }
+            // add_folder
+          else if (jr.action == "add_folder") {
+            ob.add_folder(jr.val_int("synch_folder_id"), jr.val_int("folder_id"), jr.val_str("title"));
+          }
+            // ren_folder
+          else if (jr.action == "ren_folder") {
+            ob.ren_folder(jr.val_int("synch_folder_id"), jr.val_int("folder_id"), jr.val_str("title"));
+          }
+            // del_folder
+          else if (jr.action == "del_folder") {
+            ob.del_folder(jr.val_int("synch_folder_id"), jr.val_int("folder_id"));
+          }
             // get_notes
           else if (jr.action == "get_details") {
             res.contents = ob.get_task_notes(jr.val_int("task_id"));

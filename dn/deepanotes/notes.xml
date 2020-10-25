@@ -42,13 +42,28 @@
       <hr class='mb-5 mt-5'/>]]>
     </html-block>
     <html-block name="title-attivita-folder">
-      <![CDATA[<h1 class='h1-responsive bg-primary text-white text-uppercase'>ATTIVITÀ {@field='title-folder'}</h1>
+      <![CDATA[<h1 tp='name_folder' class='h1-responsive bg-primary text-white text-uppercase'>{@field='title-folder'}</h1>
       {@cond_val='path-folder','path_folder'}
+
+      <div class="btn-group w-100">
+        <button type="button" class="btn btn-light w-100 m-0">{@field='filter-des'}</button>
+        <button type="button" class="btn btn-light dropdown-toggle px-3 m-0" data-toggle="dropdown" aria-haspopup="true"
+          aria-expanded="false">
+          <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <div class="dropdown-menu">{@field='html-filters'}</div>
+      </div
       <h5 class='mb-3'><small>{@field='conteggio'}</small></h5>
-      <div class='mb-3'>
-        <a class='text-primary' href="javascript:add_attivita('da_fare')"><i class="fas fa-plus-circle"></i> aggiungi attività da fare</a>
-        <a class='text-success' href="javascript:add_attivita('fatto')"><i class="fas fa-plus-circle"></i> aggiungi attività fatta</a>
-        <a class='text-warning' href="javascript:add_attivita('in_corso')"><i class="fas fa-plus-circle"></i> aggiungi attività in corso</a>
+      
+      <div class='mb-5 mt-4'>
+       <p class="note note-primary"><strong>Attività:</strong>
+         <a class='text-primary' href="javascript:add_attivita('da_fare')"><i class="fas fa-plus-circle"></i> aggiungi attività da fare</a>
+         <a class='text-success' href="javascript:add_attivita('fatto')"><i class="fas fa-plus-circle"></i> aggiungi attività fatta</a>
+         <a class='text-warning' href="javascript:add_attivita('in_corso')"><i class="fas fa-plus-circle"></i> aggiungi attività in corso</a></p>
+       <p class="note note-light"><strong>Cartelle:</strong>
+         <a class='text-info' href="javascript:add_folder()"><i class="fas fa-plus-circle"></i> aggiungi sotto-cartella</a>
+         <a class='text-warning' href="javascript:ren_folder()"><i class="fas fa-edit"></i> rinomina cartella</a>
+         <a class='text-danger' href="javascript:del_folder()"><i class="fas fa-trash-alt"></i> cancella la cartella</a></p>
       </div>]]>
       <cond name="path_folder">
         <![CDATA[<div class='badge badge-light d-block mb-3 text-left'>{@field='path-folder'}</div>]]>
@@ -156,17 +171,70 @@
        ) t order by t.[days]]]>
     </query>
     <query name="folder-local-path">
-      <![CDATA[select sf.local_path + replace(dbo.folder_path(f.folder_id), '/', '\') as folder_path 
+      <![CDATA[select sf.local_path + replace(dbo.folder_path(f.folder_id), '/', '\') as local_path, sf.synch_folder_id, f.folder_name as name
  from dn_folders f 
  join synch_folders sf on sf.synch_folder_id = f.synch_folder_id
  where f.folder_id = {@field='folder_id'}]]>
     </query>
     <query name="synch-folder-local-path">
-      <![CDATA[select local_path from synch_folders where synch_folder_id = {@field='synch_folder_id'}]]>
+      <![CDATA[select local_path, synch_folder_id, title as name 
+        from synch_folders where synch_folder_id = {@field='synch_folder_id'}]]>
     </query>
     <query name="filters-tasks">
       <![CDATA[select task_filter_id, filter_title, filter_notes, filter_def, filter_class
  from dn_tasks_filters order by filter_order]]>
+    </query>
+    <query name="add-folder">
+      <![CDATA[insert into dn_folders (synch_folder_id, parent_id, folder_name, readed)
+ values ({@field='synch_folder_id'}, {@field='parent_id'}, left({@txtqry='folder_name'}, 150), 1)]]>
+    </query>
+    <query name="ren-folder">
+      <![CDATA[update dn_folders set folder_name = left({@txtqry='folder_name'}, 150)
+        where folder_id = {@field='folder_id'}]]>
+    </query>
+    <query name="ren-synch-folder">
+      <![CDATA[update synch_folders set title = left({@txtqry='title'}, 50)
+        where synch_folder_id = {@field='synch_folder_id'}]]>
+    </query>
+    <query name="del-folder">
+      <![CDATA[delete f from dn_files f
+ join (select ft.*
+	 from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft
+	 where ft.lvl > 0) ff on ff.folder_id = f.folder_id and ff.synch_folder_id = f.synch_folder_id;
+
+ delete f from dn_folders f
+  join (select ft.*
+	 from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft
+	 where ft.lvl > 0) ff on ff.folder_id = f.folder_id and ff.synch_folder_id = f.synch_folder_id;
+   
+ delete dn from dn_tasks dn
+  where folder_id is not null and not exists (select top 1 1 from dn_folders where folder_id = dn.folder_id);
+
+ delete dn from dn_tasks dn
+  where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
+  
+ delete dn from dn_tasks_contents dn
+  where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
+  
+ delete dn from dn_tasks_notes dn
+  where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);]]>
+    </query>
+    <query name="clean-synch">
+      <![CDATA[delete from dn_files where synch_folder_id = {@field='synch_folder_id'};
+
+ delete from dn_folders where synch_folder_id = {@field='synch_folder_id'};
+ 
+ delete dn from dn_tasks dn
+  where folder_id is not null and not exists (select top 1 1 from dn_folders where folder_id = dn.folder_id);
+
+ delete dn from dn_tasks dn
+  where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
+  
+ delete dn from dn_tasks_contents dn
+  where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
+  
+ delete dn from dn_tasks_notes dn
+  where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);]]>
     </query>
   </queries>
 </config>

@@ -1,0 +1,4 @@
+github.hub
+ stonetempledev, molinagarden@gmail.com/Homme33!
+ repositories
+  https://github.com/stonetempledev/root.git

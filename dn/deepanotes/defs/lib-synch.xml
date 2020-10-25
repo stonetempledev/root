@@ -34,7 +34,11 @@
     <query name="del-unreaded">
       <![CDATA[delete from dn_folders where readed is null;
       delete from dn_files where readed is null;
-      delete from dn_tasks where readed is null;]]>
+      delete from dn_tasks where readed is null;
+      delete tn from dn_tasks_notes tn
+       where not exists (select top 1 1 from dn_tasks where task_id = tn.task_id);
+      delete tc from dn_tasks_contents tc
+       where not exists (select top 1 1 from dn_tasks where task_id = tc.task_id);]]>
     </query>
     <query name="ins-folder">
       <![CDATA[declare @id bigint; declare @tp varchar(10); declare @cc int;

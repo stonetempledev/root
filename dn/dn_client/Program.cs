@@ -76,13 +76,13 @@ namespace dn_client {
 
         // test
         //try {
-        //  string cmd = @"c:\tmp\toyn.sql";
-        //Process.Start(new System.Diagnostics.ProcessStartInfo("cmd", "/c \"" + cmd + "\"") {
-        //  RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
-        //});
-        //Process.Start(new System.Diagnostics.ProcessStartInfo("explorer", "\"" + cmd + "\"") {
-        //  RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
-        //});
+        //  string cmd = @"c:\tmp\a.sql";
+        //  Process.Start(new System.Diagnostics.ProcessStartInfo("cmd", "/c \"" + cmd + "\"") {
+        //    RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
+        //  });
+        //  Process.Start(new System.Diagnostics.ProcessStartInfo("explorer", "\"" + cmd + "\"") {
+        //    RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
+        //  });
         //  return;
         //} catch (Exception ex) { MessageBox.Show(ex.Message); }
 

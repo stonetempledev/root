@@ -131,6 +131,60 @@
       } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
+    function del_folder() {
+      show_danger_yn("Attenzione!", "Sei sicuro di voler cancellare la cartella e tutto il contenuto?"
+        , function () { remove_folder() });
+    }
+
+    function remove_folder() {
+      try {
+          window.setTimeout(function () {
+            try {
+              var res = post_action({ "action": "del_folder", "folder_id": get_param("id"), "synch_folder_id": get_param("sf") });
+              if (res) window.location.reload();
+            } catch (e) { show_danger("Attenzione!", e.message); }
+          }, 1500);
+      } catch (e) { show_danger("Attenzione!", e.message); }
+    }
+
+    function ren_folder() {
+      try {
+        show_dyn_dlg({ title: "Rinomina la Cartella", rows: [
+        { id: "title", icon: "heading", label: "Titolo", valore: $("[tp='name_folder']").text()}]
+        , on_ok: function () {
+          if (!val_dyn("title")) return;
+          window.setTimeout(function () {
+            try {
+              var res = post_action({ "action": "ren_folder", "folder_id": get_param("id"), "synch_folder_id": get_param("sf")
+                , "title": val_dyn("title")
+              });
+              if (res) window.location.reload();
+            } catch (e) { show_danger("Attenzione!", e.message); }
+          }, 1500);
+        }
+        });
+      } catch (e) { show_danger("Attenzione!", e.message); }
+    }
+
+    function add_folder() {
+      try {
+        show_dyn_dlg({ title: "Aggiungi Cartella", rows: [
+        { id: "title", icon: "heading", label: "Titolo", valore: ""}]
+        , on_ok: function () {
+          if (!val_dyn("title")) return;
+          window.setTimeout(function () {
+            try {
+              var res = post_action({ "action": "add_folder", "folder_id": get_param("id"), "synch_folder_id": get_param("sf")
+                , "title": val_dyn("title")
+              });
+              if (res) window.location.reload();
+            } catch (e) { show_danger("Attenzione!", e.message); }
+          }, 1500);
+        }
+        });
+      } catch (e) { show_danger("Attenzione!", e.message); }
+    }
+
     function change_filter(filter_id) {
       try {
         var result = post_data({ "action": "set_filter_id", "filter_id": filter_id });

@@ -29,5 +29,9 @@
           where setting_name = {@txtqry='setting'} and [user_id] = {@field='user_id'};
         end ]]>
     </query>
+    <query name="get-settings">
+      <![CDATA[select setting_id, setting_name, setting_var 
+        from settings]]>
+    </query>
   </queries>
 </config>

@@ -13,15 +13,6 @@ GO
 create index idx_client_cmds on client_cmds (machine_ip, [state]);
 go
 
--- client_db_conns
-create table client_db_conns (id_conn int identity(1,1) not null primary key
- , conn_name varchar(50) not null, conn_type varchar(25) not null
- , conn_string varchar(500) not null, [provider] varchar(200) not null, conn_des varchar(1500));
-go
-
-create index idx_client_db_conns on client_db_conns (conn_name, conn_type);
-go
-
 -- clients
 CREATE TABLE [dbo].[clients](
 	[id_client] [int] IDENTITY(1,1) NOT NULL,
@@ -37,17 +28,23 @@ create unique index idx_clients on clients (machine_ip);
 go
 
 
+-- settings
+-- drop table settings
+CREATE TABLE [dbo].[settings]([setting_id] [int] IDENTITY(1,1) NOT NULL
+ , [setting_name] [varchar](40) NOT NULL, [setting_var] [varchar](100) NOT NULL
+ , dt_ins datetime not null default getdate() PRIMARY KEY CLUSTERED ( [setting_id] ASC )
+)
+GO
+
+-- truncate table settings
+insert into settings (setting_name, setting_var)
+ values ('url', 'http://localhost/deepanotes')
 
 
 
 
 
-
-
-
-
-
-
+-- OLDIES
 
 alter table dn_tasks_filters add filter_order int
 go

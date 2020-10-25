@@ -298,7 +298,7 @@ namespace deepanotes {
       DataRow dr = dt.Rows[0];
       // aggiornamento del file
       if (db_provider.str_val(dr["file_id_notes"]) != "") {
-        string file_path = db_provider.str_val(dr["file_path_notes"]) != "" ? 
+        string file_path = db_provider.str_val(dr["file_path_notes"]) != "" ?
           db_provider.str_val(dr["file_path_notes"]) : db_provider.str_val(dr["file_path"]);
         System.Text.Encoding e = dlib.tools.encoding_type.GetType(file_path);
         // file sorgente
@@ -308,7 +308,7 @@ namespace deepanotes {
           // cerco i commenti 
           int from = all.IndexOf(key_from), to = all.IndexOf(key_to, from + 1);
           string src = "";
-          if (from >= 0 && to > 0) 
+          if (from >= 0 && to > 0)
             src = all.Substring(0, from + key_from.Length) + "\r\n" + notes + "\r\n" + all.Substring(to);
           else
             src = oc + " " + key_from + "\r\n" + notes + "\r\n" + key_to + cc + "\n\n" + all;
@@ -339,7 +339,7 @@ namespace deepanotes {
             db_conn.exec(core.parse_query("lib-notes.init-notes", new string[,] { { "task_id", task_id.ToString() } })
               , pars: new System.Data.Common.DbParameter[] { 
                 new System.Data.SqlClient.SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes.Trim(new char[] { ' ', '\n', '\r' }) } });
-          } else { 
+          } else {
             // creo una cartella con questo nome di task e aggiungo le note
             string title = db_provider.str_val(dr["title"]);
             string parent = Path.GetDirectoryName(file_path);
@@ -362,14 +362,78 @@ namespace deepanotes {
       }
     }
 
+    public void add_folder(int synch_folder_id, int folder_id, string title) {
+      DataRow r = folder_id > 0 ? db_conn.first_row(core.parse_query("folder-local-path"
+        , new string[,] { { "folder_id", folder_id.ToString() } })) :
+        db_conn.first_row(core.parse_query("synch-folder-local-path"
+        , new string[,] { { "synch_folder_id", synch_folder_id.ToString() } }));
+
+      string folder_path = folder_id > 0 ? r["local_path"].ToString() : r["local_path"].ToString();
+      int sf_id = (int)r["synch_folder_id"];
+
+      string path = Path.Combine(folder_path, title);
+      if (System.IO.Directory.Exists(path)) throw new Exception("esiste già una cartella '" + title + "'!");
+      System.IO.Directory.CreateDirectory(path);
+
+      db_conn.exec(core.parse_query("add-folder", new string[,] { { "synch_folder_id", sf_id.ToString() }
+        , {"parent_id", folder_id > 0 ? folder_id.ToString(): "null"}, { "folder_name", title } }), true);
+    }
+
+    public void ren_folder(int synch_folder_id, int folder_id, string title) {
+      DataRow r = folder_id > 0 ? db_conn.first_row(core.parse_query("folder-local-path"
+        , new string[,] { { "folder_id", folder_id.ToString() } })) :
+        db_conn.first_row(core.parse_query("synch-folder-local-path"
+        , new string[,] { { "synch_folder_id", synch_folder_id.ToString() } }));
+
+      string folder_path = (string)r["local_path"], name = (string)r["name"];
+      int sf_id = (int)r["synch_folder_id"];
+
+      if (folder_id > 0) {
+        string path = folder_path, path2 = Path.Combine(Directory.GetParent(path).Parent.FullName, title);
+        if (System.IO.Directory.Exists(path2)) throw new Exception("esiste già una cartella '" + title + "'!");
+        System.IO.Directory.Move(path, path2);
+      }
+
+      if (folder_id > 0)
+        db_conn.exec(core.parse_query("ren-folder", new string[,] { { "folder_id", folder_id.ToString() }
+          , { "folder_name", title } }), true);
+      else
+        db_conn.exec(core.parse_query("ren-synch-folder", new string[,] { { "synch_folder_id", sf_id.ToString() }
+          , { "title", title } }), true);
+    }
+
+    public void del_folder(int synch_folder_id, int folder_id) {
+      DataRow r = folder_id > 0 ? db_conn.first_row(core.parse_query("folder-local-path"
+        , new string[,] { { "folder_id", folder_id.ToString() } })) :
+        db_conn.first_row(core.parse_query("synch-folder-local-path"
+        , new string[,] { { "synch_folder_id", synch_folder_id.ToString() } }));
+
+      string folder_path = (string)r["local_path"];
+
+      if (folder_id > 0)
+        System.IO.Directory.Delete(folder_path, true);
+      else {
+        foreach (string f in System.IO.Directory.EnumerateFiles(folder_path))
+          System.IO.File.Delete(f);
+        foreach (string d in System.IO.Directory.EnumerateDirectories(folder_path))
+          System.IO.Directory.Delete(d, true);
+      }
+
+      if (folder_id > 0)
+        db_conn.exec(core.parse_query("del-folder", new string[,] { { "synch_folder_id", r["synch_folder_id"].ToString() }
+          , { "folder_id", folder_id.ToString() } }), true);
+      else
+        db_conn.exec(core.parse_query("clean-synch", new string[,] { { "synch_folder_id", synch_folder_id.ToString() } }), true);
+    }
+
     public void add_task(int synch_folder_id, int folder_id, string stato
       , string title, string assegna, string priorita, string tipo, string stima) {
       if (string.IsNullOrEmpty(title)) throw new Exception("il titolo non è stato specificato!");
 
       string folder_path = folder_id > 0 ? db_conn.first_row(core.parse_query("folder-local-path"
-        , new string[,] { { "folder_id", folder_id.ToString() } }))[0].ToString() :
+        , new string[,] { { "folder_id", folder_id.ToString() } }))["local_path"].ToString() :
         db_conn.first_row(core.parse_query("synch-folder-local-path"
-        , new string[,] { { "synch_folder_id", synch_folder_id.ToString() } }))[0].ToString();
+        , new string[,] { { "synch_folder_id", synch_folder_id.ToString() } }))["local_path"].ToString();
 
       List<free_label> fl = load_free_labels();
 

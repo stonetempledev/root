@@ -14,6 +14,7 @@ namespace dn_client {
 
     public static core _c = null;
     protected Point _dp = Point.Empty;
+    protected settings _settings = null;
 
     public frm_main(core c) {
       _c = c; InitializeComponent();
@@ -56,6 +57,9 @@ namespace dn_client {
 
     private void frm_main_Load(object sender, EventArgs e) {
       try {
+        db_provider conn = Program.open_conn();
+        _settings = settings.read_settings(_c, conn);
+
         // tray
         ntf_main.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
         ntf_main.ContextMenuStrip.Items.Add("Apri...", null, this.MenuApri_Click);
@@ -64,10 +68,7 @@ namespace dn_client {
         ntf_main.ContextMenuStrip.ForeColor = Color.White;
         ntf_main.ContextMenuStrip.Font = new Font("segoe ui light", 9, FontStyle.Regular);
 
-        // get mac address
-        string externalip = new System.Net.WebClient().DownloadString("http://icanhazip.com");
-
-
+        wb_main.Navigate(_settings.get_value("url"));
       } catch { }
     }
 

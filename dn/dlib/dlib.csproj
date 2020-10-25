@@ -72,6 +72,7 @@
     <Compile Include="tools\file.cs" />
     <Compile Include="tools\log.cs" />
     <Compile Include="tools\procs.cs" />
+    <Compile Include="tools\setting.cs" />
     <Compile Include="tools\strings.cs" />
     <Compile Include="tools\zip.cs" />
     <Compile Include="db\db_access.cs" />

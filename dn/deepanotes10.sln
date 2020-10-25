@@ -1,0 +1,71 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "deepanotes", "http://localhost/deepanotes", "{2D5A1473-8A2D-4B4A-B8B4-6BBF96E97CD3}"
+	ProjectSection(WebsiteProperties) = preProject
+		UseIISExpress = "false"
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		Debug.AspNetCompiler.VirtualPath = "/deepanotes"
+		Debug.AspNetCompiler.PhysicalPath = "deepanotes\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\deepanotes\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/deepanotes"
+		Release.AspNetCompiler.PhysicalPath = "deepanotes\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\deepanotes\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		SlnRelativePath = "..\..\..\..\..\..\_todd\git\dn\deepanotes\"
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dlib", "dlib\dlib.csproj", "{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dn_client", "dn_client\dn_client.csproj", "{5311397C-657F-4E1A-BFC0-50FA86606BA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dn_synch", "dn_synch\dn_synch.csproj", "{8770A572-097A-4C1B-B854-6F75717DD0F5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2D5A1473-8A2D-4B4A-B8B4-6BBF96E97CD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D5A1473-8A2D-4B4A-B8B4-6BBF96E97CD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D5A1473-8A2D-4B4A-B8B4-6BBF96E97CD3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2D5A1473-8A2D-4B4A-B8B4-6BBF96E97CD3}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D5A1473-8A2D-4B4A-B8B4-6BBF96E97CD3}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{2D5A1473-8A2D-4B4A-B8B4-6BBF96E97CD3}.Release|x86.ActiveCfg = Debug|Any CPU
+		{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}.Release|x86.ActiveCfg = Release|Any CPU
+		{5311397C-657F-4E1A-BFC0-50FA86606BA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5311397C-657F-4E1A-BFC0-50FA86606BA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5311397C-657F-4E1A-BFC0-50FA86606BA8}.Debug|x86.ActiveCfg = Debug|x86
+		{5311397C-657F-4E1A-BFC0-50FA86606BA8}.Debug|x86.Build.0 = Debug|x86
+		{5311397C-657F-4E1A-BFC0-50FA86606BA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5311397C-657F-4E1A-BFC0-50FA86606BA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5311397C-657F-4E1A-BFC0-50FA86606BA8}.Release|x86.ActiveCfg = Release|x86
+		{5311397C-657F-4E1A-BFC0-50FA86606BA8}.Release|x86.Build.0 = Release|x86
+		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Debug|x86.ActiveCfg = Debug|x86
+		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Debug|x86.Build.0 = Debug|x86
+		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Release|x86.ActiveCfg = Release|x86
+		{8770A572-097A-4C1B-B854-6F75717DD0F5}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
