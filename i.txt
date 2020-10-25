@@ -2,3 +2,48 @@ github.hub
  stonetempledev, molinagarden@gmail.com/Homme33!
  repositories
   https://github.com/stonetempledev/root.git
+
+IN CORSO
+ / dn: ottimizzazione
+
+TODO
+ dn
+  . dn client
+   . apertura documenti
+   . edit documenti
+  . ricerca testo
+  . drag & drop allegati
+  . open sql, cs, etc...
+  . invio mail 
+  . filtro assegnate a...
+  . crea folder
+  . rinomina folder
+  . elimina folder
+  . sposta folder
+  . sposta task
+
+IDEE
+ dn
+  task
+   . nuovo tipo: sviluppo importante con una bella cornicetta intorno
+   . sposta
+   . sulla cancellazione avvertire se ci sono dei files nella cartella del task
+  vista attività
+   . filtro risultati
+    . vista giorni ieri, oggi, 2 giorni fa...
+    . ordina per giorno
+    . filtro giorno
+    . assegnazione
+   . invio notifiche mail
+    . configurabile
+    . all'apertura attività
+     . all'assegnazione
+  . al cambio di stato
+   . percentuale realizzazione di un task!
+   . la storia del task iniziato . ultimo aggiornamento
+   . testo supplementare, punti aggiuntivi descrizione del problema e delle cose da fare nel dettaglio
+   . discussioni
+   . visualizzazione documenti, files, immagini del task
+  synch
+   . task: fare delle cartelle speciali dove avviene l'inizializzazione automatica dei task una volta creata
+    assegnazione una o più parole chiave in automatico
