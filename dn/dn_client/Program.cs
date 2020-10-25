@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Renci.SshNet;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -11,8 +10,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using MySql.Data;
-using MySql.Data.MySqlClient;
 using dlib;
 using dlib.db;
 using dlib.tools;
