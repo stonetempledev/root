@@ -3,8 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "deepanotes", "http://localhost/deepanotes", "{2D5A1473-8A2D-4B4A-B8B4-6BBF96E97CD3}"
 	ProjectSection(WebsiteProperties) = preProject
+		Frontpage = "false"
 		UseIISExpress = "false"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		ProjectReferences = "{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}|dlib.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/deepanotes"
 		Debug.AspNetCompiler.PhysicalPath = "deepanotes\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\deepanotes\"
