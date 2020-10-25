@@ -1,5 +1,6 @@
 ﻿<config>
   <vars>
+    <var name="tray-icon">true</var>
     <var name="tray-icon" machine="home">false</var>
   </vars>
   <queries>
