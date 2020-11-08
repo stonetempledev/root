@@ -372,11 +372,38 @@ namespace deepanotes {
       int sf_id = (int)r["synch_folder_id"];
 
       string path = Path.Combine(folder_path, title);
-      if (System.IO.Directory.Exists(path)) throw new Exception("esiste già una cartella '" + title + "'!");
-      System.IO.Directory.CreateDirectory(path);
+      if (Directory.Exists(path)) throw new Exception("esiste già una cartella '" + title + "'!");
+      Directory.CreateDirectory(path);
 
       db_conn.exec(core.parse_query("add-folder", new string[,] { { "synch_folder_id", sf_id.ToString() }
         , {"parent_id", folder_id > 0 ? folder_id.ToString(): "null"}, { "folder_name", title } }), true);
+    }
+
+    public int get_synch_folder_id(int folder_id) {
+      return Convert.ToInt32(db_conn.dt_table(core.parse_query("get-synch-folder-id"
+        , new string[,] { { "folder_id", folder_id.ToString() } })).Rows[0]["synch_folder_id"]);
+    }
+
+    public void move_folder(int folder_id, int synch_folder_id, int? parent_id) {
+      // sposto la cartella
+      string from_path = db_conn.first_row(core.parse_query("folder-local-path"
+        , new string[,] { { "folder_id", folder_id.ToString() } }))["local_path"].ToString()
+        , to_path = parent_id.HasValue ? db_conn.first_row(core.parse_query("folder-local-path"
+          , new string[,] { { "folder_id", parent_id.Value.ToString() } }))["local_path"].ToString()
+          : db_conn.first_row(core.parse_query("synch-folder-local-path"
+            , new string[,] { { "synch_folder_id", synch_folder_id.ToString() } }))["local_path"].ToString();
+      string to = Path.Combine(to_path, (new DirectoryInfo(from_path)).Name);
+      if (Directory.Exists(to)) throw new Exception("esiste già una cartella '" + (new DirectoryInfo(from_path)).Name + "'!");
+      Directory.Move(from_path, to);
+
+      // aggiorno la tabella
+      db_conn.exec(core.parse_query("set-folder-new-parent", new string[,] { { "folder_id", folder_id.ToString() }
+        , {"synch_folder_id", synch_folder_id.ToString() }, { "parent_id", parent_id.HasValue ? parent_id.Value.ToString() : "null" } }));
+    }
+
+    public List<int> ids_childs_folders(int sf_id) {
+      return db_conn.dt_table(core.parse_query("ids-childs-folders", new string[,] { { "synch_folder_id", sf_id.ToString() } }))
+        .Rows.Cast<DataRow>().Select(x => Convert.ToInt32(x["folder_id"])).ToList();
     }
 
     public void ren_folder(int synch_folder_id, int folder_id, string title) {
@@ -390,8 +417,8 @@ namespace deepanotes {
 
       if (folder_id > 0) {
         string path = folder_path, path2 = Path.Combine(Directory.GetParent(path).Parent.FullName, title);
-        if (System.IO.Directory.Exists(path2)) throw new Exception("esiste già una cartella '" + title + "'!");
-        System.IO.Directory.Move(path, path2);
+        if (Directory.Exists(path2)) throw new Exception("esiste già una cartella '" + title + "'!");
+        Directory.Move(path, path2);
       }
 
       if (folder_id > 0)
@@ -411,12 +438,12 @@ namespace deepanotes {
       string folder_path = (string)r["local_path"];
 
       if (folder_id > 0)
-        System.IO.Directory.Delete(folder_path, true);
+        Directory.Delete(folder_path, true);
       else {
-        foreach (string f in System.IO.Directory.EnumerateFiles(folder_path))
-          System.IO.File.Delete(f);
-        foreach (string d in System.IO.Directory.EnumerateDirectories(folder_path))
-          System.IO.Directory.Delete(d, true);
+        foreach (string f in Directory.EnumerateFiles(folder_path))
+          File.Delete(f);
+        foreach (string d in Directory.EnumerateDirectories(folder_path))
+          Directory.Delete(d, true);
       }
 
       if (folder_id > 0)

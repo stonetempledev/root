@@ -8,6 +8,10 @@
       padding-top: 3px;
       padding-bottom: 3px;
     }
+    .voce-cut a
+    {
+      color: khaki !important;
+    }
     .secondo:before
     {
       content: " ";
@@ -131,42 +135,80 @@
       } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
-    function del_folder() {
-      show_danger_yn("Attenzione!", "Sei sicuro di voler cancellare la cartella e tutto il contenuto?"
-        , function () { remove_folder() });
+    function del_folder(id, tp_id) {
+      show_danger_yn("Attenzione!",
+        get_param("sf") || tp_id == "synch-folder" ? "Sei sicuro di voler cancellare il contenuto della cartella?"
+          : "Sei sicuro di voler cancellare la cartella e tutto il contenuto?"
+        , function () { remove_folder(id, tp_id) });
     }
 
-    function remove_folder() {
+    function cut_folder(id, tp_id, el) {
       try {
-          window.setTimeout(function () {
-            try {
-              var res = post_action({ "action": "del_folder", "folder_id": get_param("id"), "synch_folder_id": get_param("sf") });
-              if (res) window.location.reload();
-            } catch (e) { show_danger("Attenzione!", e.message); }
-          }, 1500);
+        window.setTimeout(function () {
+          try {
+            var res = post_action({ "action": "cut_folder", "folder_id": id && tp_id == "folder" ? id : get_param("id")
+              , "synch_folder_id": id && tp_id == "synch-folder" ? id : get_param("sf")
+            });
+            if (res) {
+              $.each(res.list, function (index, value) {
+                $("li[tp-item='folder'][item-id=" + value + "]").addClass("voce-cut");
+              });
+            }
+          } catch (e) { show_danger("Attenzione!", e.message); }
+        }, 500);
       } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
-    function ren_folder() {
+    function paste_folder(id, tp_id) {
+      try {
+        window.setTimeout(function () {
+          try {
+            var res = post_action({ "action": "paste_folder", "folder_id": id && tp_id == "folder" ? id : get_param("id")
+              , "synch_folder_id": id && tp_id == "synch-folder" ? id : get_param("sf")
+            });
+            if (res) {
+              if (res.message)
+                show_danger("Nota Bene!", res.message, function () { window.location.reload(); });
+              else window.location.reload();
+            }
+          } catch (e) { show_danger("Attenzione!", e.message); }
+        }, 500);
+      } catch (e) { show_danger("Attenzione!", e.message); }
+    }
+
+    function remove_folder(id, tp_id) {
+      try {
+        window.setTimeout(function () {
+          try {
+            var res = post_action({ "action": "del_folder", "folder_id": id && tp_id == "folder" ? id : get_param("id")
+              , "synch_folder_id": id && tp_id == "synch-folder" ? id : get_param("sf")
+            });
+            if (res) { if (tp_id) window.location.reload(); else window.location.href = res.contents; }
+          } catch (e) { show_danger("Attenzione!", e.message); }
+        }, 500);
+      } catch (e) { show_danger("Attenzione!", e.message); }
+    }
+
+    function ren_folder(name, id, tp_id) {
       try {
         show_dyn_dlg({ title: "Rinomina la Cartella", rows: [
-        { id: "title", icon: "heading", label: "Titolo", valore: $("[tp='name_folder']").text()}]
+        { id: "title", icon: "heading", label: "Titolo", valore: name ? name : $("[tp='name_folder']").text()}]
         , on_ok: function () {
           if (!val_dyn("title")) return;
           window.setTimeout(function () {
             try {
-              var res = post_action({ "action": "ren_folder", "folder_id": get_param("id"), "synch_folder_id": get_param("sf")
-                , "title": val_dyn("title")
+              var res = post_action({ "action": "ren_folder", "folder_id": id && tp_id == "folder" ? id : get_param("id")
+                , "synch_folder_id": id && tp_id == "synch-folder" ? id : get_param("sf"), "title": val_dyn("title")
               });
               if (res) window.location.reload();
             } catch (e) { show_danger("Attenzione!", e.message); }
-          }, 1500);
+          }, 500);
         }
         });
       } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
-    function add_folder() {
+    function add_folder(id, tp_id) {
       try {
         show_dyn_dlg({ title: "Aggiungi Cartella", rows: [
         { id: "title", icon: "heading", label: "Titolo", valore: ""}]
@@ -174,12 +216,12 @@
           if (!val_dyn("title")) return;
           window.setTimeout(function () {
             try {
-              var res = post_action({ "action": "add_folder", "folder_id": get_param("id"), "synch_folder_id": get_param("sf")
-                , "title": val_dyn("title")
+              var res = post_action({ "action": "add_folder", "folder_id": id && tp_id == "folder" ? id : get_param("id")
+                , "synch_folder_id": id && tp_id == "synch-folder" ? id : get_param("sf"), "title": val_dyn("title")
               });
               if (res) window.location.reload();
             } catch (e) { show_danger("Attenzione!", e.message); }
-          }, 1500);
+          }, 500);
         }
         });
       } catch (e) { show_danger("Attenzione!", e.message); }
@@ -252,6 +294,15 @@
       } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
+    function add_folders() { }
+
+    function ren_folders() { }
+
+    function del_folders() { }
+
+    function cut_folders() { }
+
+
   </script>
 </asp:Content>
 <asp:Content ContentPlaceHolderID="contents" runat="Server">
@@ -262,6 +313,12 @@
       <nav sidebar-tp='menu' class='d-none' sidebar-init='show'>
         <div id='menu' class='sidebar-sticky' runat='server'>
         </div>
+        <!--<div id='sub_menu' class='sidebar-sticky-sub' runat='server'>
+          <a href='javascript:add_folders()' style='color:gray;'>AGGIUNGI</a>
+          <a href='javascript:cut_folders()' style='color:gray;'>TAGLIA</a>
+          <a href='javascript:ren_folders()' style='color:gray;'>RINOMINA</a>
+          <a href='javascript:del_folders()' style='color:gray;'>RIMUOVI</a>
+        </div>-->
       </nav>
       <!-- contenuti -->
       <div sidebar-tp='body'>

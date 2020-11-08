@@ -5,6 +5,15 @@ github.hub
 
 IN CORSO
  / dn: ottimizzazione
+  / folders
+   . nascondi i puntini sulle cartelle per i desktop e provala sul cellulare
+   . nuovo folder occhio ai caratteri speciali "/\, etc...
+   . file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
+  . allegati
+  . tasks: 
+   . titolo modificabile al volo
+   . più piccoli
+   . taglia e incolla in un altra cartella
 
 TODO
  dn

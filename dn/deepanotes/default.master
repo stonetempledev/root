@@ -39,15 +39,20 @@
     ////// DIALOGS
 
     // alert
-    function show_danger(title, body) { show_alert(title, body, "danger"); }
-    function show_info(title, body) { show_alert(title, body, "info"); }
-    function show_warning(title, body) { show_alert(title, body, "warning"); }
+    var _fnc = null;
+    function show_danger(title, body, fnc) { show_alert(title, body, "danger", fnc); }
+    function show_info(title, body, fnc) { show_alert(title, body, "info", fnc); }
+    function show_warning(title, body, fnc) { show_alert(title, body, "warning", fnc); }
 
-    function show_alert(title, body, style) {
+    function show_alert(title, body, style, fnc) {
       $("#alert_dlg_ok").removeClass().addClass("modal-dialog modal-notify modal-" + style);
       $("#alert_ok_title").text(title);
       $("#alert_ok_body").html(body);
       $('#alert_ok').modal('show');
+      _fnc = fnc;
+      $("#alert_ok").on('hidden.bs.modal', function () {
+        try { if(_fnc) _fnc(); } catch (e) { }
+      });
     }
 
     // alert yn

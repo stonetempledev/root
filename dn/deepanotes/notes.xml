@@ -1,21 +1,38 @@
 ﻿<config>
   <html-blocks>
     <!-- menu -->
+    <html-block name="item-events">
+      <![CDATA[ onmouseover='' onmouseout='']]>
+    </html-block>
+    <html-block name="item-menu">
+      <![CDATA[<div class="dropdown no-arrow float-right" title='modifica cartella...'>
+        <a class="dropdown-toggle mr-2" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
+          aria-expanded="false"><i class="fas fa-ellipsis-h text-muted"></i></a>
+        <div class="dropdown-menu dropdown-menu-right shadow">
+          <h4 class="dropdown-header" style='color: blue; background-color: whitesmoke;'>CARTELLA</h4>
+            <div class="dropdown-item"><span onclick="add_folder({@field='id'}, '{@field='tp'}')" style='cursor:pointer;'><i class="fas fa-plus-circle text-info"></i> aggiungi sotto-cartella</span></div>
+            <div class="dropdown-item"><span onclick="cut_folder({@field='id'}, '{@field='tp'}', this)" style='cursor:pointer;'><i class="fas fa-cut text-primary"></i> taglia la cartella</span></div>
+            <div class="dropdown-item"><span onclick="paste_folder({@field='id'}, '{@field='tp'}')" style='cursor:pointer;'><i class="fas fa-paste text-success"></i> incolla la cartella</span></div>
+            <div class="dropdown-item"><span onclick="ren_folder('{@field='title'}', {@field='id'}, '{@field='tp'}')" style='cursor:pointer;'><i class="fas fa-edit text-warning"></i> rinomina cartella</span></div>
+            <div class="dropdown-item"><span onclick="del_folder({@field='id'}, '{@field='tp'}')" style='cursor:pointer;'><i class="fas fa-trash-alt text-danger"></i> cancella la cartella</span></div>
+          </div>
+        </div>]]>
+    </html-block>
     <html-block name="item-synch-folder">
-      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce primo'>
-        {@cond_val='url_open_home','open_home'}<a class='h5' href="{@field='url_synch_folder'}">{@field='title'}</a>{@field='block-attivita'}</li>{@field='childs'}]]>
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce primo' {@html-block='item-events'}>
+        {@cond_val='url_open_home','open_home'}<a class='h5' href="{@field='url_synch_folder'}">{@field='title'}</a>{@html-block='item-menu'}{@field='block-attivita'}</li>{@field='childs'}]]>
       <cond name="open_home">
         <![CDATA[<a class='fas fa-home mr-2' href="{@field='url_open_home'}"></a>]]>
       </cond>
     </html-block>
     <html-block name="item-secondo">
-      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce secondo'><a class='h6' href="{@field='url_folder'}">{@field='title'}</a>{@field='block-attivita'}</li>{@field='childs'}]]>
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce secondo {@field='class_cut'}' {@html-block='item-events'}><a class='h6' href="{@field='url_folder'}">{@field='title'}</a>{@field='block-attivita'}{@html-block='item-menu'}</li>{@field='childs'}]]>
     </html-block>
     <html-block name="item-terzo">
-      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce terzo'><a href="{@field='url_folder'}">{@field='title'}</a>{@field='block-attivita'}</li>{@field='childs'}]]>
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce terzo {@field='class_cut'}' {@html-block='item-events'}><a href="{@field='url_folder'}">{@field='title'}</a>{@field='block-attivita'}{@html-block='item-menu'}</li>{@field='childs'}]]>
     </html-block>
     <html-block name="item-quarto">
-      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce quarto'><a href="{@field='url_folder'}">{@field='title'}</a>{@field='block-attivita'}{@cond_val='url_open_folder','open_folder'}</li>]]>
+      <![CDATA[<li tp-item='{@field='tp'}' item-id='{@field='id'}' class='voce quarto {@field='class_cut'}' {@html-block='item-events'}><a href="{@field='url_folder'}">{@field='title'}</a>{@field='block-attivita'}{@cond_val='url_open_folder','open_folder'}{@html-block='item-menu'}</li>]]>
       <cond name="open_folder">
         <![CDATA[<small><a class='fas fa-chevron-circle-right ml-2' style='opacity:0.2;' title='apri la cartella' href="{@field='url_open_folder'}"></a></small>]]>
       </cond>
@@ -57,13 +74,15 @@
       
       <div class='mb-5 mt-4'>
        <p class="note note-primary"><strong>Attività:</strong>
-         <a class='text-primary' href="javascript:add_attivita('da_fare')"><i class="fas fa-plus-circle"></i> aggiungi attività da fare</a>
-         <a class='text-success' href="javascript:add_attivita('fatto')"><i class="fas fa-plus-circle"></i> aggiungi attività fatta</a>
-         <a class='text-warning' href="javascript:add_attivita('in_corso')"><i class="fas fa-plus-circle"></i> aggiungi attività in corso</a></p>
+         <a class='text-primary' style='white-space: nowrap;' href="javascript:add_attivita('da_fare')"><i class="fas fa-plus-circle"></i> aggiungi attività da fare</a>
+         <a class='text-success' style='white-space: nowrap;' href="javascript:add_attivita('fatto')"><i class="fas fa-plus-circle"></i> aggiungi attività fatta</a>
+         <a class='text-warning' style='white-space: nowrap;' href="javascript:add_attivita('in_corso')"><i class="fas fa-plus-circle"></i> aggiungi attività in corso</a></p>
        <p class="note note-light"><strong>Cartelle:</strong>
-         <a class='text-info' href="javascript:add_folder()"><i class="fas fa-plus-circle"></i> aggiungi sotto-cartella</a>
-         <a class='text-warning' href="javascript:ren_folder()"><i class="fas fa-edit"></i> rinomina cartella</a>
-         <a class='text-danger' href="javascript:del_folder()"><i class="fas fa-trash-alt"></i> cancella la cartella</a></p>
+         <a class='text-info' style='white-space: nowrap;' href="javascript:add_folder()"><i class="fas fa-plus-circle"></i> aggiungi sotto-cartella</a>
+         <a class='text-primary' style='white-space: nowrap;' href="javascript:cut_folder()"><i class="fas fa-cut"></i> taglia la cartella</a>
+         <a class='text-success' style='white-space: nowrap;' href="javascript:paste_folder()"><i class="fas fa-paste"></i> incolla la cartella</a>
+         <a class='text-warning' style='white-space: nowrap;' href="javascript:ren_folder()"><i class="fas fa-edit"></i> rinomina cartella</a>
+         <a class='text-danger' style='white-space: nowrap;' href="javascript:del_folder()"><i class="fas fa-trash-alt"></i> cancella la cartella</a></p>
       </div>]]>
       <cond name="path_folder">
         <![CDATA[<div class='badge badge-light d-block mb-3 text-left'>{@field='path-folder'}</div>]]>
@@ -86,15 +105,15 @@
       <![CDATA[<div task-id='{@field='task_id'}' task-assegna="{@field='val-assegna'}" task-priorita='{@field='val-priorita'}' task-stima='{@field='val-stima'}' task-tipo='{@field='val-tipo'}'>
         <!-- path + menù -->
         <div class='d-block badge badge-light text-wrap'><span>//{@field='path'}</span>
-          <div class="dropdown no-arrow float-right" title='modifica attività...'>
+          <div class="dropdown no-arrow float-right">
             <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
               aria-expanded="false"><i class="fas fa-ellipsis-v text-muted"></i></a>
             <div class="dropdown-menu dropdown-menu-right shadow">
-              <h4 class="dropdown-header" style='color: blue; background-color: whitesmoke;'>ATTIVITÀ</h4>
-              <div class="dropdown-item icon-item"><span class='icon-menu' title='modifica attività...'
-                onclick='modify_task({@field='task_id'})'><i class="fas fa-pen text-info"></i></span>
-                  <span class='icon-menu text-danger' title='elimina attività...' onclick="del_task({@field='task_id'})">
-                  <i class="fas fa-trash-alt"></i></span></div>
+              <h4 class="dropdown-header mb-2" style='color: blue; background-color: whitesmoke;'>ATTIVITÀ</h4>
+              <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span class='text-info' onclick='modify_task({@field='task_id'})'>
+                <i class="fas fa-pen"></i> aggiorna attività</span></div>
+              <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span class='text-danger' onclick="del_task({@field='task_id'})">
+                <i class="fas fa-trash-alt"></i> elimina attività</span></div>
             </div>
           </div>        
         </div>
@@ -183,6 +202,16 @@
     <query name="filters-tasks">
       <![CDATA[select task_filter_id, filter_title, filter_notes, filter_def, filter_class
  from dn_tasks_filters order by filter_order]]>
+    </query>
+    <query name="ids-childs-folders">
+      <![CDATA[select folder_id from dn_folders where parent_id is null and synch_folder_id = {@field='synch_folder_id'}]]>
+    </query>
+    <query name="get-synch-folder-id">
+      <![CDATA[select top 1 synch_folder_id from dn_folders where folder_id = {@field='folder_id'}]]>
+    </query>
+    <query name="set-folder-new-parent">
+      <![CDATA[update dn_folders set synch_folder_id = {@field='synch_folder_id'}, parent_id = {@field='parent_id'}
+        where folder_id = {@field='folder_id'}]]>
     </query>
     <query name="add-folder">
       <![CDATA[insert into dn_folders (synch_folder_id, parent_id, folder_name, readed)
