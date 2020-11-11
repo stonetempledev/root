@@ -22,19 +22,19 @@
       width: 1000px;
       display: block;
     }
-    .primo *
+    .primo a
     {
       color: steelblue;
     }
-    .secondo *
+    .secondo a
     {
       color: skyblue;
     }
-    .terzo *
+    .terzo a
     {
       color: lightblue;
     }
-    .quarto *
+    .quarto a
     {
       color: whitesmoke;
     }
@@ -294,13 +294,9 @@
       } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
-    function add_folders() { }
+    function show_menu(el) { $(el).find("[tp='menu-item']").show(); }
 
-    function ren_folders() { }
-
-    function del_folders() { }
-
-    function cut_folders() { }
+    function hide_menu(el) { $(el).find("[tp='menu-item']").hide(); }
 
 
   </script>

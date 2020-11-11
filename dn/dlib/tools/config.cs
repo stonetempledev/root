@@ -142,22 +142,24 @@ namespace dlib.tools {
 
     // html-block
     public class html_block : base_class {
-      string _name, _content;
-      public string name { get { return _name; } }
-      public string content { get { return _content; } }
-      public html_block(string doc_key, string name, string content, bool for_pg = false) : base(doc_key, for_pg) { _name = name; _content = content; }
+      public string name { get; set; }
+      public string content { get; set; }
+      public html_block(string doc_key, string name, string content, bool for_pg = false)
+        : base(doc_key, for_pg) {
+        this.name = name; this.content = content; 
+      }
 
       // conds
       Dictionary<string, string> _conds = new Dictionary<string, string>();
       public Dictionary<string, string> conds { get { return _conds; } }
       public void add_cond(string name, string txt) {
         if (_conds.ContainsKey(name))
-          throw new Exception("c'è già una condizione '" + name + "' nel blocco '" + _name + "'!");
+          throw new Exception("c'è già una condizione '" + name + "' nel blocco '" + this.name + "'!");
         _conds.Add(name, txt);
       }
       public string get_cond(string name) {
         if (!_conds.ContainsKey(name))
-          throw new Exception("non c'è la condizione '" + name + "' nel blocco '" + _name + "'!");
+          throw new Exception("non c'è la condizione '" + name + "' nel blocco '" + this.name + "'!");
         return _conds[name];
       }
 
@@ -310,7 +312,7 @@ namespace dlib.tools {
 
     public bool exists_var(string name) { return _vars.ContainsKey(name); }
     public string var_value(string name) { if (!_vars.ContainsKey(name)) throw new Exception("la variabile '" + name + "' non esiste!"); return _vars[name].value; }
-    public bool var_bool(string name) { string val = var_value(name); if(string.IsNullOrEmpty(val) || val.ToLower() == "false" || val == "0") return false; return true; }
+    public bool var_bool(string name) { string val = var_value(name); if (string.IsNullOrEmpty(val) || val.ToLower() == "false" || val == "0") return false; return true; }
     public var get_var(string name) { if (!_vars.ContainsKey(name)) throw new Exception("la variabile '" + name + "' non esiste!"); return _vars[name]; }
     public string var_value_par(string name, string par) { if (!_vars.ContainsKey(name)) throw new Exception("la variabile '" + name + "' non esiste!"); return _vars[name].value.Replace("[@par]", par); }
     public folder get_folder(string name) { if (!_folders.ContainsKey(name)) throw new Exception("il folder '" + name + "' non esiste!"); return _folders[name]; }

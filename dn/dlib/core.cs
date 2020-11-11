@@ -13,6 +13,9 @@ namespace dlib {
     protected System.Xml.XPath.XPathNavigator _eval = new System.Xml.XPath.XPathDocument(new System.IO.StringReader("<r/>")).CreateNavigator();
     Dictionary<string, string> _cfg_keys = new Dictionary<string, string>();
 
+    protected bool? _mobile = null;
+    public bool? mobile { get { return _mobile; } set { _mobile = value; } }
+
     protected string _base_path = "";
     public string base_path { get { return _base_path; } }
 
@@ -25,13 +28,14 @@ namespace dlib {
     Dictionary<string, string> _machines = new Dictionary<string, string>();
     public string machine_key() {
       string mn = machine_name();
-      if (!_machines.ContainsKey(mn)) 
+      if (!_machines.ContainsKey(mn))
         throw new Exception("è necessario registrare il pc '" + mn + "' nella sezione machines del base config!");
       return _machines[mn];
     }
 
-    public core(string base_path, string base_url = "") {
+    public core(string base_path, string base_url = "", bool? mobile = null) {
       _base_path = base_path;
+      _mobile = mobile;
       _config = new config(this);
       read_base_settings();
     }
@@ -48,7 +52,7 @@ namespace dlib {
       _config.read_vars(bdoc, vars, xpath: "/base/vars");
       _base_url = parse(vars["base_url"].value);
     }
-    
+
     #region configs
 
     public void reset_configs() { _cfg_keys.Clear(); _config.reset(); }
@@ -97,7 +101,7 @@ namespace dlib {
 
     public string app_setting(string name, bool throw_err = true) {
       if (System.Configuration.ConfigurationManager.AppSettings[name] == null) {
-        if(throw_err) throw new Exception("non c'è la variabile '" + name + "' nel config!");
+        if (throw_err) throw new Exception("non c'è la variabile '" + name + "' nel config!");
         return "";
       }
       return parse(System.Configuration.ConfigurationManager.AppSettings[name] != null ?
@@ -241,7 +245,10 @@ namespace dlib {
                   break;
                 }
               // {@html-block='<NAME KEY>'}
-              case "html-block": value = parse(config.get_html_block(par).content, flds, dr, conds); break;
+              case "html-block": {
+                  value = parse(config.get_html_block(par).content, flds, dr, conds);
+                  break;
+                }
               // {@query-text='<NAME QUERY'}
               case "query-text": value = parse(config.get_query(par).text, flds, dr, conds); break;
               // {@var='<NAME KEY>'}

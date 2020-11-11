@@ -58,7 +58,7 @@ public class tl_page : System.Web.UI.Page {
       bool reload_cfg = false;
       if (Cache["core_obj"] == null) {
         log.log_info("reload core");
-        core cr = new core(base_path);
+        core cr = new core(base_path, mobile: master.is_mobile());
         reload_cfg = true;
         Cache["core_obj"] = cr;
       }

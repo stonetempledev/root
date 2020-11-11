@@ -2,11 +2,14 @@
   <html-blocks>
     <!-- menu -->
     <html-block name="item-events">
-      <![CDATA[ onmouseover='' onmouseout='']]>
+      <![CDATA[ onmouseover='show_menu(this)' onmouseout='hide_menu(this)']]>
+    </html-block>
+    <html-block name="item-display">
+      <![CDATA[style='display:none;']]>
     </html-block>
     <html-block name="item-menu">
       <![CDATA[<div class="dropdown no-arrow float-right" title='modifica cartella...'>
-        <a class="dropdown-toggle mr-2" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
+        <a tp='menu-item' class="dropdown-toggle mr-2" {@html-block='item-display'} href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
           aria-expanded="false"><i class="fas fa-ellipsis-h text-muted"></i></a>
         <div class="dropdown-menu dropdown-menu-right shadow">
           <h4 class="dropdown-header" style='color: blue; background-color: whitesmoke;'>CARTELLA</h4>
@@ -118,7 +121,8 @@
           </div>        
         </div>
         <!-- barra -->
-        <div class='d-flex badge badge-light p-2'><div class='text-left w-50'>
+        <div class='d-flex badge badge-light p-2'>
+          <div class='text-left w-50'>
             <h5 class='d-inline mr-3' title="clicca per visualizzare o inserire delle note" onclick='open_notes({@field='task_id'})'><span tp-item='btn-notes' class='badge badge-pill badge-light' style='cursor:pointer;'>{@field='title_notes'}</span></h5>
           </div>
           <div class='text-right w-50'>{@field='priorita'}{@field='stima'}{@field='tipo'}</div></div>
@@ -153,8 +157,9 @@
     <html-block name="task-allegato">
       <![CDATA[<h5 class='d-inline mr-3' style='opacity: 0.7;' title="scarica allegato..."><a href="{@field='http-path'}" target='blank' class='badge badge-pill badge-light'>{@field='file-name'}</a></h5>]]>
     </html-block>
+    <h5 class='d-inline mr-3' title="{@field='tooltip'}"></h5>
     <html-block name="task-state">
-      <![CDATA[<h5 class='d-inline mr-3' title="{@field='tooltip'}"><span class='badge badge-pill badge-{@field='cls'}'>{@field='txt'}</span></h5>]]>
+      <![CDATA[<span class='mr-1 badge badge-pill badge-{@field='cls'}'>{@field='txt'}</span>]]>
     </html-block>
     <html-block name="menu-state">
       <![CDATA[<a class="dropdown-item" href="javascript:task_state({@field='task_id'}, '{@field='assign_stato'}')"><h5>{@field='title'}</h5></a>]]>
@@ -210,8 +215,11 @@
       <![CDATA[select top 1 synch_folder_id from dn_folders where folder_id = {@field='folder_id'}]]>
     </query>
     <query name="set-folder-new-parent">
-      <![CDATA[update dn_folders set synch_folder_id = {@field='synch_folder_id'}, parent_id = {@field='parent_id'}
-        where folder_id = {@field='folder_id'}]]>
+      <![CDATA[update dn_folders set synch_folder_id = {@field='synch_folder_id'}
+         where folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder' and lvl > 1);
+         
+      update dn_folders set synch_folder_id = {@field='synch_folder_id'}, parent_id = {@field='parent_id'}
+        where folder_id = {@field='folder_id'};]]>
     </query>
     <query name="add-folder">
       <![CDATA[insert into dn_folders (synch_folder_id, parent_id, folder_name, readed)

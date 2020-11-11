@@ -29,17 +29,17 @@ namespace dlib.tools {
 
     public string parse_blocks(core cr) {
       StringBuilder sb = new StringBuilder();
-      foreach (nano_node nd in _doc.root.nodes) parse_block(sb, cr, nd);
+      foreach (nano_node nd in _doc.root.nodes) parse_block(sb, cr, nd, cr.mobile);
       return sb.ToString();
     }
 
-    protected void parse_block(StringBuilder sb, core cr, nano_node nd) {
+    protected void parse_block(StringBuilder sb, core cr, nano_node nd, bool? mobile) {
       string html = cr.config.get_html_block(nd.name).content;
 
       // childs
       StringBuilder sbc = new StringBuilder();
       if (html.IndexOf("{@childs@}") >= 0) {
-        foreach (nano_node nd2 in nd.nodes) parse_block(sbc, cr, nd2);
+        foreach (nano_node nd2 in nd.nodes) parse_block(sbc, cr, nd2, mobile);
         html = html.Replace("{@childs@}", sbc.Length > 0 ? sbc.ToString() : "");
       }
 
