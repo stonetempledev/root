@@ -49,7 +49,7 @@
     <!-- attivita -->
     <html-block name="title-attivita">
       <![CDATA[
-      <div class="btn-group w-100">
+      <div class="btn-group w-100 mt-3">
         <button type="button" class="btn btn-primary w-100"><h3>{@field='filter-title'}</h3></button>
         <button type="button" class="btn btn-primary dropdown-toggle px-3" data-toggle="dropdown" aria-haspopup="true"
           aria-expanded="false">
@@ -62,11 +62,11 @@
       <hr class='mb-5 mt-5'/>]]>
     </html-block>
     <html-block name="title-attivita-folder">
-      <![CDATA[<h1 tp='name_folder' class='h1-responsive bg-primary text-white text-uppercase'>{@field='title-folder'}</h1>
+      <![CDATA[<h1 tp='name_folder' class='h1-responsive bg-primary text-white text-uppercase mb-0'>{@field='title-folder'}</h1>
       {@cond_val='path-folder','path_folder'}
 
-      <div class="btn-group w-100">
-        <button type="button" class="btn btn-light w-100 m-0">{@field='filter-des'}</button>
+      <div class="btn-group btn-group-sm w-100 mt-3">
+        <button type="button" class="btn btn-light w-100 m-0">{@field='filter-title'}</button>
         <button type="button" class="btn btn-light dropdown-toggle px-3 m-0" data-toggle="dropdown" aria-haspopup="true"
           aria-expanded="false">
           <span class="sr-only">Toggle Dropdown</span>
@@ -88,7 +88,7 @@
          <a class='text-danger' style='white-space: nowrap;' href="javascript:del_folder()"><i class="fas fa-trash-alt"></i> cancella la cartella</a></p>
       </div>]]>
       <cond name="path_folder">
-        <![CDATA[<div class='badge badge-light d-block mb-3 text-left'>{@field='path-folder'}</div>]]>
+        <![CDATA[<div class='badge badge-info d-block text-left'>//{@field='path-folder'}</div>]]>
       </cond>
     </html-block>
     <html-block name="open-title-sub-attivita">
@@ -105,40 +105,39 @@
         <hr/><h5>{@field='stack'}</h5></div></div>]]>
     </html-block>
     <html-block name="task">
-      <![CDATA[<div task-id='{@field='task_id'}' task-assegna="{@field='val-assegna'}" task-priorita='{@field='val-priorita'}' task-stima='{@field='val-stima'}' task-tipo='{@field='val-tipo'}'>
-        <!-- path + menù -->
-        <div class='d-block badge badge-light text-wrap'><span>//{@field='path'}</span>
-          <div class="dropdown no-arrow float-right">
-            <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
-              aria-expanded="false"><i class="fas fa-ellipsis-v text-muted"></i></a>
-            <div class="dropdown-menu dropdown-menu-right shadow">
-              <h4 class="dropdown-header mb-2" style='color: blue; background-color: whitesmoke;'>ATTIVITÀ</h4>
-              <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span class='text-info' onclick='modify_task({@field='task_id'})'>
-                <i class="fas fa-pen"></i> aggiorna attività</span></div>
-              <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span class='text-danger' onclick="del_task({@field='task_id'})">
-                <i class="fas fa-trash-alt"></i> elimina attività</span></div>
-            </div>
-          </div>        
-        </div>
-        <!-- barra -->
-        <div class='d-flex badge badge-light p-2'>
-          <div class='text-left w-50'>
-            <h5 class='d-inline mr-3' title="clicca per visualizzare o inserire delle note" onclick='open_notes({@field='task_id'})'><span tp-item='btn-notes' class='badge badge-pill badge-light' style='cursor:pointer;'>{@field='title_notes'}</span></h5>
-          </div>
-          <div class='text-right w-50'>{@field='priorita'}{@field='stima'}{@field='tipo'}</div></div>
+      <![CDATA[<div task-id='{@field='task_id'}' task-assegna="{@field='val-assegna'}" task-priorita='{@field='val-priorita'}' task-stima='{@field='val-stima'}' task-tipo='{@field='val-tipo'}'>        
         <!-- title + stato attività -->
         <div class='badge badge-{@field='cls'} mb-3 d-block text-left text-wrap'>
-          <h3><span tp-val='title'>{@field='title'}</span>
-            <div class="dropdown no-arrow mr-1 mt-1 float-right" title="aggiorna stato attività">
+          <div><span class='h4' tp-val='title'>{@field='title'}</span>
+          
+            <div class="dropdown no-arrow float-right ml-2 mt-1">
+              <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false"><i class="fas fa-ellipsis-v text-muted"></i></a>
+              <div class="dropdown-menu dropdown-menu-right shadow">
+                <h4 class="dropdown-header mb-2" style='color: blue; background-color: whitesmoke;'>ATTIVITÀ</h4>
+                <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick='modify_task({@field='task_id'})'>
+                  <i class="fas fa-pen text-info"></i> aggiorna attività</span></div>
+                <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick="del_task({@field='task_id'})">
+                  <i class="fas fa-trash-alt text-danger"></i> elimina attività</span></div>
+              </div>
+            </div>        
+
+            <div class="dropdown no-arrow mr-1 mt-1 float-right">
               <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" 
                 aria-haspopup="true" aria-expanded="false">
-                <small class='badge badge-pill badge-{@field='cls'}' style='cursor:pointer;'>{@field='stato'}</small></a>
+                <h4 class='d-inline'><span class='badge badge-pill badge-{@field='cls'}' style='cursor:pointer;'>{@field='stato'}</span></h4></a>
               <div class="dropdown-menu dropdown-menu-right shadow">
                 <h4 class="dropdown-header" style='color: blue; background-color: whitesmoke;'>STATO ATTIVITÀ</h4>
                 {@field='menu-states'}
               </div>
-             </div>
-           </h3>
+            </div>
+                        
+            <h6 class='d-inline float-right mt-2 mr-3'><span class='text-right'>{@field='priorita'}{@field='stima'}{@field='tipo'}</span></h6>
+            <h6 class='d-inline float-right mt-2 mr-3' title="clicca per visualizzare o inserire delle note" onclick='open_notes({@field='task_id'})'>
+              <span tp-item='btn-notes' class='badge badge-pill badge-info' style='cursor:pointer;'>{@field='title_notes'}</span></h6>
+
+           </div>
+           <span class='text-nowrap font-weight-light'>//{@field='path'}</span>
            <!-- notes -->
            <div tp-item='section-notes' class='mt-2' style='display:none;'>
              <span class='text-dark font-weight-light'>note particolari</span>
@@ -215,8 +214,21 @@
       <![CDATA[select top 1 synch_folder_id from dn_folders where folder_id = {@field='folder_id'}]]>
     </query>
     <query name="set-folder-new-parent">
-      <![CDATA[update dn_folders set synch_folder_id = {@field='synch_folder_id'}
-         where folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder' and lvl > 1);
+      <![CDATA[update df set df.synch_folder_id = {@field='synch_folder_id'}
+       from dn_tasks df
+       where df.folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
+
+      update df set df.synch_folder_id = {@field='synch_folder_id'}
+       from dn_tasks df
+       join dn_files f on f.file_id = df.file_id
+       where f.folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
+      
+      update df set df.synch_folder_id = {@field='synch_folder_id'}
+       from dn_files df
+       where folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
+       
+      update dn_folders set synch_folder_id = {@field='synch_folder_id'}
+       where folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder' and lvl > 1);
          
       update dn_folders set synch_folder_id = {@field='synch_folder_id'}, parent_id = {@field='parent_id'}
         where folder_id = {@field='folder_id'};]]>
