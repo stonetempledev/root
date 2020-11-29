@@ -11,6 +11,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.WebParts;
 using System.Xml;
+using System.Text.RegularExpressions;
 using System.Text;
 using System.IO;
 using System.Collections.Specialized;
@@ -69,6 +70,9 @@ public partial class _notes : tl_page {
           else if (jr.action == "update_task") {
             List<free_label> fl = ob.load_free_labels();
 
+            if (!nome_valido(jr.val_str("title")))
+              throw new Exception("nome '" + jr.val_str("title") + "' non valido!");
+
             string folder_path;
             ob.update_task(jr.val_int("id"), out folder_path, fl, title: jr.val_str("title"), assegna: jr.val_str("assegna")
               , priorita: jr.val_str("priorita"), stima: jr.val_str("stima"), tipo: jr.val_str("tipo"));
@@ -77,17 +81,31 @@ public partial class _notes : tl_page {
                 , db_provider.str_val(r["title_singolare"]))).ToList();
             res.html_element = parse_task(ob.load_task(jr.val_int("id")), folder_path, stati);
           }
+            // ren_task
+          else if (jr.action == "ren_task") {
+            if (!nome_valido(jr.val_str("title")))
+              throw new Exception("nome '" + jr.val_str("title") + "' non valido!");
+            ob.ren_task(jr.val_int("id"), jr.val_str("title"));
+          }
             // add_task
           else if (jr.action == "add_task") {
+            if(!nome_valido(jr.val_str("title")))
+              throw new Exception("nome '" + jr.val_str("title") + "' non valido!");
+
             ob.add_task(jr.val_int("synch_folder_id"), jr.val_int("folder_id"), jr.val_str("stato")
               , jr.val_str("title"), jr.val_str("assegna"), jr.val_str("priorita"), jr.val_str("tipo"), jr.val_str("stima"));
           }
             // add_folder
           else if (jr.action == "add_folder") {
+            if (!nome_valido(jr.val_str("title")))
+              throw new Exception("nome '" + jr.val_str("title") + "' non valido!");
+
             ob.add_folder(jr.val_int("synch_folder_id"), jr.val_int("folder_id"), jr.val_str("title"));
           }
             // ren_folder
           else if (jr.action == "ren_folder") {
+            if (!nome_valido(jr.val_str("title")))
+              throw new Exception("nome '" + jr.val_str("title") + "' non valido!");
             ob.ren_folder(jr.val_int("synch_folder_id"), jr.val_int("folder_id"), jr.val_str("title"));
           }
             // del_folder
@@ -186,6 +204,8 @@ public partial class _notes : tl_page {
 
     } catch (Exception ex) { log.log_err(ex); if (!json_request.there_request(this)) master.err_txt(ex.Message); }
   }
+
+  protected bool nome_valido(string nome) { return (new Regex("^[a-zA-Z0-9 ,ìèéùàò_]*$")).IsMatch(nome); }
 
   protected void add_element_cut(int id, string prefix) {
     if (Session["elements_cut"] == null) { Session["elements_cut"] = prefix + id.ToString(); return; }

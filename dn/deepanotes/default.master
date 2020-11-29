@@ -6,7 +6,7 @@
 <head runat="server">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
-  <meta http-equiv="X-UA-Compatible" content="IE=11" >
+  <meta http-equiv="X-UA-Compatible" content="IE=11">
   <title>deepa-notes</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700&amp;display=swap">
   <link href="js/fontawesome-5.13.0/css/all.min.css" rel="stylesheet">
@@ -51,7 +51,7 @@
       $('#alert_ok').modal('show');
       _fnc = fnc;
       $("#alert_ok").on('hidden.bs.modal', function () {
-        try { if(_fnc) _fnc(); } catch (e) { }
+        try { if (_fnc) _fnc(); } catch (e) { }
       });
     }
 
@@ -168,7 +168,9 @@
 
     function dyn_dlg_enter(e) { if (e.keyCode == 13) { ok_dyn_dlg(); return false; } }
 
-    function ok_dyn_dlg() { $('#dyn_dlg').modal('hide'); try { if (_dyn.on_ok) _dyn.on_ok(); } catch (e) { } }
+    function ok_dyn_dlg() { try { if (_dyn.on_ok) _dyn.on_ok(); } catch (e) { } }
+
+    function hide_dyn_dlg() { $('#dyn_dlg').modal('hide'); }
 
     ////// POST ACTIONS
 
@@ -353,7 +355,7 @@
   </script>
 </head>
 <body>
-  <form mainform='true' runat="server" novalidate autocomplete="off" >
+  <form mainform='true' runat="server" novalidate autocomplete="off">
   <input id='__action' type='hidden' runat='server' />
   <input id='__args' type='hidden' runat='server' />
   <input id='__utype' type='hidden' runat='server' />
@@ -374,7 +376,8 @@
     </div>
   </div>
   <!-- ok dialog -->
-  <div id='alert_ok' class="modal fade" tabindex="-1" role="dialog" data-backdrop="static">
+  <div id='alert_ok' class="modal fade" style='z-index: 99000' tabindex="-1" role="dialog"
+    data-backdrop="static">
     <div id='alert_dlg_ok' class="modal-dialog modal-notify modal-success" role="document">
       <div class="modal-content">
         <div class="modal-header">

@@ -40,7 +40,7 @@
     }
     .task-cut
     {
-      box-shadow:6px 2px 4px 2px yellow;
+      box-shadow: 6px 2px 4px 2px yellow;
     }
   </style>
   <script type="text/javascript" language="javascript">
@@ -88,6 +88,7 @@
                 , "assegna": val_dyn("assegna"), "priorita": val_dyn("priorita"), "tipo": val_dyn("tipo"), "stima": val_dyn("stima")
               });
               if (res && res.html_element) {
+                hide_dyn_dlg();
                 var p = t.prev(); t.remove(); p.after(res.html_element);
                 t.css("border-color", "").css("box-shadow", "");
               } else t.css("border-color", "tomato").css("box-shadow", "3px 3px 3px tomato");
@@ -314,6 +315,28 @@
 
     function hide_menu(el) { $(el).find("[tp='menu-item']").hide(); }
 
+    function title_task_focus(el) { if(!$(el).attr("err-title")) $(el).attr("bck-title", $(el).text()); }
+
+    function title_task_blur(el) {
+      if ($(el).attr("bck-title") == $(el).text())
+        return;
+
+      try {
+        var task_id = $(el).closest("[task-id]").attr("task-id"), title = $(el).text();
+
+        $("[task-id=" + task_id + "]").css("border-color", "lightgreen").css("box-shadow", "4px 4px 4px lightgreen");
+        window.setTimeout(function () {
+          try {
+            var t = $("[task-id=" + task_id + "]"), res = post_action({ "action": "ren_task", "id": task_id, "title": title });
+            if (res) {
+              $(el).attr("bck-title", ""); $(el).attr("err-title", "");
+              t.css("border-color", "").css("box-shadow", "");
+            } else { t.css("border-color", "tomato").css("box-shadow", "3px 3px 3px tomato"); $(el).attr("err-title", "true"); }
+          } catch (e) { show_danger("Attenzione!", e.message); }
+        }, 1500);
+      } catch (e) { show_danger("Attenzione!", e.message); }
+
+    }
 
   </script>
 </asp:Content>

@@ -8,7 +8,6 @@ IN CORSO
   . ricerca elementi e filtri
    . da disco o da db?
   / folders, files
-   / nuovo folder o file occhio ai caratteri speciali "/\, etc...
    . file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
    . sulla cancellazione avvertire se ci sono dei files nella cartella del task
   . gestione allegati!
@@ -17,8 +16,6 @@ IN CORSO
    . drag e drop
    . cancella
    . rinomina
-  . tasks
-   . titolo modificabile al volo
 
 TODO
  dn

@@ -282,6 +282,36 @@ namespace deepanotes {
         db_conn.exec(core.parse_query("lib-synch.set-folder-name", new string[,] { { "folder_id", r["folder_id"].ToString() }, { "folder_name", new_name } }));
     }
 
+    public void ren_task(int task_id, string title) {
+      // aggiorno il file/folder
+      DataRow r = db_conn.first_row(core.parse_query("lib-notes.task-paths", new string[,] { { "task_id", task_id.ToString() } }));
+      if (r == null) throw new Exception("il task " + task_id.ToString() + " non c'è in tabella!");
+      string folder_path = db_provider.str_val(r["folder_path"]), name = db_provider.str_val(r["task_name"]), new_name = name;
+
+      // title
+      if (!string.IsNullOrEmpty(title)) new_name = new_name.Replace(db_provider.str_val(r["title"]) + ".", title + ".");
+
+      string src = Path.Combine(folder_path, name);
+      if (db_provider.int_val(r["file_id"]) > 0) {
+        if (!File.Exists(src)) throw new Exception("il file non c'è, non è possibile aggiornare l'attività!");
+        File.Move(src, Path.Combine(folder_path, new_name));
+      } else {
+        if (!Directory.Exists(src)) throw new Exception("la cartella non c'è, non è possibile aggiornare l'attività!");
+        Directory.Move(src, Path.Combine(folder_path, new_name));
+      }
+
+      // title
+      if (!string.IsNullOrEmpty(title))
+        db_conn.exec(core.parse_query("lib-notes.set-task-title"
+          , new string[,] { { "title", title }, { "task_id", task_id.ToString() } }));
+
+      // aggiorno il file nel db
+      if (db_provider.int_val(r["file_id"]) > 0)
+        db_conn.exec(core.parse_query("lib-synch.set-file-name", new string[,] { { "file_id", r["file_id"].ToString() }, { "file_name", new_name } }));
+      else
+        db_conn.exec(core.parse_query("lib-synch.set-folder-name", new string[,] { { "folder_id", r["folder_id"].ToString() }, { "folder_name", new_name } }));
+    }
+
     public string get_task_notes(int task_id) {
       DataTable dt = db_conn.dt_table(core.parse_query("lib-notes.get-task-notes", new string[,] { { "task_id", task_id.ToString() } }), true);
       return dt.Rows.Count > 0 ? db_provider.str_val(dt.Rows[0]["task_notes"]) : "";

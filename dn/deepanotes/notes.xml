@@ -108,7 +108,7 @@
       <![CDATA[<div task-id='{@field='task_id'}' class='mb-3 {@field='classes'}' task-assegna="{@field='val-assegna'}" task-priorita='{@field='val-priorita'}' task-stima='{@field='val-stima'}' task-tipo='{@field='val-tipo'}'>        
         <!-- title + stato attività -->
         <div class='badge badge-{@field='cls'} d-block text-left text-wrap'>
-          <div><span class='h4' tp-val='title'>{@field='title'}</span>
+          <div><span class='h4' tp-val='title' contenteditable='true' onfocus='title_task_focus(this)' onblur='title_task_blur(this)'>{@field='title'}</span>
           
             <div class="dropdown no-arrow float-right ml-2 mt-1">
               <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
