@@ -95,31 +95,36 @@ public partial class _notes : tl_page {
             ob.del_folder(jr.val_int("synch_folder_id"), jr.val_int("folder_id"));
             res.contents = master.url_cmd("tasks");
           }
-            // cut_folder
-          else if (jr.action == "cut_folder") {
-            int f_id = jr.val_int("folder_id"), sf_id = jr.val_int("synch_folder_id");
-            if (sf_id > 0) {
-              foreach (int id in ob.ids_childs_folders(sf_id)) {
-                add_folder_cut(id); res.list.Add(id.ToString());
-              }
-            } else { add_folder_cut(f_id); res.list.Add(f_id.ToString()); }
+            // cut_element
+          else if (jr.action == "cut_element") {
+            int f_id = jr.val_int("element_id"), sf_id = jr.val_int("synch_folder_id");
+            string tp = jr.val_str("tp_element");
+            if (tp == "folder" || tp == "synch-folder") {
+              if (sf_id > 0) {
+                foreach (int id in ob.ids_childs_folders(sf_id)) {
+                  add_element_cut(id, "f"); res.list.Add(id.ToString());
+                }
+              } else { add_element_cut(f_id, "f"); res.list.Add(f_id.ToString()); }
+            } else if (tp == "task") add_element_cut(f_id, "t");
           }
-            // paste_folder
-          else if (jr.action == "paste_folder") {
+            // paste_elements
+          else if (jr.action == "paste_elements") {
             int f_id = jr.val_int("folder_id"), sf_id = jr.val_int("synch_folder_id");
-            if (Session["folders_cut"] != null) {
+            if (Session["elements_cut"] != null) {
               if (sf_id <= 0) sf_id = ob.get_synch_folder_id(f_id);
               string err = "", ids = "";
-              foreach (int id in Session["folders_cut"].ToString().Split(new char[] { ',' }).Select(x => int.Parse(x))) {
+              foreach (string sid in Session["elements_cut"].ToString().Split(new char[] { ',' })) {
+                string tp = sid.Substring(0, 1); int id = int.Parse(sid.Substring(1));
                 try {
-                  ob.move_folder(id, sf_id, f_id > 0 ? f_id : (int?)null);
+                  if (tp == "f") ob.move_folder(id, sf_id, f_id > 0 ? f_id : (int?)null);
+                  else if (tp == "t") ob.move_task(id, sf_id, f_id > 0 ? f_id : (int?)null);
                 } catch (Exception ex) {
-                  ids = ids + (ids != "" ? "," : "") + id.ToString();
+                  //ids = ids + (ids != "" ? "," : "") + sid;
                   if (err == "") err = ex.Message;
                 }
               }
               res.message = err;
-              Session["folders_cut"] = ids == "" ? null : ids;
+              Session["elements_cut"] = ids == "" ? null : ids;
             }
           }
             // get_notes
@@ -182,11 +187,11 @@ public partial class _notes : tl_page {
     } catch (Exception ex) { log.log_err(ex); if (!json_request.there_request(this)) master.err_txt(ex.Message); }
   }
 
-  protected void add_folder_cut(int id) {
-    if (Session["folders_cut"] == null) { Session["folders_cut"] = id.ToString(); return; }
-    if (!Session["folders_cut"].ToString().Split(new char[] { ',' }).Select(x => int.Parse(x)).ToList().Contains(id)) {
-      Session["folders_cut"] = Session["folders_cut"].ToString()
-        + (Session["folders_cut"].ToString() != "" ? "," : "") + id.ToString();
+  protected void add_element_cut(int id, string prefix) {
+    if (Session["elements_cut"] == null) { Session["elements_cut"] = prefix + id.ToString(); return; }
+    if (!Session["elements_cut"].ToString().Split(new char[] { ',' }).ToList().Contains(prefix + id.ToString())) {
+      Session["elements_cut"] = Session["elements_cut"].ToString()
+        + (Session["elements_cut"].ToString() != "" ? "," : "") + (prefix + id.ToString());
     }
   }
 
@@ -267,6 +272,10 @@ public partial class _notes : tl_page {
           (t.dt_ins.HasValue && t.dt_upd.HasValue && t.dt_ins.Value > t.dt_upd.Value)) dupd = "";
       }
 
+      // classes
+      bool cut = Session["elements_cut"] != null ? Session["elements_cut"].ToString()
+        .Split(new char[] { ',' }).FirstOrDefault(x => x == "t" + t.id.ToString()) != null : false;
+
       // stati menu
       string ms = string.Join("", stati.Where(x => x.stato != t.stato.stato).Select(s =>
         core.parse_html_block("menu-state", new string[,] { { "task_id", t.id.ToString() }, { "assign_stato", s.stato }, { "title", s.title_singolare } })
@@ -274,6 +283,7 @@ public partial class _notes : tl_page {
 
       return core.parse_html_block("task", new string[,] { { "task_id", t.id.ToString() }, { "path", folder_path }
         , { "cls", t.stato.cls }, { "title", t.title }, { "val-assegna", t.user != null ? t.user : "" }
+        , {"classes", cut ? "task-cut" : ""}
         , { "val-priorita", t.priorita != null ? t.priorita.priorita : "" }, { "val-stima", t.stima != null ? t.stima.stima : ""}
         , { "val-tipo", t.tipo != null ? t.tipo.tipo : "" }, { "menu-states", ms }
         , { "stato", !string.IsNullOrEmpty(t.stato.title_singolare) ? t.stato.title_singolare : "generica" }
@@ -331,8 +341,9 @@ public partial class _notes : tl_page {
       string url_open_folder = lvl >= 3 && f.folders.Where(x => x.task == null).Count() > 0
         ? master.url_cmd("attivita", pars: new string[,] { { "id", f.parent_id.ToString() } }) : "";
 
-      List<int> cuts = Session["folders_cut"] != null ?
-        Session["folders_cut"].ToString().Split(new char[] { ',' }).Select(x => int.Parse(x)).ToList() : null;
+      List<int> cuts = Session["elements_cut"] != null ?
+        Session["elements_cut"].ToString().Split(new char[] { ',' }).Where(y => y.StartsWith("f"))
+        .Select(x => int.Parse(x.Substring(1))).ToList() : null;
       bool cut = cuts != null && cuts.Contains(f.folder_id);
 
       // tasks

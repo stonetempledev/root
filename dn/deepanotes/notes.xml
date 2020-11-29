@@ -14,8 +14,8 @@
         <div class="dropdown-menu dropdown-menu-right shadow">
           <h4 class="dropdown-header" style='color: blue; background-color: whitesmoke;'>CARTELLA</h4>
             <div class="dropdown-item"><span onclick="add_folder({@field='id'}, '{@field='tp'}')" style='cursor:pointer;'><i class="fas fa-plus-circle text-info"></i> aggiungi sotto-cartella</span></div>
-            <div class="dropdown-item"><span onclick="cut_folder({@field='id'}, '{@field='tp'}', this)" style='cursor:pointer;'><i class="fas fa-cut text-primary"></i> taglia la cartella</span></div>
-            <div class="dropdown-item"><span onclick="paste_folder({@field='id'}, '{@field='tp'}')" style='cursor:pointer;'><i class="fas fa-paste text-success"></i> incolla la cartella</span></div>
+            <div class="dropdown-item"><span onclick="cut_element({@field='id'}, '{@field='tp'}')" style='cursor:pointer;'><i class="fas fa-cut text-primary"></i> taglia la cartella</span></div>
+            <div class="dropdown-item"><span onclick="paste_elements({@field='id'}, '{@field='tp'}')" style='cursor:pointer;'><i class="fas fa-paste text-success"></i> incolla</span></div>
             <div class="dropdown-item"><span onclick="ren_folder('{@field='title'}', {@field='id'}, '{@field='tp'}')" style='cursor:pointer;'><i class="fas fa-edit text-warning"></i> rinomina cartella</span></div>
             <div class="dropdown-item"><span onclick="del_folder({@field='id'}, '{@field='tp'}')" style='cursor:pointer;'><i class="fas fa-trash-alt text-danger"></i> cancella la cartella</span></div>
           </div>
@@ -82,8 +82,8 @@
          <a class='text-warning' style='white-space: nowrap;' href="javascript:add_attivita('in_corso')"><i class="fas fa-plus-circle"></i> aggiungi attività in corso</a></p>
        <p class="note note-light"><strong>Cartelle:</strong>
          <a class='text-info' style='white-space: nowrap;' href="javascript:add_folder()"><i class="fas fa-plus-circle"></i> aggiungi sotto-cartella</a>
-         <a class='text-primary' style='white-space: nowrap;' href="javascript:cut_folder()"><i class="fas fa-cut"></i> taglia la cartella</a>
-         <a class='text-success' style='white-space: nowrap;' href="javascript:paste_folder()"><i class="fas fa-paste"></i> incolla la cartella</a>
+         <a class='text-primary' style='white-space: nowrap;' href="javascript:cut_element()"><i class="fas fa-cut"></i> taglia la cartella</a>
+         <a class='text-success' style='white-space: nowrap;' href="javascript:paste_elements()"><i class="fas fa-paste"></i> incolla</a>
          <a class='text-warning' style='white-space: nowrap;' href="javascript:ren_folder()"><i class="fas fa-edit"></i> rinomina cartella</a>
          <a class='text-danger' style='white-space: nowrap;' href="javascript:del_folder()"><i class="fas fa-trash-alt"></i> cancella la cartella</a></p>
       </div>]]>
@@ -105,9 +105,9 @@
         <hr/><h5>{@field='stack'}</h5></div></div>]]>
     </html-block>
     <html-block name="task">
-      <![CDATA[<div task-id='{@field='task_id'}' task-assegna="{@field='val-assegna'}" task-priorita='{@field='val-priorita'}' task-stima='{@field='val-stima'}' task-tipo='{@field='val-tipo'}'>        
+      <![CDATA[<div task-id='{@field='task_id'}' class='mb-3 {@field='classes'}' task-assegna="{@field='val-assegna'}" task-priorita='{@field='val-priorita'}' task-stima='{@field='val-stima'}' task-tipo='{@field='val-tipo'}'>        
         <!-- title + stato attività -->
-        <div class='badge badge-{@field='cls'} mb-3 d-block text-left text-wrap'>
+        <div class='badge badge-{@field='cls'} d-block text-left text-wrap'>
           <div><span class='h4' tp-val='title'>{@field='title'}</span>
           
             <div class="dropdown no-arrow float-right ml-2 mt-1">
@@ -119,6 +119,8 @@
                   <i class="fas fa-pen text-info"></i> aggiorna attività</span></div>
                 <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick="del_task({@field='task_id'})">
                   <i class="fas fa-trash-alt text-danger"></i> elimina attività</span></div>
+                <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick="cut_element({@field='task_id'}, 'task')">
+                  <i class="fas fa-cut text-warning"></i> taglia attività</span></div>
               </div>
             </div>        
 
@@ -213,25 +215,43 @@
     <query name="get-synch-folder-id">
       <![CDATA[select top 1 synch_folder_id from dn_folders where folder_id = {@field='folder_id'}]]>
     </query>
+    <query name="get-file-task">
+      <![CDATA[select top 1 t.synch_folder_id, isnull(t.folder_id, f.folder_id) as folder_id, t.file_id, f.file_name
+       from dn_tasks t
+       left join dn_files f on f.file_id = t.file_id
+       where t.task_id = {@field='task_id'}]]>
+    </query>
     <query name="set-folder-new-parent">
-      <![CDATA[update df set df.synch_folder_id = {@field='synch_folder_id'}
+      <![CDATA[update df set df.synch_folder_id = {@field='synch_folder_id'}, df.dt_upd = getdate()
        from dn_tasks df
-       where df.folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
+       where df.synch_folder_id <> {@field='synch_folder_id'} 
+        and df.folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
 
-      update df set df.synch_folder_id = {@field='synch_folder_id'}
+      update df set df.synch_folder_id = {@field='synch_folder_id'}, df.dt_upd = getdate()
        from dn_tasks df
        join dn_files f on f.file_id = df.file_id
-       where f.folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
+       where df.synch_folder_id <> {@field='synch_folder_id'} 
+        and f.folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
       
-      update df set df.synch_folder_id = {@field='synch_folder_id'}
+      update df set df.synch_folder_id = {@field='synch_folder_id'}, df.dt_upd = getdate()
        from dn_files df
-       where folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
+       where df.synch_folder_id <> {@field='synch_folder_id'} 
+        and folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
        
-      update dn_folders set synch_folder_id = {@field='synch_folder_id'}
-       where folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder' and lvl > 1);
+      update dn_folders set synch_folder_id = {@field='synch_folder_id'}, dt_upd = getdate()
+       where synch_folder_id <> {@field='synch_folder_id'} 
+        and folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder' and lvl > 1);
          
-      update dn_folders set synch_folder_id = {@field='synch_folder_id'}, parent_id = {@field='parent_id'}
+      update dn_folders set synch_folder_id = {@field='synch_folder_id'}, parent_id = {@field='parent_id'}, dt_upd = getdate()
         where folder_id = {@field='folder_id'};]]>
+    </query>
+    <query name="set-file-new-parent">
+      <![CDATA[update df set df.synch_folder_id = {@field='synch_folder_id'}, df.folder_id = {@field='parent_id'}, dt_upd = getdate()
+       from dn_files df where df.file_id = {@field='file_id'};
+       
+       update dn_tasks set synch_folder_id = {@field='synch_folder_id'}, dt_upd = getdate()
+       where file_id = {@field='file_id'} and synch_folder_id <> {@field='synch_folder_id'};
+       ]]>
     </query>
     <query name="add-folder">
       <![CDATA[insert into dn_folders (synch_folder_id, parent_id, folder_name, readed)

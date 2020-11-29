@@ -10,7 +10,7 @@
     }
     .voce-cut a
     {
-      color: khaki !important;
+      color: yellow !important;
     }
     .secondo:before
     {
@@ -37,6 +37,10 @@
     .quarto a
     {
       color: whitesmoke;
+    }
+    .task-cut
+    {
+      box-shadow:6px 2px 4px 2px yellow;
     }
   </style>
   <script type="text/javascript" language="javascript">
@@ -142,28 +146,33 @@
         , function () { remove_folder(id, tp_id) });
     }
 
-    function cut_folder(id, tp_id, el) {
+    function cut_element(id, tp_id) {
       try {
         window.setTimeout(function () {
           try {
-            var res = post_action({ "action": "cut_folder", "folder_id": id && tp_id == "folder" ? id : get_param("id")
+            var res = post_action({ "action": "cut_element", "tp_element": tp_id
+              , "element_id": id && tp_id == "folder" || tp_id == "task" ? id : get_param("id")
               , "synch_folder_id": id && tp_id == "synch-folder" ? id : get_param("sf")
             });
+
             if (res) {
-              $.each(res.list, function (index, value) {
-                $("li[tp-item='folder'][item-id=" + value + "]").addClass("voce-cut");
-              });
+              if (tp_id == "folder" || tp_id == "synch_folder_id") {
+                $.each(res.list, function (index, value) {
+                  $("li[tp-item='folder'][item-id=" + value + "]").addClass("voce-cut");
+                });
+              } else if (tp_id == "task")
+                $("[task-id=" + id + "]").addClass("task-cut");
             }
           } catch (e) { show_danger("Attenzione!", e.message); }
         }, 500);
       } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
-    function paste_folder(id, tp_id) {
+    function paste_elements(id, tp_id) {
       try {
         window.setTimeout(function () {
           try {
-            var res = post_action({ "action": "paste_folder", "folder_id": id && tp_id == "folder" ? id : get_param("id")
+            var res = post_action({ "action": "paste_elements", "folder_id": id && tp_id == "folder" ? id : get_param("id")
               , "synch_folder_id": id && tp_id == "synch-folder" ? id : get_param("sf")
             });
             if (res) {
@@ -256,8 +265,8 @@
                 var res = post_action({ "action": "get_details", "task_id": task_id });
                 if (res) {
                   ta.val(res.contents); sec.attr("readed", "1");
-                  sec.show(350); sec.attr("state", "opened");
-                  if (res.html_element) { tf.html(res.html_element); tf.show(350); }
+                  sec.show(350, "swing", function () { ta.focus(); }); sec.attr("state", "opened");
+                  if (res.html_element) { ta.attr("allegati", "true"); tf.html(res.html_element); tf.show(350, "swing"); }
                   t.css("border-color", "").css("box-shadow", "");
                   btn.text("salva e nascondi le note...");
                 }
@@ -266,7 +275,14 @@
             }, 200);
           } catch (e) { show_danger("Attenzione!", e.message); }
         }
-        else { sec.show(350); sec.attr("state", "opened"); btn.text("salva e nascondi le note..."); }
+        else {
+          var ta = $("[task-id='" + task_id + "'] [tp-item='txt-notes']")
+            , tf = $("[task-id='" + task_id + "'] [tp-item='section-allegati']")
+          sec.show(350, "swing", function () { ta.focus(); });
+          if (ta.attr("allegati") == "true") tf.show(350, "swing");
+          sec.attr("state", "opened");
+          btn.text("salva e nascondi le note...");
+        }
       }
     }
 
@@ -309,12 +325,6 @@
       <nav sidebar-tp='menu' class='d-none' sidebar-init='show'>
         <div id='menu' class='sidebar-sticky' runat='server'>
         </div>
-        <!--<div id='sub_menu' class='sidebar-sticky-sub' runat='server'>
-          <a href='javascript:add_folders()' style='color:gray;'>AGGIUNGI</a>
-          <a href='javascript:cut_folders()' style='color:gray;'>TAGLIA</a>
-          <a href='javascript:ren_folders()' style='color:gray;'>RINOMINA</a>
-          <a href='javascript:del_folders()' style='color:gray;'>RIMUOVI</a>
-        </div>-->
       </nav>
       <!-- contenuti -->
       <div sidebar-tp='body'>

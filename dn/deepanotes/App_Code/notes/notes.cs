@@ -384,6 +384,20 @@ namespace deepanotes {
         , new string[,] { { "folder_id", folder_id.ToString() } })).Rows[0]["synch_folder_id"]);
     }
 
+    public int get_file_task(int task_id, out string tp, out int folder_id, out string file_name) {
+      folder_id = -1; file_name = "";
+      DataRow r = db_conn.dt_table(core.parse_query("get-file-task"
+        , new string[,] { { "task_id", task_id.ToString() } })).Rows[0];
+      // file
+      if (db_provider.int_val(r["file_id"]) > 0) {
+        tp = "file"; folder_id = db_provider.int_val(r["folder_id"]);
+        file_name = db_provider.str_val(r["file_name"]);
+        return db_provider.int_val(r["file_id"]);
+      }
+      // folder
+      tp = "folder"; return db_provider.int_val(r["folder_id"]);
+    }
+
     public void move_folder(int folder_id, int synch_folder_id, int? parent_id) {
       // sposto la cartella
       string from_path = db_conn.first_row(core.parse_query("folder-local-path"
@@ -399,6 +413,43 @@ namespace deepanotes {
       // aggiorno la tabella
       db_conn.exec(core.parse_query("set-folder-new-parent", new string[,] { { "folder_id", folder_id.ToString() }
         , {"synch_folder_id", synch_folder_id.ToString() }, { "parent_id", parent_id.HasValue ? parent_id.Value.ToString() : "null" } }));
+    }
+
+    public void move_task(int task_id, int synch_folder_id, int? parent_id) {
+      string tp_file; int folder_id; string file_name;
+      int id_file = get_file_task(task_id, out tp_file, out folder_id, out file_name);
+
+      // sposto il task
+      if (tp_file == "folder") {
+        string from_path = db_conn.first_row(core.parse_query("folder-local-path"
+          , new string[,] { { "folder_id", id_file.ToString() } }))["local_path"].ToString()
+          , to_path = parent_id.HasValue ? db_conn.first_row(core.parse_query("folder-local-path"
+            , new string[,] { { "folder_id", parent_id.Value.ToString() } }))["local_path"].ToString()
+            : db_conn.first_row(core.parse_query("synch-folder-local-path"
+              , new string[,] { { "synch_folder_id", synch_folder_id.ToString() } }))["local_path"].ToString();
+        string to = Path.Combine(to_path, (new DirectoryInfo(from_path)).Name);
+        if (Directory.Exists(to)) throw new Exception("esiste già una cartella '" + (new DirectoryInfo(from_path)).Name + "'!");
+        Directory.Move(from_path, to);
+
+        // aggiorno il task
+        db_conn.exec(core.parse_query("set-folder-new-parent", new string[,] { { "folder_id", id_file.ToString() }
+        , {"synch_folder_id", synch_folder_id.ToString() }, { "parent_id", parent_id.HasValue ? parent_id.Value.ToString() : "null" } }));
+      } else {
+        string from_path = db_conn.first_row(core.parse_query("folder-local-path"
+          , new string[,] { { "folder_id", folder_id.ToString() } }))["local_path"].ToString()
+          , to_path = parent_id.HasValue ? db_conn.first_row(core.parse_query("folder-local-path"
+            , new string[,] { { "folder_id", parent_id.Value.ToString() } }))["local_path"].ToString()
+            : db_conn.first_row(core.parse_query("synch-folder-local-path"
+              , new string[,] { { "synch_folder_id", synch_folder_id.ToString() } }))["local_path"].ToString();
+        from_path = Path.Combine(from_path, file_name);
+        string to = Path.Combine(to_path, (new DirectoryInfo(from_path)).Name);
+        if (File.Exists(to)) throw new Exception("esiste già il file '" + file_name + "'!");
+        File.Move(from_path, to);
+
+        // aggiorno il task
+        db_conn.exec(core.parse_query("set-file-new-parent", new string[,] { { "file_id", id_file.ToString() }
+        , {"synch_folder_id", synch_folder_id.ToString() }, { "parent_id", parent_id.HasValue ? parent_id.Value.ToString() : "null" } }));
+      }
     }
 
     public List<int> ids_childs_folders(int sf_id) {
