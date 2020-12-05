@@ -5,6 +5,9 @@ github.hub
 
 IN CORSO
  / dn: ottimizzazione
+  . ricerca elementi e filtri
+  / folders, files
+   . file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
   . gestione allegati!
    . apertura in locale
    . salvataggio
@@ -20,6 +23,7 @@ TODO
  dn
   ! documentazione, appunti
   ! passwords, accounts, info tecniche
+  ! procedure, scripts, pannelli di controllo
 
 IDEE
  dn
