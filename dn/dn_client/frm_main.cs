@@ -4,8 +4,12 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
+using System.Net;
+using System.Threading.Tasks;
 using dlib;
 using dlib.db;
 
@@ -37,7 +41,7 @@ namespace dn_client {
 
     private void btn_close_Click(object sender, EventArgs e) {
       if (!_c.config.var_bool("client.tray-icon")) {
-        this.Close(); return; 
+        this.Close(); return;
       }
 
       this.WindowState = FormWindowState.Minimized;
@@ -57,6 +61,7 @@ namespace dn_client {
 
     private void frm_main_Load(object sender, EventArgs e) {
       try {
+        tmr_state.Interval = Program._interval_ss * 1000;
         db_provider conn = Program.open_conn();
         _settings = settings.read_settings(_c, conn);
 
@@ -68,6 +73,7 @@ namespace dn_client {
         ntf_main.ContextMenuStrip.ForeColor = Color.White;
         ntf_main.ContextMenuStrip.Font = new Font("segoe ui light", 9, FontStyle.Regular);
 
+        wb_main.ObjectForScripting = new client_external(this);
         wb_main.Navigate(_settings.get_value("url"));
       } catch { }
     }
@@ -93,14 +99,33 @@ namespace dn_client {
       MenuExit_Click(sender, e);
     }
 
-    private void tmr_state_Tick(object sender, EventArgs e) {
-      try {
-        db_provider conn = Program.open_conn();
-        conn.exec(_c.parse_query("client.opened"
-          , new string[,] { { "ip_machine", dlib.core.machine_ip() } }));
-        conn.close_conn(); conn = null;
-      } catch { }
+    private void tmr_state_Tick(object sender, EventArgs e) { Program.client_opened(); }
+
+    public void open_att(int file_id) {
+      Task.Factory.StartNew(() => {
+        try {
+          string folder = Program._c.config.get_var("client.client-tmp-path").value;
+          if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+          DataRow r = Program.first_row("client.file-infos", new string[,] { { "file_id", file_id.ToString() } });
+          string fp = Path.Combine(folder, file_id.ToString() + "_" + db_provider.str_val(r["file_name"]) + db_provider.str_val(r["extension"]));
+          using (WebClient webClient = new WebClient()) {
+            webClient.DownloadFile(db_provider.str_val(r["http_path"]), fp);
+          }
+          System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer", "\"" + fp + "\"") {
+            RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
+          });
+        } catch (Exception ex) { MessageBox.Show(ex.Message, "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+      });
     }
+    
+  }
+
+  [ComVisible(true)]
+  [ClassInterface(ClassInterfaceType.None)]
+  public class client_external {
+    protected frm_main _form = null;
+    public client_external(frm_main form) { _form = form; }
+    public void open_att(int file_id) { _form.open_att(file_id); }
   }
 }
 

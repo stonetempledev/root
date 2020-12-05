@@ -16,6 +16,12 @@
           and isnull(ft.folder_id, 0) = isnull(f.folder_id, 0))]]>
     </query>
 
+    <query name="file-path">
+      <![CDATA[select replace((select local_path from synch_folders where synch_folder_id = f.synch_folder_id) 
+        + isnull(dbo.folder_path(f.folder_id), '\') + f.file_name , '/', '\') as file_path
+       from dn_files f where f.file_id = {@field='file_id'}]]>
+    </query>
+
     <query name="tasks">
       <![CDATA[select t3.*
       , tst.stato, tst.[order] as stato_order, isnull(tst.class, 'light') as stato_class, isnull(tst.title_plurale, '') as stato_title_plurale, isnull(tst.title_singolare, '') as stato_title_singolare

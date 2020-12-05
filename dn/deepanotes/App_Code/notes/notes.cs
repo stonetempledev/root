@@ -151,6 +151,12 @@ namespace deepanotes {
       return res;
     }
 
+    public string file_path(int file_id) {
+      DataRow r = db_conn.first_row(core.parse_query("lib-notes.file-path", new string[,] { { "file_id", file_id.ToString() } }));
+      if (r == null) throw new Exception("il file " + file_id.ToString() + " non esiste!");
+      return db_provider.str_val(r["file_path"]);
+    }
+
     public void remove_task(int task_id) {
       // aggiorno il file/folder
       DataRow r = db_conn.first_row(core.parse_query("lib-notes.task-paths", new string[,] { { "task_id", task_id.ToString() } }));

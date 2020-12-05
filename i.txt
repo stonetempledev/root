@@ -5,17 +5,16 @@ github.hub
 
 IN CORSO
  / dn: ottimizzazione
-  . ricerca elementi e filtri
-   . da disco o da db?
-  / folders, files
-   . file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
-   . sulla cancellazione avvertire se ci sono dei files nella cartella del task
   . gestione allegati!
    . apertura in locale
    . salvataggio
    . drag e drop
    . cancella
    . rinomina
+  . folders, files
+   ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
+  . ricerca elementi e filtri
+   . da disco o da db?
 
 TODO
  dn

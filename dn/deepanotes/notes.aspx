@@ -315,7 +315,7 @@
 
     function hide_menu(el) { $(el).find("[tp='menu-item']").hide(); }
 
-    function title_task_focus(el) { if(!$(el).attr("err-title")) $(el).attr("bck-title", $(el).text()); }
+    function title_task_focus(el) { if (!$(el).attr("err-title")) $(el).attr("bck-title", $(el).text()); }
 
     function title_task_blur(el) {
       if ($(el).attr("bck-title") == $(el).text())
@@ -336,6 +336,10 @@
         }, 1500);
       } catch (e) { show_danger("Attenzione!", e.message); }
 
+    }
+
+    function open_att(file_id) {
+      try { window.external.open_att(file_id); } catch (e) { show_danger("Attenzione!", e.message); }
     }
 
   </script>

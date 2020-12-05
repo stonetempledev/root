@@ -40,6 +40,7 @@ public partial class _notes : tl_page {
 
       notes ob = new notes();
 
+      // js request
       if (json_request.there_request(this)) {
         json_result res = new json_result(json_result.type_result.ok);
 
@@ -89,7 +90,7 @@ public partial class _notes : tl_page {
           }
             // add_task
           else if (jr.action == "add_task") {
-            if(!nome_valido(jr.val_str("title")))
+            if (!nome_valido(jr.val_str("title")))
               throw new Exception("nome '" + jr.val_str("title") + "' non valido!");
 
             ob.add_task(jr.val_int("synch_folder_id"), jr.val_int("folder_id"), jr.val_str("stato")
@@ -150,8 +151,10 @@ public partial class _notes : tl_page {
             res.contents = ob.get_task_notes(jr.val_int("task_id"));
             string html_allegati = "";
             foreach (DataRow dr in ob.get_task_allegati(jr.val_int("task_id")).Rows) {
-              html_allegati += core.parse_html_block("task-allegato", new string[,] { 
-                { "http-path", db_provider.str_val(dr["http_path"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }});
+              html_allegati += !_is_client ? core.parse_html_block("task-allegato", new string[,] { 
+                  { "http-path", db_provider.str_val(dr["http_path"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }})
+                : core.parse_html_block("task-allegato-client", new string[,] { 
+                  { "file-id", db_provider.str_val(dr["file_id"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }});
             }
             res.html_element = html_allegati != "" ? core.parse_html_block("task-allegati", new string[,] { { "html-allegati", html_allegati } }) : "";
           }
