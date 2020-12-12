@@ -7,7 +7,6 @@ using System.Data;
 using dlib;
 using dlib.db;
 using dlib.tools;
-using dlib;
 
 namespace deepanotes {
   // business object

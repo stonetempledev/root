@@ -6,16 +6,14 @@ github.hub
 IN CORSO
  / dn: ottimizzazione
   . ricerca elementi e filtri
-  / folders, files
-   . file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
-  . gestione allegati!
+  . folders, files
+   ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
+  / gestione allegati!
    . apertura in locale
    . salvataggio
    . drag e drop
    . cancella
    . rinomina
-  . folders, files
-   ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
   . ricerca elementi e filtri
    . da disco o da db?
 

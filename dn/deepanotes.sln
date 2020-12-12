@@ -12,7 +12,8 @@ EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "deepanotes", "http://localhost/deepanotes", "{9EDA11DA-072D-41B4-8730-95DF55E6812F}"
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "false"
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.6"
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
+		ProjectReferences = "{f4c20d7e-1c8e-42ae-ba16-7027b0fd9c87}|dlib.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/deepanotes"
 		Debug.AspNetCompiler.PhysicalPath = "deepanotes\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\deepanotes\"

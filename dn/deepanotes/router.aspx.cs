@@ -115,8 +115,8 @@ public partial class _router : tl_page
           sb.AppendFormat("<h3 style='color:white;text-transform:uppercase;background-color:royalblue;'>Variabili di sistema</h3>");
           sb.Append("<div class='list-group'>");
           string row_var = "<li class='list-group-item'><b style='text-transform: uppercase;'>{0}</b>: {1}</li>";
-          sb.AppendFormat(row_var, "machine name", dlib.core.machine_name());
-          sb.AppendFormat(row_var, "machine ip", dlib.core.machine_ip());
+          sb.AppendFormat(row_var, "machine name", sys.machine_name());
+          sb.AppendFormat(row_var, "machine ip", sys.machine_ip());
           sb.Append("</div>");
 
           // browser capabilities
