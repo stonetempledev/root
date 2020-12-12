@@ -158,7 +158,6 @@
     <html-block name="task-allegato">
       <![CDATA[<h5 class='d-inline mr-3' style='opacity: 0.7;' title="scarica allegato..."><a href="{@field='http-path'}" target='blank' class='badge badge-pill badge-light'>{@field='file-name'}</a></h5>]]>
     </html-block>
-    <h5 class='d-inline mr-3' title="{@field='tooltip'}"></h5>
     <html-block name="task-state">
       <![CDATA[<span class='mr-1 badge badge-pill badge-{@field='cls'}'>{@field='txt'}</span>]]>
     </html-block>

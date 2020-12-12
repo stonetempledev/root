@@ -26,7 +26,7 @@ public partial class login : tl_page {
       string upass = get_cache_var("tmp_password");
       set_cache_var("tmp_password", "");
 
-      send_mail(dr["email"].ToString(), "conferma iscrizione al deepa-notes",
+      send_mail(dr["email"].ToString(), "conferma iscrizione al dipa notes",
         string.Format(@"<h2>{0}.</h2><p>Ti sei iscritto al <a href='{1}'>Deepa-Notes</a>!</p>
           <p><i>Ecco la password: {3}</i></p>
           <h3><a href='{1}confirm.aspx?akey={2}'>entra per confermare la tua iscrizione!</a></h3>"
