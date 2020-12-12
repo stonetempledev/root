@@ -27,7 +27,7 @@ namespace dlib {
 
     Dictionary<string, string> _machines = new Dictionary<string, string>();
     public string machine_key() {
-      string mn = machine_name();
+      string mn = sys.machine_name();
       if (!_machines.ContainsKey(mn))
         throw new Exception("è necessario registrare il pc '" + mn + "' nella sezione machines del base config!");
       return _machines[mn];
@@ -162,9 +162,9 @@ namespace dlib {
               // {@baseurl}
               case "baseurl": text = text.Replace("{@baseurl}", _base_url.Replace("\\", "/")); break;
               // {@machine-ip}
-              case "machine-ip": text = text.Replace("{@machine-ip}", machine_ip()); break;
+              case "machine-ip": text = text.Replace("{@machine-ip}", sys.machine_ip()); break;
               // {@machine-name}
-              case "machine-name": text = text.Replace("{@machine-name}", machine_name()); break;
+              case "machine-name": text = text.Replace("{@machine-name}", sys.machine_name()); break;
               default: throw new Exception("chiave '" + cnt + "' inaspettata");
             }
           }
@@ -333,23 +333,6 @@ namespace dlib {
           throw new Exception("l'oggetto '" + cl + "' di tipo '" + o.GetType().FullName + "' non contiente la proprietà '" + pr + "'!");
         return o.GetType().GetProperty(pr).GetValue(o, null);
       }
-    }
-
-    public static string machine_name(bool lower = true) {
-      try {
-        return lower ? System.Environment.MachineName.ToLower() : System.Environment.MachineName;
-      } catch { return ""; }
-    }
-
-    public static string machine_ip(string def = "") {
-      try {
-        var host = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
-        foreach (var ip in host.AddressList) {
-          if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-            return ip.ToString();
-        }
-        return def;
-      } catch { return def; }
     }
 
     public double eval_double(string expr) { try { return (double)_eval.Evaluate(string.Format("number({0})", expr)); } catch (Exception ex) { log.log_err(expr); throw ex; } }

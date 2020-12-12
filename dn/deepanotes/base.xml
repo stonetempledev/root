@@ -1,7 +1,7 @@
 ﻿<base>
 
   <machines>
-    <machine name="dell-pc">home</machine>
+    <machine name="molinovo">home</machine>
     <machine name="fabio-pc">dipa_dev</machine>
     <machine name="dipaserver">dipa_server</machine>
   </machines>

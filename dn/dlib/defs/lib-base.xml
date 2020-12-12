@@ -30,7 +30,7 @@
         end ]]>
     </query>
     <query name="get-settings">
-      <![CDATA[select setting_id, setting_name, setting_var 
+      <![CDATA[select setting_id, setting_name, setting_var, machine_name 
         from settings]]>
     </query>
   </queries>

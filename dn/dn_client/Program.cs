@@ -89,8 +89,8 @@ namespace dn_client {
 
         // close client
         conn = open_conn();
-        conn.exec(_c.parse_query("client.closed", new string[,] { { "ip_machine", dlib.core.machine_ip() }
-            , { "machine_name", dlib.core.machine_name() } }));
+        conn.exec(_c.parse_query("client.closed", new string[,] { { "ip_machine", sys.machine_ip() }
+            , { "machine_name", sys.machine_name() } }));
         conn.close_conn(); conn = null;
 
       } catch (Exception ex) {
@@ -103,8 +103,8 @@ namespace dn_client {
       try {
         bool close = false;
         if (conn == null) { conn = Program.open_conn(); close = true; }
-        conn.exec(_c.parse_query("client.opened", new string[,] { { "ip_machine", dlib.core.machine_ip() }
-            , { "machine_name", dlib.core.machine_name() }, { "interval_ss", _interval_ss.ToString() } }));
+        conn.exec(_c.parse_query("client.opened", new string[,] { { "ip_machine", sys.machine_ip() }
+            , { "machine_name", sys.machine_name() }, { "interval_ss", _interval_ss.ToString() } }));
         if (close) { conn.close_conn(); conn = null; }
       } catch { }
     }
