@@ -30,6 +30,7 @@
       this.tmr_state = new System.Windows.Forms.Timer(this.components);
       this.btn_close = new System.Windows.Forms.Button();
       this.wb_main = new System.Windows.Forms.WebBrowser();
+      this.tmr_att = new System.Windows.Forms.Timer(this.components);
       this.SuspendLayout();
       // 
       // lbl_title
@@ -72,11 +73,13 @@
       this.btn_close.Cursor = System.Windows.Forms.Cursors.Hand;
       this.btn_close.FlatAppearance.BorderSize = 0;
       this.btn_close.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-      this.btn_close.Image = ((System.Drawing.Image)(resources.GetObject("btn_close.Image")));
-      this.btn_close.Location = new System.Drawing.Point(616, 0);
+      this.btn_close.Font = new System.Drawing.Font("Arial", 17F);
+      this.btn_close.ForeColor = System.Drawing.Color.SteelBlue;
+      this.btn_close.Location = new System.Drawing.Point(617, -3);
       this.btn_close.Name = "btn_close";
-      this.btn_close.Size = new System.Drawing.Size(29, 26);
+      this.btn_close.Size = new System.Drawing.Size(29, 34);
       this.btn_close.TabIndex = 4;
+      this.btn_close.Text = "X";
       this.btn_close.UseVisualStyleBackColor = false;
       this.btn_close.Click += new System.EventHandler(this.btn_close_Click);
       // 
@@ -91,6 +94,12 @@
       this.wb_main.ScriptErrorsSuppressed = true;
       this.wb_main.Size = new System.Drawing.Size(647, 435);
       this.wb_main.TabIndex = 5;
+      // 
+      // tmr_att
+      // 
+      this.tmr_att.Enabled = true;
+      this.tmr_att.Interval = 5000;
+      this.tmr_att.Tick += new System.EventHandler(this.tmr_att_Tick);
       // 
       // frm_main
       // 
@@ -121,6 +130,7 @@
     private System.Windows.Forms.Timer tmr_state;
     private System.Windows.Forms.Button btn_close;
     private System.Windows.Forms.WebBrowser wb_main;
+    private System.Windows.Forms.Timer tmr_att;
   }
 }
 

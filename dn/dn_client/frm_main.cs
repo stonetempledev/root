@@ -12,6 +12,7 @@ using System.Net;
 using System.Threading.Tasks;
 using dlib;
 using dlib.db;
+using dlib.tools;
 
 namespace dn_client {
   public partial class frm_main : Form {
@@ -117,7 +118,15 @@ namespace dn_client {
         } catch (Exception ex) { MessageBox.Show(ex.Message, "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error); }
       });
     }
-    
+
+    private void tmr_att_Tick(object sender, EventArgs e)
+    {
+      try {
+        string folder = Program._c.config.get_var("client.client-tmp-path").value;
+        if(Directory.Exists(folder)) {
+        }
+      } catch(Exception ex) { log.log_err(ex); }
+    }
   }
 
   [ComVisible(true)]
