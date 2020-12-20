@@ -3,6 +3,7 @@
     <var name="tray-icon">true</var>
     <var name="tray-icon" machine="home">false</var>
     <var name="client-tmp-path">{@basepath}att</var>
+    <var name="index-att">__i.xml</var>
   </vars>
   <queries>
     <query name="opened">
@@ -21,6 +22,8 @@ else
     <query name="file-infos">
       <![CDATA[select replace((select http_path from synch_folders where synch_folder_id = f.synch_folder_id)
           + isnull(dbo.folder_path(f.folder_id), '\') + f.file_name , '\', '/') as http_path
+	    , replace((select local_path from synch_folders where synch_folder_id = f.synch_folder_id)
+          + isnull(dbo.folder_path(f.folder_id), '\') + f.file_name , '/', '\') as server_path
         , f.file_name, f.extension from dn_files f where f.file_id = {@field='file_id'}]]>
     </query>
   </queries>
