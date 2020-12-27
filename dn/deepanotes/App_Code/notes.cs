@@ -8,7 +8,7 @@ using dlib.db;
 using dlib;
 
 namespace deepanotes {
-  public class notes : bo {
+  public class notes : io {
 
     public List<synch_folder> synch_folders { get; protected set; }
     public List<task> tasks { get; protected set; }
@@ -149,12 +149,6 @@ namespace deepanotes {
       }
 
       return res;
-    }
-
-    public string file_path(int file_id) {
-      DataRow r = db_conn.first_row(core.parse_query("lib-notes.file-path", new string[,] { { "file_id", file_id.ToString() } }));
-      if (r == null) throw new Exception("il file " + file_id.ToString() + " non esiste!");
-      return db_provider.str_val(r["file_path"]);
     }
 
     public void remove_task(int task_id) {

@@ -1,21 +1,16 @@
 github.hub
- stonetempledev, molinagarden@gmail.com/Homme33!
  repositories
   https://github.com/stonetempledev/root.git
 
 IN CORSO
  / dn: ottimizzazione
+  / gestione allegati!
+   / cancella
+   . drag e drop
+   . rinomina
   . ricerca elementi e filtri
   . folders, files
    ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
-  / gestione allegati!
-   . apertura in locale
-   . salvataggio
-   . drag e drop
-   . cancella
-   . rinomina
-  . ricerca elementi e filtri
-   . da disco o da db?
 
 TODO
  dn

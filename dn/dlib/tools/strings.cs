@@ -91,6 +91,7 @@ namespace dlib.tools {
     }
 
     public static bool contains_any(string haystack, params string[] needles) {
+      if(string.IsNullOrEmpty(haystack)) return false;
       foreach (string needle in needles) {
         if (haystack.Contains(needle))
           return true;

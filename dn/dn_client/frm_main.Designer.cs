@@ -31,6 +31,9 @@
       this.btn_close = new System.Windows.Forms.Button();
       this.wb_main = new System.Windows.Forms.WebBrowser();
       this.tmr_att = new System.Windows.Forms.Timer(this.components);
+      this.ss_main = new System.Windows.Forms.StatusStrip();
+      this.ss_label = new System.Windows.Forms.ToolStripStatusLabel();
+      this.ss_main.SuspendLayout();
       this.SuspendLayout();
       // 
       // lbl_title
@@ -92,14 +95,35 @@
       this.wb_main.MinimumSize = new System.Drawing.Size(20, 20);
       this.wb_main.Name = "wb_main";
       this.wb_main.ScriptErrorsSuppressed = true;
-      this.wb_main.Size = new System.Drawing.Size(647, 435);
+      this.wb_main.Size = new System.Drawing.Size(647, 412);
       this.wb_main.TabIndex = 5;
+      this.wb_main.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.wb_main_DocumentCompleted);
+      this.wb_main.Navigated += new System.Windows.Forms.WebBrowserNavigatedEventHandler(this.wb_main_Navigated);
+      this.wb_main.Navigating += new System.Windows.Forms.WebBrowserNavigatingEventHandler(this.wb_main_Navigating);
       // 
       // tmr_att
       // 
       this.tmr_att.Enabled = true;
       this.tmr_att.Interval = 5000;
       this.tmr_att.Tick += new System.EventHandler(this.tmr_att_Tick);
+      // 
+      // ss_main
+      // 
+      this.ss_main.BackColor = System.Drawing.Color.White;
+      this.ss_main.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ss_label});
+      this.ss_main.Location = new System.Drawing.Point(0, 443);
+      this.ss_main.Name = "ss_main";
+      this.ss_main.Size = new System.Drawing.Size(645, 22);
+      this.ss_main.TabIndex = 6;
+      this.ss_main.Text = "statusStrip1";
+      // 
+      // ss_label
+      // 
+      this.ss_label.Font = new System.Drawing.Font("Segoe UI Light", 9F);
+      this.ss_label.ForeColor = System.Drawing.Color.CornflowerBlue;
+      this.ss_label.Name = "ss_label";
+      this.ss_label.Size = new System.Drawing.Size(0, 17);
       // 
       // frm_main
       // 
@@ -108,6 +132,7 @@
       this.BackColor = System.Drawing.Color.White;
       this.ClientSize = new System.Drawing.Size(645, 465);
       this.ControlBox = false;
+      this.Controls.Add(this.ss_main);
       this.Controls.Add(this.wb_main);
       this.Controls.Add(this.btn_close);
       this.Controls.Add(this.lbl_title);
@@ -117,9 +142,13 @@
       this.MaximizeBox = false;
       this.MinimizeBox = false;
       this.Name = "frm_main";
+      this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frm_main_FormClosing);
       this.Load += new System.EventHandler(this.frm_main_Load);
       this.Resize += new System.EventHandler(this.frm_main_Resize);
+      this.ss_main.ResumeLayout(false);
+      this.ss_main.PerformLayout();
       this.ResumeLayout(false);
+      this.PerformLayout();
 
     }
 
@@ -131,6 +160,8 @@
     private System.Windows.Forms.Button btn_close;
     private System.Windows.Forms.WebBrowser wb_main;
     private System.Windows.Forms.Timer tmr_att;
+    private System.Windows.Forms.StatusStrip ss_main;
+    private System.Windows.Forms.ToolStripStatusLabel ss_label;
   }
 }
 

@@ -71,6 +71,7 @@
     <Compile Include="tools\config.cs" />
     <Compile Include="tools\cry.cs" />
     <Compile Include="tools\file.cs" />
+    <Compile Include="tools\json.cs" />
     <Compile Include="tools\json_request.cs" />
     <Compile Include="tools\json_result.cs" />
     <Compile Include="tools\log.cs" />

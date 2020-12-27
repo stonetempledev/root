@@ -4,6 +4,7 @@
     <var name="tray-icon" machine="home">false</var>
     <var name="client-tmp-path">{@basepath}att</var>
     <var name="index-att">__i.xml</var>
+    <var name="io-page">io.aspx</var>
   </vars>
   <queries>
     <query name="opened">

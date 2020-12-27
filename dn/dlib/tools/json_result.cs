@@ -30,5 +30,10 @@ namespace dlib.tools
       this.vars = new Dictionary<string, string>();
       this.list = new List<string>();
     }
+
+    public static json_result from_json(string json)
+    {
+      return Newtonsoft.Json.JsonConvert.DeserializeObject<json_result>(json);
+    }
   }
 }

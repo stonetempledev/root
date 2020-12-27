@@ -15,7 +15,9 @@ namespace dn_client
     public string http_path { get; set; }
     public string server_path { get; set; }
     public string file_name { get; set; }
+    public string file_name_local { get; set; }
     public string extension { get; set; }
+    public DateTime? lwt { get; set; }
 
     public fi() { }
 
@@ -25,6 +27,7 @@ namespace dn_client
       return r != null ? new fi() { id_file = id_file,
         http_path = db_provider.str_val(r["http_path"]), server_path = db_provider.str_val(r["server_path"])
         , file_name = db_provider.str_val(r["file_name"]), extension = db_provider.str_val(r["extension"])
+        , file_name_local = id_file.ToString() + "_" + db_provider.str_val(r["file_name"]) + db_provider.str_val(r["extension"])
       } : null;
     }
   }

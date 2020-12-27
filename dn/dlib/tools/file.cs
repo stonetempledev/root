@@ -147,8 +147,8 @@ namespace dlib.tools {
   }
 
   public class encoding_type {
-    public static System.Text.Encoding GetType(string FILE_NAME) {
-      FileStream fs = new FileStream(FILE_NAME, FileMode.Open, FileAccess.Read);
+    public static System.Text.Encoding GetType(string path) {
+      FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
       Encoding r = GetType(fs);
       fs.Close();
       return r;

@@ -58,7 +58,7 @@ public partial class _default : tl_master {
 
   protected void Page_Load(object sender, EventArgs e) {
     // navbar admin
-    if (tlp.user.type == user.type_user.admin) {
+    if (tlp.user != null && tlp.user.type == user.type_user.admin) {
       string cl = navbar.Attributes["class"];
       navbar.Attributes["class"] = cl.Replace("bg-primary", "bg-warning");
     }

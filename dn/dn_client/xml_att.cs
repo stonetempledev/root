@@ -30,10 +30,23 @@ namespace dn_client
       n = this.node($"/root/file[@id='{id_file}']"); return n.node != null;
     }
 
+    public List<fi> files()
+    {
+      return nodes("/root/file").Cast<xml_node>().Select(x => new fi() {
+        id_file = x.get_int("id"), file_name = x.get_attr("name"), file_name_local = x.get_attr("name_local")
+      , http_path = x.get_attr("http_path"), lwt = DateTime.Parse(x.get_attr("lwt"))
+      }).ToList();
+    }
+
+    public void del_file(int id) { node($"/root/file[@id={id}]").remove(); }
+
+    public xml_node set_file(fi i, DateTime lwt) { del_file(i.id_file); return add_file(i, lwt); }
+
     public xml_node add_file(fi i, DateTime lwt)
     {
       return root_node.add_node("file", new Dictionary<string, string>() { { "id", i.id_file.ToString() }
-        , { "name", i.file_name }, { "http_path", i.http_path }, { "lwt", lwt.ToString("yyyy-MM-dd HH:mm:ss") } });
+        , { "name", i.file_name }, { "name_local", i.file_name_local }, { "http_path", i.http_path }
+        , { "lwt", lwt.ToString("yyyy-MM-dd HH:mm:ss") } });
     }
 
   }

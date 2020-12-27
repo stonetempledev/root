@@ -121,18 +121,37 @@ namespace dn_client
     public void open_att(int file_id)
     {
       Task.Factory.StartNew(() => {
+
+        // download file...
+        string fp = "";
         try {
           string folder = Program._c.config.get_var("client.client-tmp-path").value;
           if(!Directory.Exists(folder)) Directory.CreateDirectory(folder);
           fi i = fi.load_fi(file_id);
-          string fp = Path.Combine(folder, file_id.ToString() + "_" + i.file_name + i.extension);
+          lbl_message(log.log_info($"download file {i.http_path}"));
+          fp = Path.Combine(folder, i.file_name_local);
           using(WebClient webClient = new WebClient()) {
             webClient.DownloadFile(i.http_path, fp);
           }
+          xml_att idoc = xml_att.open(); idoc.set_file(i, DateTime.Now); idoc.save();
+          lbl_message(log.log_info($"downloaded file {i.http_path}"));
+        } catch(Exception ex) {
+          log.log_err(ex);
+          lbl_message($"download file error: {ex.Message}");
+        }
+
+        // apri il file
+        try {
+          lbl_message(log.log_info($"open file {fp}"));
           System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer", "\"" + fp + "\"") {
             RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
           });
-        } catch(Exception ex) { MessageBox.Show(ex.Message, "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+          lbl_message();
+        } catch(Exception ex) {
+          log.log_err(ex);
+          lbl_message($"open file error: {ex.Message}");
+        }
+
       });
     }
 
@@ -143,61 +162,123 @@ namespace dn_client
         if(_tmr_att) return;
         _tmr_att = true;
 
-        string folder = Program._c.config.get_var("client.client-tmp-path").value
-          , iname = Program._c.config.get_var("client.index-att").value;
-        if(!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-        xml_att idoc = xml_att.open();
-
-        // enum files & check to upload
-        bool savei = false;
-        foreach(FileInfo i in Directory.EnumerateFiles(folder).Select(x => new FileInfo(x))) {
-          if(i.Name.ToLower() == iname) continue;
-          try {
-            string fn = i.Name.ToLower(); int id_file = int.Parse(fn.Split(new char[] { '_' })[0]);
-
-            // add file
-            if(!idoc.exists_file(id_file, out xml_node n)) {
-              n = idoc.add_file(fi.load_fi(id_file), i.LastWriteTime);
-              savei = true;
-              continue;
-            }
-
-            // check upload
-            DateTime lwt = DateTime.Parse(n.get_attr("lwt"));
-            if(lwt.ToString("yyyy-MM-dd HH:mm:ss") != i.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")) {
-              savei = true;
-              upload_file(i.FullName, n.get_attr("http_path"), n);
-              n.set_attr("lwt", i.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"));
-              continue;
-            }
-
-            // check delete
-            if((DateTime.Now - lwt).TotalMinutes > 5) {
-              n.remove();
-              i.Delete();
-              savei = true;
-              continue;
-            }
-
-          } catch(Exception ex) { log.log_err(ex); }
-        }
-        if(savei) idoc.save();
+        check_upload_att();
       } catch(Exception ex) { log.log_err(ex); }
       _tmr_att = false;
     }
 
-    protected void upload_file(string path, string http_path, xml_node n)
+    protected void check_upload_att()
+    {
+      string folder = Program._c.config.get_var("client.client-tmp-path").value
+        , iname = Program._c.config.get_var("client.index-att").value;
+      if(!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+      xml_att idoc = xml_att.open();
+
+      // enum files & check to upload
+      bool savei = false;
+      foreach(FileInfo i in Directory.EnumerateFiles(folder).Select(x => new FileInfo(x))) {
+        if(i.Name.ToLower() == iname) continue;
+        try {
+          string fn = i.Name.ToLower(); int id_file = int.Parse(fn.Split(new char[] { '_' })[0]);
+
+          // add file
+          if(!idoc.exists_file(id_file, out xml_node n)) {
+            n = idoc.add_file(fi.load_fi(id_file), i.LastWriteTime);
+            savei = true;
+            continue;
+          }
+
+          // check upload
+          DateTime lwt = DateTime.Parse(n.get_attr("lwt"));
+          if(lwt.ToString("yyyy-MM-dd HH:mm:ss") != i.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")) {
+            savei = true;
+            upload_file(i.FullName, id_file, n);
+            n.set_attr("lwt", i.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            continue;
+          }
+
+          // check delete
+          if((DateTime.Now - lwt).TotalHours > 12) {
+            n.remove();
+            i.Delete();
+            savei = true;
+            continue;
+          }
+
+        } catch(Exception ex) { log.log_err(ex); }
+      }
+
+      // del file
+      foreach(fi f in idoc.files()) {
+        if(!File.Exists(Path.Combine(folder, f.file_name_local))) {
+          idoc.del_file(f.id_file);
+          savei = true;
+        }
+      }
+
+      if(savei) idoc.save();
+    }
+
+    protected void upload_file(string path, int id_file, xml_node n)
     {
       try {
-        WebClient client = new WebClient();
-        client.UseDefaultCredentials = true;
-        client.Credentials = CredentialCache.DefaultCredentials;
-        client.UploadFile(http_path, path);
-        client.Dispose();
-      } catch(Exception ex) { n.set_attr("upload_err", $"error at {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}: {ex.Message}"); throw ex; }
+        lbl_message(log.log_info($"upload file {n.get_attr("http_path")}"));
+        System.Text.Encoding e = encoding_type.GetType(path);
+        var file = new { action = "save_file", id = id_file, bin_data = e.GetString(File.ReadAllBytes(path)), enc = e.HeaderName };
+        json_request.post(_c.base_url + _c.config.get_var("client.io-page").value, file);
+        lbl_message(log.log_info($"uploaded file {n.get_attr("http_path")}!"), 2);
+      } catch(Exception ex) {
+        log.log_err(ex);
+        lbl_message($"uploaded error {ex.Message}!", 5, true);
+        n.set_attr("upload_err", $"error at {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}: {ex.Message}"); throw ex;
+      }
     }
-  }
 
+    private void frm_main_FormClosing(object sender, FormClosingEventArgs e)
+    {
+      try {
+        check_upload_att();
+      } catch(Exception ex) { }
+    }
+
+    protected void lbl_message(string txt = "", int? seconds = null, bool error = false)
+    {
+      if(ss_label.Tag != null && ss_label.Tag.ToString() == "delayed") return;
+
+      if(error) {
+        ss_label.BackColor = Color.Tomato;
+        ss_main.BackColor = Color.Tomato;
+        ss_label.ForeColor = Color.White;
+      }
+      ss_label.Text = txt;
+      Application.DoEvents();
+
+      if(seconds.HasValue) {
+        ss_label.Tag = "delayed";
+        Task.Factory.StartNew(() => {
+          System.Threading.Thread.Sleep(seconds.Value * 1000);
+          reset_label();
+        });
+      }
+    }
+
+    protected void reset_label()
+    {
+      try {
+        ss_label.BackColor = Color.White;
+        ss_main.BackColor = Color.White;
+        ss_label.ForeColor = Color.CornflowerBlue;
+        ss_label.Text = "";
+        ss_label.Tag = null;
+      } catch { }
+    }
+
+    private void wb_main_Navigating(object sender, WebBrowserNavigatingEventArgs e) { lbl_message(log.log_info($"open {e.Url}")); }
+
+    private void wb_main_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e) { lbl_message(); }
+
+    private void wb_main_Navigated(object sender, WebBrowserNavigatedEventArgs e) { lbl_message(); }
+  }
 
   [ComVisible(true)]
   [ClassInterface(ClassInterfaceType.None)]
