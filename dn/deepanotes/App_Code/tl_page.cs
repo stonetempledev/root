@@ -240,6 +240,22 @@ public class tl_page : System.Web.UI.Page {
 
   protected string get_url_cmd(string ref_url) { return _core.config.var_value_par("lib-vars.router-cmd", System.Web.HttpUtility.UrlEncode(ref_url)); }
 
+  protected List<element_cut> elements_cut {
+    get {
+      if(Session["elements_cut"] == null) Session["elements_cut"] = new List<element_cut>();
+      return (List<element_cut>)Session["elements_cut"];
+    }
+  }
+
+  protected bool there_element_cut(int id, element_cut.element_cut_type tp) { return elements_cut.FirstOrDefault(x => x.tp == tp && x.id == id) != null; }
+
+  protected element_cut find_element_cut(int id, element_cut.element_cut_type tp) { return elements_cut.FirstOrDefault(x => x.tp == tp && x.id == id); }
+
+  protected void add_element_cut(int id, element_cut.element_cut_type tp, bool copy = false) {
+    element_cut ec = find_element_cut(id, tp);
+    if(ec == null) elements_cut.Add(new element_cut(id, tp, copy)); else ec.copy = copy;
+  }
+
   #endregion
 
   #region queries

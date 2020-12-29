@@ -121,8 +121,9 @@
                   <i class="fas fa-trash-alt text-danger"></i> elimina attività</span></div>
                 <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick="cut_element({@field='task_id'}, 'task')">
                   <i class="fas fa-cut text-warning"></i> taglia attività</span></div>
+                {@cond_bool='can-paste','paste-voice','no-paste-voice'}
               </div>
-            </div>        
+            </div>
 
             <div class="dropdown no-arrow mr-1 mt-1 float-right">
               <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" 
@@ -151,15 +152,44 @@
            </div>
            <!-- footer -->
            <hr class='m-1'/><h5>{@field='assegnata'}<small class='float-right'>{@field='data'}</small></h5></div></div>]]>
+      <cond name="paste-voice">
+        <![CDATA[<div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick="paste_elements({@field='task_id'}, 'task')">
+              <i class="fas fa-paste text-success"></i> incolla</span></div>]]></cond>
+      <cond name="no-paste-voice"><![CDATA[]]></cond>
     </html-block>
     <html-block name="task-allegati">
       <![CDATA[<span class='text-dark font-weight-light mb-2' style='display:block;'>allegati</span>{@field='html-allegati'}]]>
     </html-block>
     <html-block name="task-allegato">
-      <![CDATA[<h5 class='d-inline mr-3' style='opacity: 0.7;' title="scarica allegato..."><a href="{@field='http-path'}" target='blank' class='badge badge-pill badge-light'>{@field='file-name'}</a></h5>]]>
+      <![CDATA[<h5 tp='att-{@field='file-id'}' class='d-inline' style='opacity: 0.7;' title="scarica allegato..."><a tp='att-name-{@field='file-id'}' href="{@field='http-path'}" target='blank' class='badge badge-pill {@cond_bool='cut','cut','not-cut'}'>{@field='file-name'}</a></h5>
+      {@html-block='menu-allegato'}]]>
+      <cond name="cut">badge-warning</cond>
+      <cond name="not-cut">badge-light</cond>
     </html-block>
     <html-block name="task-allegato-client">
-      <![CDATA[<h5 class='d-inline mr-3' style='opacity: 0.7;' title="scarica allegato..."><a href="javascript:open_att({@field='file-id'})" class='badge badge-pill badge-light'>{@field='file-name'}</a></h5>]]>
+      <![CDATA[<h5 tp='att-{@field='file-id'}' class='d-inline' style='opacity: 0.7;' title="scarica allegato..."><a tp='att-name-{@field='file-id'}' href="javascript:open_att({@field='file-id'})" class='badge badge-pill {@cond_bool='cut','cut','not-cut'}'>{@field='file-name'}</a></h5>
+      {@html-block='menu-allegato'}]]>
+      <cond name="cut">badge-warning</cond>
+      <cond name="not-cut">badge-light</cond>
+    </html-block>
+    <html-block name="menu-allegato">
+      <![CDATA[
+        <div tp='att-menu-{@field='file-id'}' class="dropdown no-arrow d-inline mr-3">
+          <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
+            aria-expanded="false"><i class="fas fa-ellipsis-v text-muted"></i></a>
+          <div class="dropdown-menu dropdown-menu-right shadow">
+            <h4 class="dropdown-header mb-2" style='color: blue; background-color: whitesmoke;'>ALLEGATO</h4>
+            <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick='modify_att({@field='file-id'})'>
+              <i class="fas fa-pen text-info"></i> rinomina allegato</span></div>
+            <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick="del_att({@field='file-id'})">
+              <i class="fas fa-trash-alt text-danger"></i> elimina allegato</span></div>
+            <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick="cut_element({@field='file-id'}, 'att')">
+              <i class="fas fa-cut text-primary"></i> taglia allegato</span></div>
+            <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick="cut_element({@field='file-id'}, 'att', true)">
+              <i class="fas fa-copy text-success"></i> copia allegato</span></div>
+          </div>
+        </div>
+      ]]>
     </html-block>
     <h5 class='d-inline mr-3' title="{@field='tooltip'}"></h5>
     <html-block name="task-state">
@@ -263,6 +293,19 @@
     <query name="ren-folder">
       <![CDATA[update dn_folders set folder_name = left({@txtqry='folder_name'}, 150)
         where folder_id = {@field='folder_id'}]]>
+    </query>
+    <query name="ren-file">
+      <![CDATA[update dn_files set file_name = left({@txtqry='file_name'}, 150)
+        where file_id = {@field='file_id'}]]>
+    </query>
+    <query name="move-file">
+      <![CDATA[update dn_files set folder_id = {@field='folder_id'}, synch_folder_id = {@field='synch_folder_id'}
+        where file_id = {@field='file_id'}]]>
+    </query>
+    <query name="copy-file">
+      <![CDATA[insert into dn_files (synch_folder_id, folder_id, file_name, dt_ins , readed, dt_upd, extension)
+ select {@field='synch_folder_id'} as synch_folder_id, {@field='folder_id'} as folder_id, {@txtqry='file_name'} as file_name, getdate() as dt_ins, readed, getdate() as dt_upd, extension
+ from dn_files where file_id = {@field='file_id'}]]>
     </query>
     <query name="ren-synch-folder">
       <![CDATA[update synch_folders set title = left({@txtqry='title'}, 50)

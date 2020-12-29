@@ -17,7 +17,7 @@
     </query>
 
     <query name="file-path">
-      <![CDATA[select replace((select local_path from synch_folders where synch_folder_id = f.synch_folder_id) 
+      <![CDATA[select f.folder_id, replace((select local_path from synch_folders where synch_folder_id = f.synch_folder_id) 
         + isnull(dbo.folder_path(f.folder_id), '\') + f.file_name , '/', '\') as file_path
        from dn_files f where f.file_id = {@field='file_id'}]]>
     </query>

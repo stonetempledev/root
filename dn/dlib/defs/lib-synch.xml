@@ -172,7 +172,8 @@
     </query>
 
     <query name="del-file">
-      <![CDATA[delete from dn_files where file_id = {@field='file_id'}]]>
+      <![CDATA[delete from dn_files where file_id = {@field='file_id'};
+      delete from dn_tasks_contents where [file_id] = {@field='file_id'};]]>
     </query>
 
     <query name="task-ins-into-synch">
@@ -184,6 +185,15 @@
       <![CDATA[insert into dn_folders (synch_folder_id, parent_id, folder_name, dt_ins, readed)
      select synch_folder_id, folder_id, {@txtqry='name'}, getdate(), 1 
       from dn_folders where folder_id = {@field='folder_id'}]]>
+    </query>
+
+    <query name="task-info">
+      <![CDATA[select t.task_id, t.synch_folder_id, t.folder_id, t.file_id, t.title, t.dt_upd, t.dt_readed, sf.local_path as synch_local_path
+		    , replace(dbo.folder_path(isnull(t.folder_id, f.folder_id)), '/', '\') as folder_path, f.file_id as file_notes_id, f.file_name
+       from dn_tasks t
+       join synch_folders sf on sf.synch_folder_id = t.synch_folder_id
+       left join dn_files f on f.file_id = t.file_id
+	   where t.task_id = {@field='task_id'}]]>
     </query>
 
   </queries>

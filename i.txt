@@ -3,11 +3,12 @@ github.hub
   https://github.com/stonetempledev/root.git
 
 IN CORSO
- / dn: ottimizzazione
-  / gestione allegati!
-   / cancella
-   . drag e drop
-   . rinomina
+ / dn: ottimizzazione attività
+  / gestione allegati!  
+   . aggiungi
+    . drag e drop
+    . nome file manuale
+   / dn_tasks_contents
   . ricerca elementi e filtri
   . folders, files
    ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
