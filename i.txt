@@ -4,13 +4,14 @@ github.hub
 
 IN CORSO
  / dn: ottimizzazione attività
+  / tira fuori la synch che la chiami anche dalle pagine
   / gestione allegati!  
    . aggiungi
     . drag e drop
     . nome file manuale
    / dn_tasks_contents
   . ricerca elementi e filtri
-  . folders, files
+  / folders, files
    ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
 
 TODO

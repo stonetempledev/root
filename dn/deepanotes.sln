@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26228.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dn_synch", "dn_synch\dn_synch.csproj", "{8770A572-097A-4C1B-B854-6F75717DD0F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dlib", "dlib\dlib.csproj", "{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dn_lib", "dn_lib\dn_lib.csproj", "{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dn_client", "dn_client\dn_client.csproj", "{5311397C-657F-4E1A-BFC0-50FA86606BA8}"
 EndProject
@@ -13,7 +13,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "deepanotes", "http://localh
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "false"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
-		ProjectReferences = "{f4c20d7e-1c8e-42ae-ba16-7027b0fd9c87}|dlib.dll;"
+		ProjectReferences = "{f4c20d7e-1c8e-42ae-ba16-7027b0fd9c87}|dn_lib.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/deepanotes"
 		Debug.AspNetCompiler.PhysicalPath = "deepanotes\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\deepanotes\"

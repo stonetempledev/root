@@ -10,8 +10,8 @@ using System.Net;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
 using deepanotes;
-using dlib.tools;
-using dlib.xml;
+using dn_lib.tools;
+using dn_lib.xml;
 
 public partial class login : tl_page {
 

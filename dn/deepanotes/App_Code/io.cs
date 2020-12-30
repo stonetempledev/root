@@ -4,8 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Data;
 using System.IO;
-using dlib.db;
-using dlib;
+using dn_lib.db;
+using dn_lib;
 
 namespace deepanotes {
   public class io : bo {

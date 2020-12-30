@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Data;
-using dlib.db;
-using dlib.tools;
+using dn_lib.db;
+using dn_lib.tools;
 
 namespace deepanotes {
   public class users : bo {

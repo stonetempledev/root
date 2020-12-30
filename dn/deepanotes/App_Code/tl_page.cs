@@ -12,10 +12,10 @@ using System.Net.Configuration;
 using System.Configuration;
 using System.IO;
 using System.Data;
-using dlib;
-using dlib.tools;
-using dlib.db;
-using dlib.xml;
+using dn_lib;
+using dn_lib.tools;
+using dn_lib.db;
+using dn_lib.xml;
 using deepanotes;
 
 public class tl_page : System.Web.UI.Page {

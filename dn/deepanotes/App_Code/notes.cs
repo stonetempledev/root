@@ -4,8 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Data;
 using System.IO;
-using dlib.db;
-using dlib;
+using dn_lib.db;
+using dn_lib;
 
 namespace deepanotes
 {
@@ -53,7 +53,7 @@ namespace deepanotes
 
     public List<free_label> load_free_labels()
     {
-      return db_conn.dt_table(core.parse_query("lib-synch.free-labels")).Rows.Cast<DataRow>()
+      return db_conn.dt_table(core.parse_query("lib-notes.free-labels")).Rows.Cast<DataRow>()
         .Select(r => new free_label(db_provider.str_val(r["free_txt"]), db_provider.str_val(r["stato"])
           , db_provider.str_val(r["priorita"]), db_provider.str_val(r["tipo"]), db_provider.str_val(r["stima"])
           , db_provider.str_val(r["default"]) == "1")).ToList();
@@ -61,7 +61,7 @@ namespace deepanotes
 
     public DataRow get_task_info(int task_id)
     {
-      return db_conn.first_row(core.parse_query("lib-synch.task-info", new string[,] { { "task_id", task_id.ToString() } }));
+      return db_conn.first_row(core.parse_query("lib-notes.task-info", new string[,] { { "task_id", task_id.ToString() } }));
     }
 
     public task load_task(int task_id) { List<task> l = load_tasks(task_id); return l.Count > 0 ? l[0] : null; }
@@ -178,9 +178,9 @@ namespace deepanotes
 
       // aggiorno il db
       if(db_provider.int_val(r["file_id"]) > 0)
-        db_conn.exec(core.parse_query("lib-synch.del-file", new string[,] { { "file_id", r["file_id"].ToString() } }));
+        db_conn.exec(core.parse_query("lib-notes.del-file", new string[,] { { "file_id", r["file_id"].ToString() } }));
       else
-        db_conn.exec(core.parse_query("lib-synch.del-folder", new string[,] { { "folder_id", r["folder_id"].ToString() } }));
+        db_conn.exec(core.parse_query("lib-notes.del-folder", new string[,] { { "folder_id", r["folder_id"].ToString() } }));
       db_conn.exec(core.parse_query("lib-notes.del-task", new string[,] { { "task_id", task_id.ToString() } }));
     }
 
@@ -192,7 +192,7 @@ namespace deepanotes
       File.Delete(db_provider.str_val(r["file_path"]));
 
       // aggiorno il db
-      db_conn.exec(core.parse_query("lib-synch.del-file", new string[,] { { "file_id", file_id.ToString() } }));
+      db_conn.exec(core.parse_query("lib-notes.del-file", new string[,] { { "file_id", file_id.ToString() } }));
     }
 
     public void update_task(int task_id, out string rel_path, List<free_label> fl, string title = null, string assegna = null
@@ -304,9 +304,9 @@ namespace deepanotes
 
       // aggiorno il file nel db
       if(db_provider.int_val(r["file_id"]) > 0)
-        db_conn.exec(core.parse_query("lib-synch.set-file-name", new string[,] { { "file_id", r["file_id"].ToString() }, { "file_name", new_name } }));
+        db_conn.exec(core.parse_query("lib-notes.set-file-name", new string[,] { { "file_id", r["file_id"].ToString() }, { "file_name", new_name } }));
       else
-        db_conn.exec(core.parse_query("lib-synch.set-folder-name", new string[,] { { "folder_id", r["folder_id"].ToString() }, { "folder_name", new_name } }));
+        db_conn.exec(core.parse_query("lib-notes.set-folder-name", new string[,] { { "folder_id", r["folder_id"].ToString() }, { "folder_name", new_name } }));
     }
 
     public void ren_task(int task_id, string title)
@@ -335,9 +335,9 @@ namespace deepanotes
 
       // aggiorno il file nel db
       if(db_provider.int_val(r["file_id"]) > 0)
-        db_conn.exec(core.parse_query("lib-synch.set-file-name", new string[,] { { "file_id", r["file_id"].ToString() }, { "file_name", new_name } }));
+        db_conn.exec(core.parse_query("lib-notes.set-file-name", new string[,] { { "file_id", r["file_id"].ToString() }, { "file_name", new_name } }));
       else
-        db_conn.exec(core.parse_query("lib-synch.set-folder-name", new string[,] { { "folder_id", r["folder_id"].ToString() }, { "folder_name", new_name } }));
+        db_conn.exec(core.parse_query("lib-notes.set-folder-name", new string[,] { { "folder_id", r["folder_id"].ToString() }, { "folder_name", new_name } }));
     }
 
     public string get_task_notes(int task_id)
@@ -659,10 +659,10 @@ namespace deepanotes
 
       // aggiorno il db
       long new_id = long.Parse(synch_folder_id > 0 ?
-        db_conn.exec(core.parse_query("lib-synch.task-ins-into-synch", new string[,] { { "synch_folder_id", synch_folder_id.ToString() }, { "name", name } }), true)
-        : db_conn.exec(core.parse_query("lib-synch.task-ins-into-folder", new string[,] { { "folder_id", folder_id.ToString() }, { "name", name } }), true));
+        db_conn.exec(core.parse_query("lib-notes.task-ins-into-synch", new string[,] { { "synch_folder_id", synch_folder_id.ToString() }, { "name", name } }), true)
+        : db_conn.exec(core.parse_query("lib-notes.task-ins-into-folder", new string[,] { { "folder_id", folder_id.ToString() }, { "name", name } }), true));
 
-      db_conn.exec(core.parse_query("lib-notes.ins-task", new string[,] { { "folder_id", new_id.ToString() }
+      db_conn.exec(core.parse_query("lib-notes.ins-task-from-folder", new string[,] { { "folder_id", new_id.ToString() }
         , { "title", title }, { "user", assegna }, { "stato", !string.IsNullOrEmpty(stato) ? stato : "da_fare" }
         , { "priorita", priorita }, { "tipo", tipo }, { "stima", stima }}), true);
     }

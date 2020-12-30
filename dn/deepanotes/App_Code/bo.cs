@@ -4,9 +4,9 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Data;
-using dlib;
-using dlib.db;
-using dlib.tools;
+using dn_lib;
+using dn_lib.db;
+using dn_lib.tools;
 
 namespace deepanotes {
   // business object

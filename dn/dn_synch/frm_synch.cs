@@ -9,10 +9,10 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Data.SqlClient;
-using dlib;
-using dlib.tools;
-using dlib.db;
-using dlib.xml;
+using dn_lib;
+using dn_lib.tools;
+using dn_lib.db;
+using dn_lib.xml;
 
 namespace fsynch {
   public partial class frm_synch : Form {
@@ -192,7 +192,7 @@ namespace fsynch {
       if (!_loaded.HasValue || (_loaded.HasValue && (DateTime.Now - _loaded.Value).TotalMinutes > 5)) {
         _loaded = DateTime.Now;
 
-        _users = _conn.dt_table(main._c.parse_query("lib-synch.task-users")).Rows.Cast<DataRow>()
+        _users = _conn.dt_table(main._c.parse_query("lib-notes.task-users")).Rows.Cast<DataRow>()
           .Select(r => db_provider.str_val(r["nome"])).ToList();
 
         _labels = _s.load_free_labels();
@@ -231,10 +231,11 @@ namespace fsynch {
         if (deleted > 0) log_debug("cancellati " + deleted.ToString() + " files/folders/tasks");
 
         // contenuti tasks
+        /*
         status_txt("lettura contenuti...");
-        DataTable dt = _conn.dt_table(_c.parse_query("lib-synch.load-tasks-contents"));
+        DataTable dt = _conn.dt_table(_c.parse_query("lib-notes.load-tasks-contents"));
         foreach (long task_id in dt.Rows.Cast<DataRow>().Select(r => db_provider.int_val(r["task_id"])).Distinct())
-          _conn.exec(_c.parse_query("lib-synch.init-content", new string[,] { { "task_id", task_id.ToString() } }));
+          _conn.exec(_c.parse_query("lib-notes.init-content", new string[,] { { "task_id", task_id.ToString() } }));
 
         List<long> tasks_notes = new List<long>();
         foreach (DataRow dr in dt.Rows) {
@@ -252,7 +253,7 @@ namespace fsynch {
               if (!string.IsNullOrEmpty(txt.Trim())) {
                 if ((type == "source" || type == "info") 
                   && (type_info != "notes" || (type_info == "notes" && tasks_notes.Contains(task_id)))) {
-                  _conn.exec(_c.parse_query("lib-synch.ins-content", new string[,] { { "task_id", task_id.ToString() }
+                  _conn.exec(_c.parse_query("lib-notes.ins-content", new string[,] { { "task_id", task_id.ToString() }
                     , { "file_id", db_provider.str_val(dr["file_notes_id"]) }
                     , { "title", "" }, { "extension", Path.GetExtension(path).ToLower() }})
                     , pars: new System.Data.Common.DbParameter[] { 
@@ -279,7 +280,7 @@ namespace fsynch {
               if (!string.IsNullOrEmpty(txt.Trim())) {
                 if ((type == "source" || type == "info") 
                   && (type_info != "notes" || (type_info == "notes" && tasks_notes.Contains(task_id)))) {
-                  _conn.exec(_c.parse_query("lib-synch.ins-content", new string[,] { { "task_id", task_id.ToString() }
+                  _conn.exec(_c.parse_query("lib-notes.ins-content", new string[,] { { "task_id", task_id.ToString() }
                     , { "file_id", db_provider.str_val(dr["file_notes_id_ff"]) }
                     , { "title", Path.GetFileNameWithoutExtension(path).ToLower() }, { "extension", Path.GetExtension(path).ToLower() }})
                     , pars: new System.Data.Common.DbParameter[] { 
@@ -297,7 +298,8 @@ namespace fsynch {
         }
 
         foreach (long task_id in dt.Rows.Cast<DataRow>().Select(r => db_provider.int_val(r["task_id"])).Distinct())
-          _conn.exec(_c.parse_query("lib-synch.update-task-readed", new string[,] { { "task_id", task_id.ToString() } }));
+          _conn.exec(_c.parse_query("lib-notes.update-task-readed", new string[,] { { "task_id", task_id.ToString() } }));
+      */
 
         seconds = (int)(DateTime.Now - start).TotalSeconds;
       } catch (Exception ex) { log_err(ex.Message); } finally {
@@ -307,7 +309,7 @@ namespace fsynch {
 
     protected bool ins_notes(long task_id, long file_id, string content, string path, string type) {
       if (type == "info") {
-        _conn.exec(_c.parse_query("lib-synch.ins-notes", new string[,] { { "task_id", task_id.ToString() }, { "file_id", file_id.ToString() } })
+        _conn.exec(_c.parse_query("lib-notes.ins-notes", new string[,] { { "task_id", task_id.ToString() }, { "file_id", file_id.ToString() } })
           , pars: new System.Data.Common.DbParameter[] { 
             new SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = content } });
         log_debug("lette note task '" + path + "'");
@@ -317,7 +319,7 @@ namespace fsynch {
         int from_n = content.IndexOf(key_from), to_n = from_n >= 0 ? content.IndexOf(key_to, from_n + 1) : -1;
         if (from_n >= 0 && to_n > 0) {
           string notes = content.Substring(from_n + key_from.Length, to_n - from_n - key_from.Length - 1).Trim(new char[] { ' ', '\n', '\r' });
-          _conn.exec(_c.parse_query("lib-synch.ins-notes", new string[,] { { "task_id", task_id.ToString() }, { "file_id", file_id.ToString() } })
+          _conn.exec(_c.parse_query("lib-notes.ins-notes", new string[,] { { "task_id", task_id.ToString() }, { "file_id", file_id.ToString() } })
             , pars: new System.Data.Common.DbParameter[] { 
             new SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes } });
           log_debug("lette note task '" + path + "'");
@@ -379,7 +381,7 @@ namespace fsynch {
 
         // task folder - dt_upd
         if (parent_task != null) {
-          string cc = _conn.exec(_c.parse_query("lib-synch.upd-task-date", new string[,] { { "task_id", parent_task.id.ToString() } }));
+          string cc = _conn.exec(_c.parse_query("lib-notes.upd-task-date", new string[,] { { "task_id", parent_task.id.ToString() } }));
           if (cc != "0") log_debug("updated task: " + Path.Combine(Path.GetDirectoryName(path), parent_task.title));
         }
 

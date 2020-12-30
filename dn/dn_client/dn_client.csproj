@@ -109,21 +109,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\dlib\dlib.csproj">
-      <Project>{F4C20D7E-1C8E-42AE-BA16-7027B0FD9C87}</Project>
-      <Name>dlib</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\dlib\defs\lib-base.xml">
+    <Content Include="..\dn_lib\defs\lib-base.xml">
       <Link>defs\lib-base.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\dlib\defs\lib-conns.xml">
+    <Content Include="..\dn_lib\defs\lib-conns.xml">
       <Link>defs\lib-conns.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\dlib\defs\lib-vars.xml">
+    <Content Include="..\dn_lib\defs\lib-vars.xml">
       <Link>defs\lib-vars.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -134,7 +128,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\dn_lib\dn_lib.csproj">
+      <Project>{f4c20d7e-1c8e-42ae-ba16-7027b0fd9c87}</Project>
+      <Name>dn_lib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

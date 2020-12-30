@@ -10,10 +10,10 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using dlib;
-using dlib.db;
-using dlib.tools;
-using dlib.xml;
+using dn_lib;
+using dn_lib.db;
+using dn_lib.tools;
+using dn_lib.xml;
 
 namespace dn_client {
   static class Program {

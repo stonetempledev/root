@@ -4,10 +4,10 @@ using System.Linq;
 using System.Windows.Forms;
 using System.IO;
 using System.Net;
-using dlib;
-using dlib.db;
-using dlib.tools;
-using dlib.xml;
+using dn_lib;
+using dn_lib.db;
+using dn_lib.tools;
+using dn_lib.xml;
 
 namespace fsynch {
   static class main {
