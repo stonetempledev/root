@@ -19,6 +19,10 @@ namespace deepanotes
     {
     }
 
+    public static synch create_synch() { bo b = new bo(); return new synch(b.db_conn, b.core, b.config, b.user_id, b.user_name); }
+
+    public synch get_synch() { return new synch(this.db_conn, this.core, this.config, this.user_id, this.user_name); }
+
     public folder find_folder(long folder_id)
     {
       foreach(synch_folder sf in this.synch_folders) {
@@ -343,7 +347,7 @@ namespace deepanotes
     public string get_task_notes(int task_id)
     {
       DataTable dt = db_conn.dt_table(core.parse_query("lib-notes.get-task-notes", new string[,] { { "task_id", task_id.ToString() } }), true);
-      return dt.Rows.Count > 0 ? db_provider.str_val(dt.Rows[0]["task_notes"]) : "";
+      return dt.Rows.Count > 0 ? db_provider.str_val(dt.Rows[0]["content"]) : "";
     }
 
     public DataTable get_task_allegati(int task_id)
@@ -357,8 +361,12 @@ namespace deepanotes
       if(dt.Rows.Count == 0) throw new Exception("l'attività " + task_id.ToString() + " non è registrata correttamente!");
 
       DataRow dr = dt.Rows[0];
+      synch s = this.get_synch();
+      DateTime ct = DateTime.Now;
+
       // aggiornamento del file
       if(db_provider.str_val(dr["file_id_notes"]) != "") {
+        int fid = db_provider.int_val(dr["file_id_notes"]);
         string file_path = db_provider.str_val(dr["file_path_notes"]) != "" ?
           db_provider.str_val(dr["file_path_notes"]) : db_provider.str_val(dr["file_path"]);
         System.Text.Encoding e = dlib.tools.encoding_type.GetType(file_path);
@@ -374,21 +382,20 @@ namespace deepanotes
           else
             src = oc + " " + key_from + "\r\n" + notes + "\r\n" + key_to + cc + "\n\n" + all;
           File.WriteAllText(file_path, src, e);
-          db_conn.exec(core.parse_query("lib-notes.init-notes", new string[,] { { "task_id", task_id.ToString() } })
-            , pars: new System.Data.Common.DbParameter[] {
-                new System.Data.SqlClient.SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes.Trim(new char[] { ' ', '\n', '\r' }) } });
+          s.set_file_content(fid, Path.GetExtension(file_path).ToLower(), src, ct, ct);
+          init_task_notes(file_path, task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
         }
         // file info
         else {
           File.WriteAllText(file_path, notes, e);
-          db_conn.exec(core.parse_query("lib-notes.init-notes", new string[,] { { "task_id", task_id.ToString() } })
-            , pars: new System.Data.Common.DbParameter[] {
-                new System.Data.SqlClient.SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes.Trim(new char[] { ' ', '\n', '\r' }) } });
+          s.set_file_content(fid, Path.GetExtension(file_path).ToLower(), notes.Trim(new char[] { ' ', '\n', '\r' }), ct, ct);
+          init_task_notes(file_path, task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
         }
       } // nuovo commento
       else {
         // file
         if(db_provider.str_val(dr["file_id"]) != "") {
+          int fid = db_provider.int_val(dr["file_id"]);
           string file_path = db_provider.str_val(dr["file_path"]);
           System.Text.Encoding e = dlib.tools.encoding_type.GetType(file_path);
           // sorgente
@@ -397,30 +404,54 @@ namespace deepanotes
               , cc = db_provider.str_val(dr["close_comment"]), key_from = "###FROM_NOTES###", key_to = "###TO_NOTES###";
             string src = oc + " " + key_from + "\r\n" + notes + "\r\n" + key_to + cc + "\n\n" + all;
             File.WriteAllText(file_path, src, e);
-            db_conn.exec(core.parse_query("lib-notes.init-notes", new string[,] { { "task_id", task_id.ToString() } })
-              , pars: new System.Data.Common.DbParameter[] {
-                new System.Data.SqlClient.SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes.Trim(new char[] { ' ', '\n', '\r' }) } });
+            s.set_file_content(fid, Path.GetExtension(file_path).ToLower(), src, ct, ct);
+            init_task_notes(file_path, task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
           } else {
             // creo una cartella con questo nome di task e aggiungo le note
-            string title = db_provider.str_val(dr["title"]);
-            string parent = Path.GetDirectoryName(file_path);
-            string new_folder = Path.Combine(parent, Path.GetFileNameWithoutExtension(file_path));
+            string title = db_provider.str_val(dr["title"]), parent = Path.GetDirectoryName(file_path)
+              , name_folder = Path.GetFileNameWithoutExtension(file_path), new_folder = Path.Combine(parent, name_folder);
+            int sfid = db_provider.int_val(dr["synch_folder_id"]); long? pfid = db_provider.long_val_null(dr["parent_folder_id"]);
+
+            // nuova cartella
             Directory.CreateDirectory(new_folder);
-            File.Move(file_path, Path.Combine(new_folder, title + Path.GetExtension(file_path)));
+            string tp; int cc; DateTime? clwt;
+            long folder_id = s.ins_folder(sfid, pfid, name_folder, ct, ct, out tp, out cc);
+
+            // sposto il file
+            string name_file = title + Path.GetExtension(file_path);
+            File.Move(file_path, Path.Combine(new_folder, name_file));
+            db_conn.exec(core.parse_query("lib-notes.del-file", new string[,] { { "file_id", fid.ToString() } }));
+            s.ins_file(sfid, folder_id, name_file, Path.GetExtension(file_path).ToLower(), ct, ct, out tp, out cc, out clwt);
+            set_folder_task(task_id, (int)folder_id);
+
+            // setto le note
             File.WriteAllText(Path.Combine(new_folder, "i.txt"), notes, System.Text.Encoding.UTF8);
-            db_conn.exec(core.parse_query("lib-notes.init-notes", new string[,] { { "task_id", task_id.ToString() } })
-              , pars: new System.Data.Common.DbParameter[] {
-              new System.Data.SqlClient.SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes.Trim(new char[] { ' ', '\n', '\r' }) } });
+            long nid = s.ins_file(sfid, folder_id, "i.txt", ".txt", ct, ct, out tp, out cc, out clwt);
+            s.set_file_content((int)nid, ".txt", notes.Trim(new char[] { ' ', '\n', '\r' }), ct, ct);
+            init_task_notes(file_path, task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
           }
         }
         // cartella
-        else {
-          File.WriteAllText(db_provider.str_val(dr["folder_path"]) + "i.txt", notes, System.Text.Encoding.UTF8);
-          db_conn.exec(core.parse_query("lib-notes.init-notes", new string[,] { { "task_id", task_id.ToString() } })
-            , pars: new System.Data.Common.DbParameter[] {
-              new System.Data.SqlClient.SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes.Trim(new char[] { ' ', '\n', '\r' }) } });
+        else {          
+          string fp = db_provider.str_val(dr["folder_path"]) + "i.txt";
+          File.WriteAllText(fp, notes, System.Text.Encoding.UTF8);
+          string tp; int cc; DateTime? clwt;
+          long fid = s.ins_file(db_provider.int_val(dr["synch_folder_id"]), db_provider.int_val(dr["folder_id"]), "i.txt", ".txt", ct, ct, out tp, out cc, out clwt);
+          s.set_file_content((int)fid, ".txt", notes.Trim(new char[] { ' ', '\n', '\r' }), ct, ct);
+          init_task_notes(fp, task_id, (int)fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
         }
       }
+    }
+
+    protected void set_folder_task(int task_id, int folder_id)
+    {
+      db_conn.exec(core.parse_query("lib-notes.set-task-folder", new string[,] { { "task_id", task_id.ToString() }, { "folder_id", folder_id.ToString() } }));
+    }
+
+    protected void init_task_notes(string path, int task_id, int file_id, string notes)
+    {
+      db_conn.exec(core.parse_query("lib-notes.init-notes", new string[,] { { "task_id", task_id.ToString() }, { "file_id", file_id.ToString() } })
+        , pars: new System.Data.Common.DbParameter[] { new System.Data.SqlClient.SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes } });
     }
 
     public void add_folder(int synch_folder_id, int folder_id, string title)
@@ -482,11 +513,11 @@ namespace deepanotes
       if(r == null) throw new Exception("il file " + file_id.ToString() + " non esiste!");
 
       string file_name = "";
-      int i = 2;
+      int i = 1;
       while(true) {
-        string fp = db_provider.str_val(r["file_path"]), fn = Path.GetFileNameWithoutExtension(fp)
-          , fe = Path.GetExtension(fp), fp2 = Path.Combine(folder_path, fn + i.ToString() + fe);
-        if(!File.Exists(fp2)) { file_name = fn + i.ToString() + fe; File.Copy(fp, fp2); break; }
+        string fp = db_provider.str_val(r["file_path"]), fn = Path.GetFileNameWithoutExtension(fp), suff = i > 1 ? i.ToString() : ""
+          , fe = Path.GetExtension(fp), fp2 = Path.Combine(folder_path, fn + suff + fe);
+        if(!File.Exists(fp2)) { file_name = fn + suff + fe; File.Copy(fp, fp2); break; }
         i++;
       }
 

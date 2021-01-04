@@ -118,7 +118,7 @@ namespace dn_client
 
     private void tmr_state_Tick(object sender, EventArgs e) { Program.client_opened(); }
 
-    public void open_att(int file_id)
+    public void open_att(int file_id, int user_id, string user_name)
     {
       Task.Factory.StartNew(() => {
 
@@ -133,7 +133,7 @@ namespace dn_client
           using(WebClient webClient = new WebClient()) {
             webClient.DownloadFile(i.http_path, fp);
           }
-          xml_att idoc = xml_att.open(); idoc.set_file(i, DateTime.Now); idoc.save();
+          xml_att idoc = xml_att.open(); idoc.set_file(i, DateTime.Now, user_id, user_name); idoc.save();
           lbl_message(log.log_info($"downloaded file {i.http_path}"));
         } catch(Exception ex) {
           log.log_err(ex);
@@ -183,7 +183,7 @@ namespace dn_client
 
           // add file
           if(!idoc.exists_file(id_file, out xml_node n)) {
-            n = idoc.add_file(fi.load_fi(id_file), i.LastWriteTime);
+            n = idoc.add_file(fi.load_fi(id_file), i.LastWriteTime, n.get_int("user_id"), n.get_val("user_name"));
             savei = true;
             continue;
           }
@@ -224,7 +224,8 @@ namespace dn_client
       try {
         lbl_message(log.log_info($"upload file {n.get_attr("http_path")}"));
         System.Text.Encoding e = encoding_type.GetType(path);
-        var file = new { action = "save_file", id = id_file, bin_data = e.GetString(File.ReadAllBytes(path)), enc = e.HeaderName };
+        var file = new { action = "save_file", id = id_file, bin_data = e.GetString(File.ReadAllBytes(path)), enc = e.HeaderName
+          , user_id = n.get_int("user_id"), user_name = n.get_val("user_name") };
         json_request.post(_c.base_url + _c.config.get_var("client.io-page").value, file);
         lbl_message(log.log_info($"uploaded file {n.get_attr("http_path")}!"), 2);
       } catch(Exception ex) {
@@ -286,7 +287,7 @@ namespace dn_client
   {
     protected frm_main _form = null;
     public client_external(frm_main form) { _form = form; }
-    public void open_att(int file_id) { _form.open_att(file_id); }
+    public void open_att(int file_id, int user_id, string user_name) { _form.open_att(file_id, user_id, user_name); }
   }
 }
 

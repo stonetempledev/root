@@ -127,15 +127,17 @@ public partial class _notes : tl_page
           // cut_element
           else if(jr.action == "cut_element") {
             int f_id = jr.val_int("element_id"), sf_id = jr.val_int("synch_folder_id");
-            string tp = jr.val_str("tp_element");
+            string tp = jr.val_str("tp_element"); bool? added = null;
             if(tp == "folder" || tp == "synch-folder") {
               if(sf_id > 0) {
                 foreach(int id in ob.ids_childs_folders(sf_id)) {
-                  add_element_cut(id, element_cut.element_cut_type.folder, jr.val_bool("copy")); res.list.Add(id.ToString());
+                  added = set_element_cut(id, element_cut.element_cut_type.folder, jr.val_bool("copy")); res.list.Add(id.ToString());
                 }
-              } else { add_element_cut(f_id, element_cut.element_cut_type.folder, jr.val_bool("copy")); res.list.Add(f_id.ToString()); }
-            } else if(tp == "task") add_element_cut(f_id, element_cut.element_cut_type.task, jr.val_bool("copy"));
-            else if(tp == "att") add_element_cut(f_id, element_cut.element_cut_type.attachment, jr.val_bool("copy"));
+              } else { added = set_element_cut(f_id, element_cut.element_cut_type.folder, jr.val_bool("copy")); res.list.Add(f_id.ToString()); }
+            } else if(tp == "task") added = set_element_cut(f_id, element_cut.element_cut_type.task, jr.val_bool("copy"));
+            else if(tp == "att") added = set_element_cut(f_id, element_cut.element_cut_type.attachment, jr.val_bool("copy"));
+
+            res.set_var("added", added.HasValue ? (added.Value ? "true" : "false") : "none");
           }
           // paste_elements
           else if(jr.action == "paste_elements") {
@@ -154,8 +156,8 @@ public partial class _notes : tl_page
                     if(ec.tp == element_cut.element_cut_type.attachment) {
                       paste = true;
                       if(!ec.copy) ob.move_file(ec.id, db_provider.int_val(dr["folder_id"]), db_provider.int_val(dr["synch_folder_id"]), path_task);
-                      else { ob.copy_file(ec.id, db_provider.int_val(dr["folder_id"]), db_provider.int_val(dr["synch_folder_id"]), path_task); ecs.Add(ec); }
-                      }
+                      else ob.copy_file(ec.id, db_provider.int_val(dr["folder_id"]), db_provider.int_val(dr["synch_folder_id"]), path_task);
+                    }
                   } catch(Exception ex) {
                     ecs.Add(ec);
                     if(err == "") err = ex.Message;
@@ -192,7 +194,8 @@ public partial class _notes : tl_page
               html_allegati += !_is_client ? core.parse_html_block("task-allegato", new string[,] { { "file-id", db_provider.str_val(dr["file_id"]) }
                   , { "http-path", db_provider.str_val(dr["http_path"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, {"cut", cut ? "true" : "false"} })
                 : core.parse_html_block("task-allegato-client", new string[,] {
-                  { "file-id", db_provider.str_val(dr["file_id"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, {"cut", cut ? "true" : "false"}});
+                  { "file-id", db_provider.str_val(dr["file_id"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, {"cut", cut ? "true" : "false"}
+                  , { "user-id", ob.user_id.ToString() }, { "user-name", ob.user_name } });
             }
             res.html_element = html_allegati != "" ? core.parse_html_block("task-allegati", new string[,] { { "html-allegati", html_allegati } }) : "";
           }

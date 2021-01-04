@@ -251,9 +251,14 @@ public class tl_page : System.Web.UI.Page {
 
   protected element_cut find_element_cut(int id, element_cut.element_cut_type tp) { return elements_cut.FirstOrDefault(x => x.tp == tp && x.id == id); }
 
-  protected void add_element_cut(int id, element_cut.element_cut_type tp, bool copy = false) {
+  protected void remove_element_cut(int id, element_cut.element_cut_type tp) { elements_cut.Remove(find_element_cut(id, tp)); }
+
+  protected bool? set_element_cut(int id, element_cut.element_cut_type tp, bool copy = false) {
     element_cut ec = find_element_cut(id, tp);
-    if(ec == null) elements_cut.Add(new element_cut(id, tp, copy)); else ec.copy = copy;
+    if(ec == null) { elements_cut.Add(new element_cut(id, tp, copy)); return true; }
+    if(ec.copy != copy) { ec.copy = copy; return null; }
+    remove_element_cut(id, tp);
+    return false;
   }
 
   #endregion

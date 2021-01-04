@@ -167,7 +167,7 @@
       <cond name="not-cut">badge-light</cond>
     </html-block>
     <html-block name="task-allegato-client">
-      <![CDATA[<h5 tp='att-{@field='file-id'}' class='d-inline' style='opacity: 0.7;' title="scarica allegato..."><a tp='att-name-{@field='file-id'}' href="javascript:open_att({@field='file-id'})" class='badge badge-pill {@cond_bool='cut','cut','not-cut'}'>{@field='file-name'}</a></h5>
+      <![CDATA[<h5 tp='att-{@field='file-id'}' class='d-inline' style='opacity: 0.7;' title="scarica allegato..."><a tp='att-name-{@field='file-id'}' href="javascript:open_att({@field='file-id'}, {@field='user-id'}, '{@field='user-name'}')" class='badge badge-pill {@cond_bool='cut','cut','not-cut'}'>{@field='file-name'}</a></h5>
       {@html-block='menu-allegato'}]]>
       <cond name="cut">badge-warning</cond>
       <cond name="not-cut">badge-light</cond>
@@ -255,40 +255,41 @@
        where t.task_id = {@field='task_id'}]]>
     </query>
     <query name="set-folder-new-parent">
-      <![CDATA[update df set df.synch_folder_id = {@field='synch_folder_id'}, df.dt_upd = getdate()
+      <![CDATA[update df set df.synch_folder_id = {@field='synch_folder_id'}, df.dt_upd = convert(datetime, convert(varchar, getdate(), 120), 120)
        from dn_tasks df
        where df.synch_folder_id <> {@field='synch_folder_id'} 
         and df.folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
 
-      update df set df.synch_folder_id = {@field='synch_folder_id'}, df.dt_upd = getdate()
+      update df set df.synch_folder_id = {@field='synch_folder_id'}, df.dt_upd = convert(datetime, convert(varchar, getdate(), 120), 120)
        from dn_tasks df
        join dn_files f on f.file_id = df.file_id
        where df.synch_folder_id <> {@field='synch_folder_id'} 
         and f.folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
       
-      update df set df.synch_folder_id = {@field='synch_folder_id'}, df.dt_upd = getdate()
+      update df set df.synch_folder_id = {@field='synch_folder_id'}, df.dt_upd = convert(datetime, convert(varchar, getdate(), 120), 120)
        from dn_files df
        where df.synch_folder_id <> {@field='synch_folder_id'} 
         and folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder');
        
-      update dn_folders set synch_folder_id = {@field='synch_folder_id'}, dt_upd = getdate()
+      update dn_folders set synch_folder_id = {@field='synch_folder_id'}, dt_upd = convert(datetime, convert(varchar, getdate(), 120), 120)
        where synch_folder_id <> {@field='synch_folder_id'} 
         and folder_id in (select folder_id from dbo.fnc_dn_folders ({@field='folder_id'}, null) where tp = 'folder' and lvl > 1);
          
-      update dn_folders set synch_folder_id = {@field='synch_folder_id'}, parent_id = {@field='parent_id'}, dt_upd = getdate()
+      update dn_folders set synch_folder_id = {@field='synch_folder_id'}, parent_id = {@field='parent_id'}, dt_upd = convert(datetime, convert(varchar, getdate(), 120), 120)
         where folder_id = {@field='folder_id'};]]>
     </query>
     <query name="set-file-new-parent">
-      <![CDATA[update df set df.synch_folder_id = {@field='synch_folder_id'}, df.folder_id = {@field='parent_id'}, dt_upd = getdate()
+      <![CDATA[update df set df.synch_folder_id = {@field='synch_folder_id'}, df.folder_id = {@field='parent_id'}, dt_upd = convert(datetime, convert(varchar, getdate(), 120), 120)
        from dn_files df where df.file_id = {@field='file_id'};
        
-       update dn_tasks set synch_folder_id = {@field='synch_folder_id'}, dt_upd = getdate()
+       update dn_tasks set synch_folder_id = {@field='synch_folder_id'}, dt_upd = convert(datetime, convert(varchar, getdate(), 120), 120)
        where file_id = {@field='file_id'} and synch_folder_id <> {@field='synch_folder_id'};
        ]]>
     </query>
     <query name="add-folder">
-      <![CDATA[insert into dn_folders (synch_folder_id, parent_id, folder_name, readed)
- values ({@field='synch_folder_id'}, {@field='parent_id'}, left({@txtqry='folder_name'}, 150), 1)]]>
+      <![CDATA[insert into dn_folders (synch_folder_id, parent_id, folder_name, readed, dt_ins, dt_upd)
+ values ({@field='synch_folder_id'}, {@field='parent_id'}, left({@txtqry='folder_name'}, 150), 1
+  , convert(datetime, convert(varchar, getdate(), 120), 120), convert(datetime, convert(varchar, getdate(), 120), 120))]]>
     </query>
     <query name="ren-folder">
       <![CDATA[update dn_folders set folder_name = left({@txtqry='folder_name'}, 150)
@@ -303,9 +304,18 @@
         where file_id = {@field='file_id'}]]>
     </query>
     <query name="copy-file">
-      <![CDATA[insert into dn_files (synch_folder_id, folder_id, file_name, dt_ins , readed, dt_upd, extension)
- select {@field='synch_folder_id'} as synch_folder_id, {@field='folder_id'} as folder_id, {@txtqry='file_name'} as file_name, getdate() as dt_ins, readed, getdate() as dt_upd, extension
- from dn_files where file_id = {@field='file_id'}]]>
+      <![CDATA[declare @id int;
+      insert into dn_files (synch_folder_id, folder_id, file_name, dt_ins , readed, dt_upd, extension)
+   select {@field='synch_folder_id'} as synch_folder_id, {@field='folder_id'} as folder_id, {@txtqry='file_name'} as file_name
+    , convert(datetime, convert(varchar, getdate(), 120), 120) as dt_ins, readed, convert(datetime, convert(varchar, getdate(), 120), 120) as dt_upd, extension
+   from dn_files where file_id = {@field='file_id'};
+ 
+   select @id = @@IDENTITY;  
+ 
+   insert into dn_files_contents (file_id, extension, content, dt_ins, dt_upd)
+   select @id as file_id, extension, content, convert(datetime, convert(varchar, getdate(), 120), 120) as dt_ins 
+    , convert(datetime, convert(varchar, getdate(), 120), 120) as dt_upd
+    from dn_files_contents where file_id = {@field='file_id'};]]>
     </query>
     <query name="ren-synch-folder">
       <![CDATA[update synch_folders set title = left({@txtqry='title'}, 50)
@@ -328,7 +338,7 @@
  delete dn from dn_tasks dn
   where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
   
- delete dn from dn_tasks_contents dn
+ delete dn from dn_files_contents dn
   where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
   
  delete dn from dn_tasks_notes dn
@@ -345,7 +355,7 @@
  delete dn from dn_tasks dn
   where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
   
- delete dn from dn_tasks_contents dn
+ delete dn from dn_files_contents dn
   where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
   
  delete dn from dn_tasks_notes dn

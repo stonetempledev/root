@@ -25,5 +25,10 @@ namespace dn_lib.tools
         return def;
       } catch { return def; }
     }
+
+    public static DateTime without_ms(DateTime from)
+    {
+      return new DateTime(from.Year, from.Month, from.Day, from.Hour, from.Minute, from.Second);
+    }
   }
 }

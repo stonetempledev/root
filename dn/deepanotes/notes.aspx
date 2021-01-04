@@ -152,6 +152,7 @@
 
         function cut_element(id, tp_id, copy) {
             try {
+                tp_id = tp_id ? tp_id : "folder";
                 window.setTimeout(function () {
                     try {
                         var res = post_action({
@@ -161,14 +162,20 @@
                         });
 
                         if (res) {
+                            var added = res.vars.added == "true";
                             if (tp_id == "folder" || tp_id == "synch_folder_id") {
                                 $.each(res.list, function (index, value) {
-                                    $("li[tp-item='folder'][item-id=" + value + "]").addClass("voce-cut");
+                                    if (added) $("li[tp-item='folder'][item-id=" + value + "]").addClass("voce-cut");
+                                    else $("li[tp-item='folder'][item-id=" + value + "]").removeClass("voce-cut");
                                 });
-                            } else if (tp_id == "task")
-                                $("[task-id=" + id + "]").addClass("task-cut");
-                            else if (tp_id == "att")
-                                $("[tp=att-name-" + id + "]").removeClass("badge-light").addClass("badge-warning");
+                            } else if (tp_id == "task") {
+                                if (added) $("[task-id=" + id + "]").addClass("task-cut");
+                                else $("[task-id=" + id + "]").removeClass("task-cut");
+                            }
+                            else if (tp_id == "att") {
+                                if (added) $("[tp=att-name-" + id + "]").removeClass("badge-light").addClass("badge-warning");
+                                else $("[tp=att-name-" + id + "]").addClass("badge-light").removeClass("badge-warning");
+                            }
                         }
                     } catch (e) { show_danger("Attenzione!", e.message); }
                 }, 500);
@@ -245,7 +252,7 @@
                         { id: "title", icon: "heading", label: "Titolo", valore: "" }]
                     , on_ok: function () {
                         if (!val_dyn("title")) return;
-                        window.setTimeout(function () {
+                        window.setTimeout(function () {                            
                             try {
                                 var res = post_action({
                                     "action": "add_folder", "folder_id": id && tp_id == "folder" ? id : get_param("id")
@@ -361,8 +368,8 @@
 
         }
 
-        function open_att(file_id) {
-            try { window.external.open_att(file_id); } catch (e) { show_danger("Attenzione!", e.message); }
+        function open_att(file_id, user_id, user_name) {
+            try { window.external.open_att(file_id, user_id, user_name); } catch (e) { show_danger("Attenzione!", e.message); }
         }
 
         function del_att(file_id) {

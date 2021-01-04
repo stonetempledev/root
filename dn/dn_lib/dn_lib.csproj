@@ -53,6 +53,8 @@
   <ItemGroup>
     <Compile Include="bo.cs" />
     <Compile Include="core.cs" />
+    <Compile Include="notes\file_info.cs" />
+    <Compile Include="notes\file_type.cs" />
     <Compile Include="notes\task_tipo.cs" />
     <Compile Include="notes\task_stima.cs" />
     <Compile Include="notes\task_priorita.cs" />
@@ -64,6 +66,7 @@
     <Compile Include="synch\synch.cs" />
     <Compile Include="synch\synch_folder.cs" />
     <Compile Include="synch\synch_machine.cs" />
+    <Compile Include="synch\synch_result.cs" />
     <Compile Include="synch\synch_setting.cs" />
     <Compile Include="notes\task.cs" />
     <Compile Include="tools\blocks.cs" />

@@ -8,6 +8,7 @@ using dn_lib.db;
 using dn_lib.tools;
 
 namespace dn_lib {
+
   // business object
   public class bo {
     public db_provider db_conn { get; protected set; }

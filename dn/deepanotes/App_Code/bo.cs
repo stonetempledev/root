@@ -31,7 +31,5 @@ namespace deepanotes {
       return val;
     }
 
-    public static synch create_synch() { bo b = new bo(); return new synch(b.db_conn, b.core, b.config, b.user_id, b.user_name); }
-
   }
 }

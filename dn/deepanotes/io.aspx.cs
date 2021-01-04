@@ -52,8 +52,12 @@ public partial class _io : tl_page
 
           // save_file
           if(jr.action == "save_file") {
-            byte[] bytes = jr.val_bytes("bin_data", System.Text.Encoding.GetEncoding(jr.val_str("enc")));
-            File.WriteAllBytes(ob.file_path(jr.val_int("id")), bytes);
+            synch s = ob.get_synch(jr.val_int("user_id"), jr.val_str("user_name"));
+            Encoding enc = System.Text.Encoding.GetEncoding(jr.val_str("enc"));
+            byte[] bytes = jr.val_bytes("bin_data", enc);
+            string path = ob.file_path(jr.val_int("id"));
+            File.WriteAllBytes(path, bytes);
+            s.set_file_content(jr.val_int("id"), Path.GetExtension(path).ToLower(), enc.GetString(bytes), DateTime.Now, DateTime.Now);
           }
 
         } catch(Exception ex) { log.log_err(ex); res = new json_result(json_result.type_result.error, ex.Message); }

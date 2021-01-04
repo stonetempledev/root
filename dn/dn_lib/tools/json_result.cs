@@ -22,7 +22,7 @@ namespace dn_lib.tools
     public string url_name { get; set; }
     public Dictionary<string, string> vars { get; set; }
     public List<string> list { get; set; }
-    public void add_var(string name, string val) { this.vars.Add(name, val); }
+    public void set_var(string name, string val) { this.vars.Add(name, val); }
 
     public json_result(type_result tr, string message = "", string contents = "")
     {

@@ -21,6 +21,7 @@ namespace dn_lib {
     public task_stima stima { get; set; }
     public bool has_notes { get; set; }
     public bool has_files { get; set; }
+    public int level_folder { get; set; }
 
     public task(int synch_folder_id, long id, long? file_id, long? folder_id, string title, string user
       , DateTime? dt_ref, DateTime? dt_ins, DateTime? dt_upd, task_stato stato, task_priorita priorita
@@ -41,7 +42,7 @@ namespace dn_lib {
       this.stima = new task_stima(stima, 0, "", "", "");
     }
 
-    static public task parse_task(int synch_folder_id, string path, DateTime dt_ins, DateTime dt_upd
+    static public task parse_task(int synch_folder_id, string path, DateTime ct, DateTime lwt
       , List<string> users, List<free_label> labels, long? folder_id = null, long? file_id = null) {
       try {
         if (!folder_id.HasValue && !file_id.HasValue) throw new Exception("il task dev'essere un file o un folder");
@@ -92,7 +93,7 @@ namespace dn_lib {
         }
 
         return new task(synch_folder_id, file_id, folder_id, title, user, stato, priorita, tipo, stima
-          , dt.HasValue ? dt : dt_ins, dt2.HasValue ? dt2 : dt_upd);
+          , dt.HasValue ? dt : ct, dt2.HasValue ? dt2 : lwt);
       } catch { return null; }
     }
 

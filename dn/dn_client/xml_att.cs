@@ -40,11 +40,12 @@ namespace dn_client
 
     public void del_file(int id) { node($"/root/file[@id={id}]").remove(); }
 
-    public xml_node set_file(fi i, DateTime lwt) { del_file(i.id_file); return add_file(i, lwt); }
+    public xml_node set_file(fi i, DateTime lwt, int user_id, string user_name) { del_file(i.id_file); return add_file(i, lwt, user_id, user_name); }
 
-    public xml_node add_file(fi i, DateTime lwt)
+    public xml_node add_file(fi i, DateTime lwt, int user_id, string user_name)
     {
       return root_node.add_node("file", new Dictionary<string, string>() { { "id", i.id_file.ToString() }
+        , { "user_id", user_id.ToString() }, { "user_name", user_name }
         , { "name", i.file_name }, { "name_local", i.file_name_local }, { "http_path", i.http_path }
         , { "lwt", lwt.ToString("yyyy-MM-dd HH:mm:ss") } });
     }

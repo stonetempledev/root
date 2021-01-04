@@ -37,7 +37,7 @@ public partial class _synch : tl_page {
 
     try {
 
-      synch ob = deepanotes.bo.create_synch();
+      synch ob = deepanotes.notes.create_synch();
       html_blocks hb = new html_blocks();
 
       if (json_request.there_request(this)) {
