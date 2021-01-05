@@ -42,6 +42,37 @@ public partial class _notes : tl_page
 
       notes ob = new notes();
 
+      // upload file
+      if(json_request.there_file(this)) {
+        json_result res = new json_result(json_result.type_result.ok);
+
+        try {
+
+          if(Request.Files.Count > 0) {
+
+            HttpFileCollection files = Request.Files;
+            foreach(string key in files) {
+              HttpPostedFile file = files[key];
+              string tp_file = key.Split(new char[] { '_' })[0];
+              if(tp_file == "task-file") {
+                int task_id = int.Parse(key.Split(new char[] { '_' })[2]);
+                byte[] content;
+                using(var streamReader = new MemoryStream()) {
+                  file.InputStream.CopyTo(streamReader);
+                  content = streamReader.ToArray();
+                }
+                add_att(ob, task_id, file.FileName, content);
+              } else throw new Exception("tipo file upload '" + tp_file + "' non supportato!");
+            }
+          } else throw new Exception("nessun file da caricare!");
+
+        } catch(Exception ex) { log.log_err(ex); res = new json_result(json_result.type_result.error, ex.Message); }
+
+        write_response(res);
+
+        return;
+      }
+
       // js request
       if(json_request.there_request(this)) {
         json_result res = new json_result(json_result.type_result.ok);
@@ -50,8 +81,12 @@ public partial class _notes : tl_page
 
           json_request jr = new json_request(this);
 
+          // add_att
+          if(jr.action == "add_att") {
+            add_att(ob, jr.val_int("task_id"), jr.val_str("name"));
+          }
           // task_state
-          if(jr.action == "task_state") {
+          else if(jr.action == "task_state") {
             List<free_label> fl = ob.load_free_labels();
 
             string folder_path;
@@ -129,7 +164,7 @@ public partial class _notes : tl_page
             int f_id = jr.val_int("element_id"), sf_id = jr.val_int("synch_folder_id");
             string tp = jr.val_str("tp_element"); bool? added = null;
             if(tp == "folder" || tp == "synch-folder") {
-              if(sf_id > 0) {
+              if(sf_id > 0 && tp == "synch-folder") {
                 foreach(int id in ob.ids_childs_folders(sf_id)) {
                   added = set_element_cut(id, element_cut.element_cut_type.folder, jr.val_bool("copy")); res.list.Add(id.ToString());
                 }
@@ -212,9 +247,16 @@ public partial class _notes : tl_page
       }
 
       // tasks
-      if(_cmd != null && _cmd.action == "view" && _cmd.obj == "tasks") {
+      if(_cmd != null && ((_cmd.action == "view" && _cmd.obj == "tasks")
+        || (_cmd.action == "search" && _cmd.obj == "task"))) {
+
         int? fi = qry_val("idt") != "" ? qry_int("idt") : (qry_val("id") != "" ? qry_int("id") : (int?)null)
           , sfi = qry_val("sft") != "" ? qry_int("sft") : (qry_val("sf") != "" ? qry_int("sf") : (int?)null);
+        string search = _cmd.action == "search" ? _cmd.sub_obj() : "";
+
+        // ricerca testo
+        // search-notes
+        // string sid = this.Session.SessionID;
 
         // filtro attivo
         List<task_filter> tfs = db_conn.dt_table(core.parse_query("filters-tasks")).Rows
@@ -224,7 +266,8 @@ public partial class _notes : tl_page
         task_filter tf = tfs.FirstOrDefault(x => x.id == int.Parse(get_cache_var("active-task-filter", "1")));
         if(tf == null) tf = new task_filter(0, "elenco completo delle attività", "", "", "");
 
-        ob.load_notes(fi, sfi, tf);
+        ob.load_objets(fi, sfi, tf);
+
         menu.InnerHtml = parse_menu(ob.synch_folders, sfi.HasValue || fi.HasValue);
         folder_id.Value = qry_val("id");
 
@@ -247,6 +290,29 @@ public partial class _notes : tl_page
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
     } catch(Exception ex) { log.log_err(ex); if(!json_request.there_request(this)) master.err_txt(ex.Message); }
+  }
+
+  protected void add_att(notes ob, int task_id, string file_name, byte[] content = null)
+  {
+    synch s = ob.get_synch();
+
+    // salvo il file
+    DataRow dr = ob.get_task_info(task_id);
+    if(db_provider.int_val(dr["file_id"]) > 0) throw new Exception("il task non può contenere allegati!");
+
+    string folder = Path.Combine(db_provider.str_val(dr["synch_local_path"]), db_provider.str_val(dr["folder_path"]).Substring(1))
+      , file_path = Path.Combine(folder, file_name);
+    if(content != null) File.WriteAllBytes(file_path, content); else File.WriteAllText(file_path, "");
+
+    // aggiorno il db
+    string tp; int cc; DateTime? clwt;
+    long nid = s.ins_file(db_provider.int_val(dr["synch_folder_id"]), db_provider.int_val(dr["folder_id"]), file_name, Path.GetExtension(file_name)
+      , DateTime.Now, DateTime.Now, out tp, out cc, out clwt);
+    if(s.is_type_file(Path.GetExtension(file_name)) != null) 
+      s.set_file_content((int)nid, Path.GetExtension(file_name).ToLower()
+        , content != null ? System.Text.Encoding.UTF8.GetString(content) : "", DateTime.Now, DateTime.Now);    
+    if(s.is_info_file(file_name) != null && db_provider.int_val(dr["file_notes_id"]) <= 0) 
+      ob.init_task_notes(task_id, (int)nid, content != null ? System.Text.Encoding.UTF8.GetString(content) : "");    
   }
 
   protected bool nome_valido(string nome) { return (new Regex("^[a-zA-Z0-9 ,ìèéùàò_]*$")).IsMatch(nome); }

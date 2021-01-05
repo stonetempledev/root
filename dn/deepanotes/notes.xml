@@ -105,7 +105,8 @@
         <hr/><h5>{@field='stack'}</h5></div></div>]]>
     </html-block>
     <html-block name="task">
-      <![CDATA[<div task-id='{@field='task_id'}' class='mb-3 {@field='classes'}' task-assegna="{@field='val-assegna'}" task-priorita='{@field='val-priorita'}' task-stima='{@field='val-stima'}' task-tipo='{@field='val-tipo'}'>        
+      <![CDATA[<div task-id='{@field='task_id'}' class='mb-3 {@field='classes'}' task-assegna="{@field='val-assegna'}" task-priorita='{@field='val-priorita'}' task-stima='{@field='val-stima'}' task-tipo='{@field='val-tipo'}'
+            ondragover="drag_task_event(event, {@field='task_id'}, 'over')" ondragleave="drag_task_event(event, {@field='task_id'}, 'leave')">        
         <!-- title + stato attività -->
         <div class='badge badge-{@field='cls'} d-block text-left text-wrap'>
           <div><span class='h4' tp-val='title' contenteditable='true' onfocus='title_task_focus(this)' onblur='title_task_blur(this)'>{@field='title'}</span>
@@ -121,7 +122,8 @@
                   <i class="fas fa-trash-alt text-danger"></i> elimina attività</span></div>
                 <div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick="cut_element({@field='task_id'}, 'task')">
                   <i class="fas fa-cut text-warning"></i> taglia attività</span></div>
-                {@cond_bool='can-paste','paste-voice','no-paste-voice'}
+                {@cond_bool='can-paste','paste-voice','no-voice'}
+                {@cond_bool='can-paste','add-att','no-voice'}
               </div>
             </div>
 
@@ -154,11 +156,17 @@
            <hr class='m-1'/><h5>{@field='assegnata'}<small class='float-right'>{@field='data'}</small></h5></div></div>]]>
       <cond name="paste-voice">
         <![CDATA[<div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'><span onclick="paste_elements({@field='task_id'}, 'task')">
-              <i class="fas fa-paste text-success"></i> incolla</span></div>]]></cond>
-      <cond name="no-paste-voice"><![CDATA[]]></cond>
+              <i class="fas fa-paste text-success"></i> incolla</span></div>]]>
+      </cond>
+      <cond name="add-att">
+        <![CDATA[<div class="dropdown-item mb-2 mt-2" style='cursor:pointer;'>
+        <span onclick="add_att({@field='task_id'})"><i class="far fa-file-alt text-primary"></i> aggiungi allegato</span>
+      </div>]]>
+      </cond>
+      <cond name="no-voice"><![CDATA[]]></cond>
     </html-block>
     <html-block name="task-allegati">
-      <![CDATA[<span class='text-dark font-weight-light mb-2' style='display:block;'>allegati</span>{@field='html-allegati'}]]>
+      <![CDATA[<div class='text-dark font-weight-light mb-2' style='display:block;'>allegati</div>{@field='html-allegati'}]]>
     </html-block>
     <html-block name="task-allegato">
       <![CDATA[<h5 tp='att-{@field='file-id'}' class='d-inline' style='opacity: 0.7;' title="scarica allegato..."><a tp='att-name-{@field='file-id'}' href="{@field='http-path'}" target='blank' class='badge badge-pill {@cond_bool='cut','cut','not-cut'}'>{@field='file-name'}</a></h5>
@@ -322,27 +330,27 @@
         where synch_folder_id = {@field='synch_folder_id'}]]>
     </query>
     <query name="del-folder">
-      <![CDATA[delete f from dn_files f
- join (select ft.*
-	 from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft
-	 where ft.lvl > 0) ff on ff.folder_id = f.folder_id and ff.synch_folder_id = f.synch_folder_id;
-
- delete f from dn_folders f
+      <![CDATA[delete f from dn_folders f
   join (select ft.*
 	 from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft
 	 where ft.lvl > 0) ff on ff.folder_id = f.folder_id and ff.synch_folder_id = f.synch_folder_id;
    
+ delete dn from dn_files f
+  where file_id is not null and not exists (select top 1 1 from dn_folders where folder_id = f.file_id);
+  
+ delete dn from dn_files_contents dn
+  where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
+  
  delete dn from dn_tasks dn
   where folder_id is not null and not exists (select top 1 1 from dn_folders where folder_id = dn.folder_id);
 
  delete dn from dn_tasks dn
   where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
   
- delete dn from dn_files_contents dn
-  where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
-  
  delete dn from dn_tasks_notes dn
-  where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);]]>
+  where not exists (select top 1 1 from dn_tasks where task_id = dn.task_id);
+  
+ ]]>
     </query>
     <query name="clean-synch">
       <![CDATA[delete from dn_files where synch_folder_id = {@field='synch_folder_id'};
@@ -360,6 +368,58 @@
   
  delete dn from dn_tasks_notes dn
   where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);]]>
+    </query>
+    <query name="search-notes">
+      <![CDATA[declare @txt varchar(max); set @txt = {@txtqry='text'};
+declare @sid varchar(100); set @sid = {@txtqry='session_id'};
+declare @id int; 
+
+if not exists (select top 1 1 from dn_search_text where session_id = @sid and search_text = @txt)
+begin
+
+ if not exists (select top 1 1 from dn_search_text where session_id = @sid)
+ begin
+  insert into dn_search_text (session_id, search_text)
+   values (@sid, @txt);
+   select @id = @@IDENTITY;  
+ end
+ else
+ begin
+  select @id = search_id from dn_search_text where session_id = @sid;
+  update dn_search_text set search_text = @txt, dt_ins = getdate() where search_id = @id;
+  delete from dn_search_tasks where search_id = @id; 
+  delete from dn_search_folders where search_id = @id;
+ end
+
+ insert into dn_search_tasks (search_id, synch_folder_id, task_id, folder_id)
+  select distinct @id as search_id, t2.synch_folder_id, t2.task_id, t2.folder_id
+   from (select t.task_id, t.synch_folder_id, t.folder_id 
+	 from dn_tasks t where t.title like '%' + @txt + '%'
+	union select t.task_id, t.synch_folder_id, t.folder_id 
+	 from dn_tasks_notes n
+	 join dn_tasks t on t.task_id = n.task_id
+	 where n.content like '%' + @txt + '%'
+	union select t.task_id, t.synch_folder_id, t.folder_id 
+	 from dn_files f
+	 join dn_tasks t on t.folder_id = f.folder_id or t.file_id = f.file_id
+	 where f.file_name like '%' + @txt + '%'
+	union select t.task_id, t.synch_folder_id, t.folder_id 
+	 from dn_files_contents fc 
+	 join dn_files f on f.file_id = fc.file_id
+	 join dn_tasks t on t.folder_id = f.folder_id or t.file_id = f.file_id
+	 where fc.content like '%' + @txt + '%') t2
+
+ insert into dn_search_folders (search_id, synch_folder_id, folder_id)
+  select @id as search_id, sf.synch_folder_id, null as folder_id
+   from synch_folders sf
+   join (select distinct synch_folder_id from dn_search_tasks) t on t.synch_folder_id = sf.synch_folder_id
+  union select @id as search_id, fp.synch_folder_id, fp.folder_id
+   from (select distinct folder_id from dn_search_tasks) t
+  cross apply [dbo].[folder_parents](t.folder_id) fp; 
+
+end
+
+]]>
     </query>
   </queries>
 </config>

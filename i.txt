@@ -4,13 +4,14 @@ github.hub
 
 IN CORSO
  . dn: ottimizzazione attività
-  . gestione allegati!  
-   / aggiungi
-    . drag e drop
-    . nome file manuale
-  . ricerca elementi e filtri  
+  / ricerca elementi e filtri  
   ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
+  . anteprima immagini 
   . tira fuori la synch che la chiami anche dalle pagine come admin se ce n'è la necessità
+  . gestione della tabella dn_files_types
+  . percentuale realizzazione di un task!
+  . la storia del task iniziato . ultimo aggiornamento
+  . invio notifiche mail
 
 TODO
  dn
@@ -18,8 +19,3 @@ TODO
   ! passwords, accounts, info tecniche
   ! procedure, scripts, pannelli di controllo
 
-IDEE
- dn
-  . invio notifiche mail
-  . percentuale realizzazione di un task!
-  . la storia del task iniziato . ultimo aggiornamento

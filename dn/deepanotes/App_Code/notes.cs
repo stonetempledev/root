@@ -37,7 +37,7 @@ namespace deepanotes
       return this.synch_folders.FirstOrDefault(x => x.id == synch_folder_id);
     }
 
-    public void load_notes(int? folder_id = null, int? synch_folder_id = null, task_filter tf = null)
+    public void load_objets(int? folder_id = null, int? synch_folder_id = null, task_filter tf = null)
     {
 
       // folders structure
@@ -46,7 +46,7 @@ namespace deepanotes
       // tasks
       this.tasks = load_tasks(folder_id: folder_id, synch_folder_id: synch_folder_id, tf: tf);
 
-      // task -> synch_folders
+      // task -> folder, file
       foreach(task t in this.tasks) {
         if(t.folder_id.HasValue && !t.file_id.HasValue)
           this.synch_folders.First(x => x.id == t.synch_folder_id).get_folder(t.folder_id.Value).task = t;
@@ -184,8 +184,7 @@ namespace deepanotes
       if(db_provider.int_val(r["file_id"]) > 0)
         db_conn.exec(core.parse_query("lib-notes.del-file", new string[,] { { "file_id", r["file_id"].ToString() } }));
       else
-        db_conn.exec(core.parse_query("lib-notes.del-folder", new string[,] { { "folder_id", r["folder_id"].ToString() } }));
-      db_conn.exec(core.parse_query("lib-notes.del-task", new string[,] { { "task_id", task_id.ToString() } }));
+        db_conn.exec(core.parse_query("lib-notes.del-folder", new string[,] { { "folder_id", r["folder_id"].ToString() } }));      
     }
 
     public void remove_att(int file_id)
@@ -383,13 +382,13 @@ namespace deepanotes
             src = oc + " " + key_from + "\r\n" + notes + "\r\n" + key_to + cc + "\n\n" + all;
           File.WriteAllText(file_path, src, e);
           s.set_file_content(fid, Path.GetExtension(file_path).ToLower(), src, ct, ct);
-          init_task_notes(file_path, task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+          init_task_notes(task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
         }
         // file info
         else {
           File.WriteAllText(file_path, notes, e);
           s.set_file_content(fid, Path.GetExtension(file_path).ToLower(), notes.Trim(new char[] { ' ', '\n', '\r' }), ct, ct);
-          init_task_notes(file_path, task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+          init_task_notes(task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
         }
       } // nuovo commento
       else {
@@ -405,7 +404,7 @@ namespace deepanotes
             string src = oc + " " + key_from + "\r\n" + notes + "\r\n" + key_to + cc + "\n\n" + all;
             File.WriteAllText(file_path, src, e);
             s.set_file_content(fid, Path.GetExtension(file_path).ToLower(), src, ct, ct);
-            init_task_notes(file_path, task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+            init_task_notes(task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
           } else {
             // creo una cartella con questo nome di task e aggiungo le note
             string title = db_provider.str_val(dr["title"]), parent = Path.GetDirectoryName(file_path)
@@ -428,7 +427,7 @@ namespace deepanotes
             File.WriteAllText(Path.Combine(new_folder, "i.txt"), notes, System.Text.Encoding.UTF8);
             long nid = s.ins_file(sfid, folder_id, "i.txt", ".txt", ct, ct, out tp, out cc, out clwt);
             s.set_file_content((int)nid, ".txt", notes.Trim(new char[] { ' ', '\n', '\r' }), ct, ct);
-            init_task_notes(file_path, task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+            init_task_notes(task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
           }
         }
         // cartella
@@ -438,7 +437,7 @@ namespace deepanotes
           string tp; int cc; DateTime? clwt;
           long fid = s.ins_file(db_provider.int_val(dr["synch_folder_id"]), db_provider.int_val(dr["folder_id"]), "i.txt", ".txt", ct, ct, out tp, out cc, out clwt);
           s.set_file_content((int)fid, ".txt", notes.Trim(new char[] { ' ', '\n', '\r' }), ct, ct);
-          init_task_notes(fp, task_id, (int)fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+          init_task_notes(task_id, (int)fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
         }
       }
     }
@@ -448,7 +447,7 @@ namespace deepanotes
       db_conn.exec(core.parse_query("lib-notes.set-task-folder", new string[,] { { "task_id", task_id.ToString() }, { "folder_id", folder_id.ToString() } }));
     }
 
-    protected void init_task_notes(string path, int task_id, int file_id, string notes)
+    public void init_task_notes(int task_id, int file_id, string notes)
     {
       db_conn.exec(core.parse_query("lib-notes.init-notes", new string[,] { { "task_id", task_id.ToString() }, { "file_id", file_id.ToString() } })
         , pars: new System.Data.Common.DbParameter[] { new System.Data.SqlClient.SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes } });
@@ -636,8 +635,12 @@ namespace deepanotes
       if(folder_id > 0)
         Directory.Delete(folder_path, true);
       else {
-        foreach(string f in Directory.EnumerateFiles(folder_path))
+        foreach(string f in Directory.EnumerateFiles(folder_path)) {
+          if(Path.GetFileName(f).ToLower() == "web.config")            
+            continue;
+
           File.Delete(f);
+        }
         foreach(string d in Directory.EnumerateDirectories(folder_path))
           Directory.Delete(d, true);
       }

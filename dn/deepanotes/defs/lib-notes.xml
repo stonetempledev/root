@@ -142,12 +142,33 @@
     </query>
 
     <query name="del-folder">
-      <![CDATA[delete from dn_folders where folder_id = {@field='folder_id'}]]>
+      <![CDATA[delete from dn_folders where folder_id = {@field='folder_id'};
+      
+        delete dn from dn_files f
+          where file_id is not null and not exists (select top 1 1 from dn_folders where folder_id = f.file_id);
+          
+        delete dn from dn_files_contents dn
+          where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
+
+        delete dn from dn_tasks dn
+         where folder_id is not null and not exists (select top 1 1 from dn_folders where folder_id = dn.folder_id);
+
+        delete dn from dn_tasks dn
+         where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
+  
+        delete dn from dn_tasks_notes dn
+         where not exists (select top 1 1 from dn_tasks where task_id = dn.task_id);]]>
     </query>
 
     <query name="del-file">
       <![CDATA[delete from dn_files where file_id = {@field='file_id'};
-      delete from dn_files_contents where [file_id] = {@field='file_id'};]]>
+      delete from dn_files_contents where [file_id] = {@field='file_id'};
+      
+      delete dn from dn_tasks dn
+       where file_id is not null and not exists (select top 1 1 from dn_files where file_id = dn.file_id);
+  
+      delete dn from dn_tasks_notes dn
+       where not exists (select top 1 1 from dn_tasks where task_id = dn.task_id);]]>
     </query>
 
     <query name="task-ins-into-synch">
@@ -239,10 +260,6 @@
     
     <query name="set-task-title">
       <![CDATA[update dn_tasks set title = {@txtqry='title'} where task_id = {@field='task_id'}]]>
-    </query>
-
-    <query name="del-task">
-      <![CDATA[delete from dn_tasks where task_id = {@field='task_id'}]]>
     </query>
 
     <query name="task-paths">

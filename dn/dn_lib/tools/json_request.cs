@@ -55,6 +55,8 @@ namespace dn_lib.tools
 
     public static bool there_request(System.Web.UI.Page page) { return page.Request.Headers["dn-post"] != null; }
 
+    public static bool there_file(System.Web.UI.Page page) { return page.Request.Headers["dn-post-file"] != null; }
+
     public static json_result post(string url, object obj)
     {
       HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);

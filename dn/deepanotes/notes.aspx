@@ -50,7 +50,53 @@
                     $("#menu").scrollTop($("[tp-item='folder'][item-id='" + $("#folder_id").val() + "']").position().top + 100);
                 }, 300);
             }
+
+            // drag & drop attività
+            $("html").on("dragover", function (e) {
+                e.preventDefault(); e.stopPropagation();
+            });
+            $("html").on("drop", function (e) {
+                e.preventDefault(); e.stopPropagation();
+                try {
+                    if (_drag_task_id) {
+                        var fd = new FormData(), i = 0;
+                        (e.originalEvent.dataTransfer.files).forEach(function (file) {
+                            fd.append('task-file' + '_' + i + '_' + _drag_task_id, file); i++;
+                        });
+                        post_form_data(fd);
+                        open_notes(_drag_task_id, true, true);
+                    }
+                } catch (e) { show_danger("Attenzione!", e.message); }
+            });
         });
+
+        // drag & drop attività
+        var _drag_task_id = null;
+        function drag_task_event(e, task_id, event) {
+            try {
+                var t = $("[task-id=" + task_id + "]")
+                if (event == "over") { _drag_task_id = task_id; t.css("border-color", "Aquamarine").css("box-shadow", "3px 3px 3px Aquamarine"); e.preventDefault(); e.stopPropagation(); }
+                else if (event == "leave") { _drag_task_id = null; t.css("border-color", "").css("box-shadow", ""); }
+            } catch (e) { }
+        }
+
+        function add_att(task_id) {
+            try {
+                show_dyn_dlg({
+                    title: "Aggiungi allegato", rows: [
+                        { id: "name", icon: "file-alt", label: "Nome File" }]
+                    , on_ok: function () {
+                        if (!val_dyn("name")) return;
+                        window.setTimeout(function () {
+                            try {
+                                var res = post_action({ "action": "add_att", "task_id": task_id, "name": val_dyn("name") });
+                                if (res) { open_notes(task_id, true, true); hide_dyn_dlg(); }
+                            } catch (e) { show_danger("Attenzione!", e.message); }
+                        }, 500);
+                    }
+                });
+            } catch (e) { show_danger("Attenzione!", e.message); }
+        }
 
         function task_state(task_id, assign_stato) {
             try {
@@ -152,18 +198,18 @@
 
         function cut_element(id, tp_id, copy) {
             try {
-                tp_id = tp_id ? tp_id : "folder";
+                tp_id = tp_id ? tp_id : (get_param("sf") ? "synch-folder" : "folder");
                 window.setTimeout(function () {
                     try {
                         var res = post_action({
                             "action": "cut_element", "tp_element": tp_id, "copy": copy ? true : false
-                            , "element_id": id && tp_id == "folder" || tp_id == "task" || tp_id == "att" ? id : get_param("id")
+                            , "element_id": id && (tp_id == "folder" || tp_id == "task" || tp_id == "att") ? id : get_param("id")
                             , "synch_folder_id": id && tp_id == "synch-folder" ? id : get_param("sf")
                         });
 
                         if (res) {
                             var added = res.vars.added == "true";
-                            if (tp_id == "folder" || tp_id == "synch_folder_id") {
+                            if (tp_id == "folder" || tp_id == "synch-folder") {
                                 $.each(res.list, function (index, value) {
                                     if (added) $("li[tp-item='folder'][item-id=" + value + "]").addClass("voce-cut");
                                     else $("li[tp-item='folder'][item-id=" + value + "]").removeClass("voce-cut");
@@ -184,6 +230,7 @@
 
         function paste_elements(id, tp_id) {
             try {
+                tp_id = tp_id ? tp_id : "folder";
                 window.setTimeout(function () {
                     try {
                         var res = post_action({
@@ -198,8 +245,7 @@
                                     open_notes(id, true, true);
                                     $("[tp-item='section-notes'][state=opened]").each(function () {
                                         var id2 = $(this).closest("[task-id]").attr("task-id");
-                                        if(id2 != id)
-                                            open_notes($(this).attr("readed", "").closest("[task-id]").attr("task-id"));
+                                        if (id2 != id) open_notes(id2, true, true);
                                     });
                                 }
                                 else window.location.reload();
@@ -252,7 +298,7 @@
                         { id: "title", icon: "heading", label: "Titolo", valore: "" }]
                     , on_ok: function () {
                         if (!val_dyn("title")) return;
-                        window.setTimeout(function () {                            
+                        window.setTimeout(function () {
                             try {
                                 var res = post_action({
                                     "action": "add_folder", "folder_id": id && tp_id == "folder" ? id : get_param("id")
@@ -296,8 +342,8 @@
                                 var res = post_action({ "action": "get_details", "task_id": task_id });
                                 if (res) {
                                     ta.val(res.contents); sec.attr("readed", "1");
-                                    if(!opened) sec.show(350, "swing", function () { ta.focus(); }); sec.attr("state", "opened");
-                                    if (res.html_element) { ta.attr("allegati", "true"); tf.html(res.html_element); if(!opened) tf.show(350, "swing"); }
+                                    if (!opened) { sec.show(350, "swing", function () { sec.attr("state", "opened"); ta.focus(); }); tf.show(350, "swing"); }
+                                    if (res.html_element) tf.html(res.html_element); else tf.html("");
                                     t.css("border-color", "").css("box-shadow", "");
                                     btn.text("salva e nascondi le note...");
                                 }
@@ -309,9 +355,7 @@
                 else {
                     var ta = $("[task-id='" + task_id + "'] [tp-item='txt-notes']")
                         , tf = $("[task-id='" + task_id + "'] [tp-item='section-allegati']")
-                    if(!!opened) sec.show(350, "swing", function () { ta.focus(); });
-                    if (ta.attr("allegati") == "true" && !opened) tf.show(350, "swing");
-                    sec.attr("state", "opened");
+                    if (!opened) { sec.show(350, "swing", function () { sec.attr("state", "opened"); ta.focus(); }); tf.show(350, "swing"); }
                     btn.text("salva e nascondi le note...");
                 }
             }

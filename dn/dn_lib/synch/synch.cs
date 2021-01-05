@@ -162,6 +162,10 @@ namespace dn_lib
       _f_types = load_file_types();
     }
 
+    public file_info is_info_file(string file_name) { reload_settings(); return _f_infos.FirstOrDefault(x => x.file_name.ToLower() == file_name.ToLower()); }
+
+    public file_type is_type_file(string extension) { reload_settings(); return _f_types.FirstOrDefault(x => x.extension.ToLower() == extension.ToLower()); }
+
     public synch_results reload_folders()
     {
       reload_settings();
@@ -178,14 +182,14 @@ namespace dn_lib
             , f.title, f.des, f.local_path), true);
 
         // leggo le cartelle
-        clean_readed();        
+        clean_readed();
         foreach(synch_folder f in this.synch_folders) {
           fire_synch_event(string.Format("leggo la cartella {0}", f.local_path), true);
           res = init_synch_folder(f.id, f.local_path, res: res);
-        }        
+        }
         res.deleted = del_unreaded();
         if(res.deleted > 0) fire_synch_event("cancellati " + res.deleted.ToString() + " files/folders/tasks");
-        res.seconds = (int)(DateTime.Now - start).TotalSeconds;        
+        res.seconds = (int)(DateTime.Now - start).TotalSeconds;
       } catch(Exception ex) { res.err = ex.Message; log.log_err(ex.Message); } finally { }
 
       return res;
@@ -234,7 +238,11 @@ namespace dn_lib
         foreach(string fn in Directory.EnumerateFiles(path)) {
           FileInfo fi = new FileInfo(fn);
           DateTime ct = sys.without_ms(fi.CreationTime), lwt = sys.without_ms(fi.LastWriteTime);
-          
+
+          // web.config
+          if(Path.GetFileName(fn).ToLower() == "web.config" && !parent_id.HasValue)
+            continue;
+
           // file          
           long file_id = ins_file(synch_folder_id, parent_id, fi.Name, fi.Extension, ct, lwt
             , out string tp, out int cc, out DateTime? content_lwt);
@@ -243,14 +251,14 @@ namespace dn_lib
 
           // file content
           string new_content = "";
-          file_info info = _f_infos.FirstOrDefault(x => x.file_name.ToLower() == fi.Name.ToLower());
-          file_type ftp = _f_types.FirstOrDefault(x => x.extension.ToLower() == fi.Extension.ToLower());
+          file_info info = is_info_file(fi.Name);
+          file_type ftp = is_type_file(fi.Extension);
           if(info != null || ftp != null) {
             if(tp == "insert" || (tp == "update" && (!content_lwt.HasValue || (content_lwt.HasValue && lwt > content_lwt.Value)))) {
               new_content = File.ReadAllText(fn);
               set_file_content((int)file_id, Path.GetExtension(fn).ToLower(), new_content, ct, lwt);
 
-              if(parent_task != null && info != null) 
+              if(parent_task != null && info != null)
                 set_task_notes(parent_task.id, file_id, new_content, file_type.ft_type_content.info, ct, lwt);
 
               fire_synch_event("letto contenuto file '" + fn + "'");
@@ -266,7 +274,7 @@ namespace dn_lib
               else if(tp == "update" && cc > 0) fire_synch_event("updated task: " + Path.Combine(path, t.title));
 
               // task notes
-              if(ftp != null && (tp == "insert" || (tp == "update" && (!notes_lwt.HasValue || (notes_lwt.HasValue && lwt > notes_lwt.Value))))) 
+              if(ftp != null && (tp == "insert" || (tp == "update" && (!notes_lwt.HasValue || (notes_lwt.HasValue && lwt > notes_lwt.Value)))))
                 set_task_notes(task_id, file_id, new_content, ftp.type_content, ct, lwt);
             }
           }

@@ -49,6 +49,8 @@ SINTASSI DICHIARAZIONE object, subobj
         <!-- deepa-notes -->
         <row group="deepa-notes" action="view" action-opt="true" object="tasks" syn-object="attivita"
              page="notes.aspx" des="vista attivita deepa-notes" call="true"/>
+        <row group="deepa-notes" action="search" action-opt="true" object="task" subobj="{testo da ricercare}"
+             page="notes.aspx" des="ricerca attivita deepa-notes" call="true"/>
       </rows>
     </table>
   </tables>
