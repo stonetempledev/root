@@ -53,7 +53,7 @@ public partial class _users : tl_page {
             string tkey, akey;
             us.add_utente(user_name, email, password, c_password, out tkey, out akey, 3);
 
-            send_mail(email, "conferma iscrizione al deepa-notes",
+            send_mail(email, "conferma iscrizione al dipa notes",
               string.Format(@"<h2>{0}.</h2><p>Sei stato iscritto al <a href='{1}'>Deepa-Notes</a>!</p>
                 <p><i>Ecco la password: {3}</i></p>
                 <h3><a href='{1}confirm.aspx?akey={2}'>entra per confermare la tua iscrizione!</a></h3>"

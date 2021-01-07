@@ -25,7 +25,6 @@ public class tl_page : System.Web.UI.Page {
   protected user _user = null;
   protected bool _db_connected = false;
   protected bool _is_mobile = false;
-  protected bool _is_client = false;
 
   protected string _base_path = null;
   public string base_path { get { if (_base_path == null) _base_path = System.Web.HttpContext.Current.Server.MapPath("~"); return _base_path; } }
@@ -40,8 +39,6 @@ public class tl_page : System.Web.UI.Page {
 
     // base
     _is_mobile = this.master.is_mobile();
-    _is_client = Request.Browser.Type == "IE7" && Request.Browser.Browser == "IE";
-
   }
 
   protected override void OnPreInit(EventArgs e) {
@@ -221,7 +218,7 @@ public class tl_page : System.Web.UI.Page {
   #region functionalities
 
   protected void send_mail(string to, string obj, string body) {
-    SmtpSection cfg = (SmtpSection)ConfigurationManager.GetSection("system.net/mailSettings/" + _core.machine_key());
+    SmtpSection cfg = (SmtpSection)ConfigurationManager.GetSection("mailSettings/" + _core.machine_key());
     using (MailMessage mm = new MailMessage() {
       From = new MailAddress(cfg.From), Subject = obj, IsBodyHtml = true, Body = body
     }) {
