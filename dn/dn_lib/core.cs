@@ -219,7 +219,7 @@ namespace dn_lib
                 string[] pars = par.Split(new string[] { "','" }, StringSplitOptions.None);
                 string par21 = pars[0], par22 = pars[1], par23 = pars.Length > 2 ? pars[2] : "", val = get_val(par21, flds, dr);
                 // falso
-                if(val == "" || !bool.Parse(val) && par23 != "") {
+                if(val == "" || !bool.Parse(val)) {
                   if(par23 != "" && conds == null)
                     throw new Exception("non sono stati specificate le condizioni per l'istruzione '{@" + cmd + "='" + par + "'}'");
                   if(par23 != "" && !conds.ContainsKey(par23))

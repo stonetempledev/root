@@ -1,4 +1,5 @@
-﻿drop table dn_tasks_contents
+﻿-- orco
+drop table dn_tasks_contents
 go
 
 create table dn_files_contents (file_content_id bigint not null identity(1,1) primary key, file_id bigint
