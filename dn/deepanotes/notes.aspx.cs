@@ -130,7 +130,7 @@ public partial class _notes : tl_page
             if(!nome_valido(jr.val_str("title")))
               throw new Exception("nome '" + jr.val_str("title") + "' non valido!");
 
-            ob.add_task(jr.val_int("synch_folder_id"), jr.val_int("folder_id"), jr.val_str("stato")
+            ob.add_task(jr.val_int("synch_folder_id"), jr.val_int("folder_id"), jr.val_int_null("search_id"), jr.val_str("stato")
               , jr.val_str("title"), jr.val_str("assegna"), jr.val_str("priorita"), jr.val_str("tipo"), jr.val_str("stima"));
           }
           // remove_att
@@ -224,12 +224,14 @@ public partial class _notes : tl_page
           else if(jr.action == "get_details") {
             res.contents = ob.get_task_notes(jr.val_int("task_id"));
             string html_allegati = "";
-            foreach(DataRow dr in ob.get_task_allegati(jr.val_int("task_id")).Rows) {
-              bool cut = there_element_cut(db_provider.int_val(dr["file_id"]), element_cut.element_cut_type.attachment);
+            foreach(DataRow dr in ob.get_task_allegati(jr.val_int("task_id"), jr.val_int_null("search_id")).Rows) {
+              bool cut = there_element_cut(db_provider.int_val(dr["file_id"]), element_cut.element_cut_type.attachment)
+                , found = db_provider.int_val(dr["found_file"]) > 0;
+              string style = cut ? "badge-warning" : (found ? "badge-danger" : "badge-light");
               html_allegati += !_is_client ? core.parse_html_block("task-allegato", new string[,] { { "file-id", db_provider.str_val(dr["file_id"]) }
-                  , { "http-path", db_provider.str_val(dr["http_path"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, {"cut", cut ? "true" : "false"} })
+                  , { "http-path", db_provider.str_val(dr["http_path"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, { "style", style }, { "found", found ? "true" : "false" } })
                 : core.parse_html_block("task-allegato-client", new string[,] {
-                  { "file-id", db_provider.str_val(dr["file_id"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, {"cut", cut ? "true" : "false"}
+                  { "file-id", db_provider.str_val(dr["file_id"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, { "style", style }, { "found", found ? "true" : "false" }
                   , { "user-id", ob.user_id.ToString() }, { "user-name", ob.user_name } });
             }
             res.html_element = html_allegati != "" ? core.parse_html_block("task-allegati", new string[,] { { "html-allegati", html_allegati } }) : "";
@@ -255,8 +257,9 @@ public partial class _notes : tl_page
         string search = _cmd.action == "search" ? _cmd.sub_obj() : "";
 
         // ricerca testo
-        // search-notes
-        // string sid = this.Session.SessionID;
+        int search_cc = 0;
+        int? search_id = search != "" ? ob.search_task(search, this.Session.SessionID, out search_cc) : (int?)null;
+        search_id_active.Value = search_id.HasValue ? search_id.Value.ToString() : "";
 
         // filtro attivo
         List<task_filter> tfs = db_conn.dt_table(core.parse_query("filters-tasks")).Rows
@@ -264,11 +267,11 @@ public partial class _notes : tl_page
             , db_provider.str_val(r["filter_title"]), db_provider.str_val(r["filter_notes"])
             , db_provider.str_val(r["filter_def"]), db_provider.str_val(r["filter_class"]))).ToList();
         task_filter tf = tfs.FirstOrDefault(x => x.id == int.Parse(get_cache_var("active-task-filter", "1")));
-        if(tf == null) tf = new task_filter(0, "elenco completo delle attività", "", "", "");
+        if(tf == null || search_id.HasValue) tf = new task_filter(0, "elenco completo delle attività", "", "", "");
 
-        ob.load_objets(fi, sfi, tf);
+        ob.load_objects(fi, sfi, tf, search_id);
 
-        menu.InnerHtml = parse_menu(ob.synch_folders, sfi.HasValue || fi.HasValue);
+        menu.InnerHtml = parse_menu(ob.synch_folders, sfi.HasValue || fi.HasValue, qry_val("cmd"), search_id);
         folder_id.Value = qry_val("id");
 
         folder f = fi.HasValue ? ob.find_folder(fi.Value) : null;
@@ -279,7 +282,7 @@ public partial class _notes : tl_page
           .Select(r => new task_stato(db_provider.str_val(r["stato"]), 0, "", "", db_provider.str_val(r["title_singolare"]))).ToList();
 
         content.InnerHtml = "<div style='display:none'>virtuale</div>"
-          + parse_tasks(ob, stati, tf, title, f != null ? ob.find_synch_folder(f.synch_folder_id).title + f.path : "", tfs);
+          + parse_tasks(ob, stati, tf, title, f != null ? ob.find_synch_folder(f.synch_folder_id).title + f.path : "", tfs, search: search_id.HasValue ? search : "");
 
         ClientScript.RegisterStartupScript(GetType(), "__task_states"
           , "var __task_priorita = " + JsonConvert.SerializeObject(db_conn.dt_table(core.parse_query("task-priorita"))) + ";\r\n"
@@ -308,24 +311,26 @@ public partial class _notes : tl_page
     string tp; int cc; DateTime? clwt;
     long nid = s.ins_file(db_provider.int_val(dr["synch_folder_id"]), db_provider.int_val(dr["folder_id"]), file_name, Path.GetExtension(file_name)
       , DateTime.Now, DateTime.Now, out tp, out cc, out clwt);
-    if(s.is_type_file(Path.GetExtension(file_name)) != null) 
+    if(s.is_type_file(Path.GetExtension(file_name)) != null)
       s.set_file_content((int)nid, Path.GetExtension(file_name).ToLower()
-        , content != null ? System.Text.Encoding.UTF8.GetString(content) : "", DateTime.Now, DateTime.Now);    
-    if(s.is_info_file(file_name) != null && db_provider.int_val(dr["file_notes_id"]) <= 0) 
-      ob.init_task_notes(task_id, (int)nid, content != null ? System.Text.Encoding.UTF8.GetString(content) : "");    
+        , content != null ? System.Text.Encoding.UTF8.GetString(content) : "", DateTime.Now, DateTime.Now);
+    if(s.is_info_file(file_name) != null && db_provider.int_val(dr["file_notes_id"]) <= 0)
+      ob.init_task_notes(task_id, (int)nid, content != null ? System.Text.Encoding.UTF8.GetString(content) : "");
   }
 
   protected bool nome_valido(string nome) { return (new Regex("^[a-zA-Z0-9 ,ìèéùàò_]*$")).IsMatch(nome); }
 
   protected string parse_tasks(notes n, List<task_stato> stati, task_filter tf = null, string title_folder = "", string path_folder = ""
-    , List<task_filter> tfs = null)
+    , List<task_filter> tfs = null, string search = "")
   {
 
     StringBuilder sb = new StringBuilder();
 
-    sb.Append(core.parse_html_block(title_folder == "" ? "title-attivita" : "title-attivita-folder"
+    sb.Append(core.parse_html_block(search != "" ? (title_folder == "" ? "title-attivita-search" : "title-attivita-folder-search") 
+        : (title_folder == "" ? "title-attivita" : "title-attivita-folder")
       , new string[,] { { "title-folder", title_folder }, { "path-folder", path_folder }
-      , { "filter-title", tf != null ? tf.title : "" }, { "filter-des", tf != null ? tf.notes + " ordinate per data decrescente" : "" }
+      , { "filter-title", search != "" ? "ricerca attività" : (tf != null ? tf.title : "") }
+      , { "filter-des", (search != "" ? "ricerca attività che contengono '" + search + "'" : "") + (tf != null ? tf.notes + " ordinate per data decrescente" : "") }
       , { "conteggio", n.tasks != null && n.tasks.Count > 0 ? "per un totale di: " + n.tasks.Count.ToString() + " attività"
           : "non è stata trovata nessuna attività" }
       , { "html-filters", tfs != null ? string.Join("", tfs.Select(x =>
@@ -431,7 +436,7 @@ public partial class _notes : tl_page
     return core.parse_html_block("task-state", new string[,] { { "txt", txt }, { "cls", cls }, { "tooltip", tooltip } });
   }
 
-  protected string parse_menu(List<synch_folder> sfs, bool open_home)
+  protected string parse_menu(List<synch_folder> sfs, bool open_home, string cmd, int? search_id)
   {
     StringBuilder sb = new StringBuilder();
     foreach(synch_folder sf in sfs) {
@@ -448,25 +453,26 @@ public partial class _notes : tl_page
 
       sb.Append(core.parse_html_block(block_level(0)
         , new string[,] { { "id", sf.id.ToString() }, { "tp", "synch-folder" }
-          , { "url_open_home", open_home ? master.url_cmd("attivita") : "" }
-          , { "url_synch_folder", master.url_cmd("attivita", pars: new string[,] { {"sf", sf.id.ToString() } }) }
-          , { "title", sf.title }, { "childs", parse_folders_menu(sf.folders, 1) }
+          , { "url_open_home", open_home ? master.url_cmd(cmd) : "" }
+          , { "search", search_id.HasValue ? "true" : "false" }
+          , { "url_synch_folder", master.url_cmd(cmd, pars: new string[,] { {"sf", sf.id.ToString() } }) }
+          , { "title", sf.title }, { "childs", parse_folders_menu(sf.folders, 1, cmd, search_id) }
           , { "block-attivita", cc > 0 ? core.parse_html_block("spin-attivita-synch"
             , new string[,] { { "class_spin", color }, { "synch_folder_id", sf.id.ToString() }
-              , { "url_open_tasks", master.url_cmd("attivita", pars: new string[,] { { "sft", sf.id.ToString() } }) }
+              , { "url_open_tasks", master.url_cmd(cmd, pars: new string[,] { { "sft", sf.id.ToString() } }) }
               , { "title", cc == 1 ? "una attività " + t_singolare : cc.ToString() + " attività " + t_plurale }
               , { "c_attivita", cc.ToString() }} ) : "" }}));
     }
     return string.Format("<ul class='nav flex-column'>{0}</ul>", sb.ToString());
   }
 
-  protected string parse_folders_menu(List<folder> fs, int lvl)
+  protected string parse_folders_menu(List<folder> fs, int lvl, string cmd, int? search_id)
   {
     StringBuilder sbb = new StringBuilder();
 
     foreach(folder f in fs.Where(x => !x.is_task)) {
       string url_open_folder = lvl >= 3 && f.folders.Where(x => x.task == null).Count() > 0
-        ? master.url_cmd("attivita", pars: new string[,] { { "id", f.parent_id.ToString() } }) : "";
+        ? master.url_cmd(cmd, pars: new string[,] { { "id", f.parent_id.ToString() } }) : "";
 
       bool cut = there_element_cut(f.folder_id, element_cut.element_cut_type.folder);
 
@@ -482,11 +488,12 @@ public partial class _notes : tl_page
       t_singolare = t_singolare == "" ? "generica" : t_singolare;
 
       sbb.Append(core.parse_html_block(block_level(lvl), new string[,] { { "id", f.folder_id.ToString() }, { "tp", "folder" }
-        , { "class_cut", cut ? "voce-cut" : "" }, { "title", f.folder_name }, { "childs", parse_folders_menu(f.folders, lvl + 1) }, { "url_open_folder", url_open_folder }
-        , { "url_folder", master.url_cmd("attivita", pars: new string[,] { { "id", f.folder_id.ToString() } }) }
+        , { "class_cut", cut ? "voce-cut" : "" }, { "title", f.folder_name }, { "childs", parse_folders_menu(f.folders, lvl + 1, cmd, search_id) }, { "url_open_folder", url_open_folder }
+        , { "url_folder", master.url_cmd(cmd, pars: new string[,] { { "id", f.folder_id.ToString() } }) }
+        , { "search", search_id.HasValue ? "true" : "false" }
         , { "block-attivita", cc > 0 ? core.parse_html_block("spin-attivita"
           , new string[,] { { "class_spin", color }, { "folder_id", f.folder_id.ToString() }
-            , { "url_open_tasks", master.url_cmd("attivita", pars: new string[,] { { "idt", f.folder_id.ToString() } }) }
+            , { "url_open_tasks", master.url_cmd(cmd, pars: new string[,] { { "idt", f.folder_id.ToString() } }) }
             , { "title", cc == 1 ? "una attività " + t_singolare :  cc.ToString() + " attività " + t_plurale }
             , { "c_attivita", cc.ToString() }} ) : "" }}));
     }

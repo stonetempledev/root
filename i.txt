@@ -4,7 +4,7 @@ github.hub
 
 IN CORSO
  . dn: ottimizzazione attività
-  / ricerca elementi e filtri  
+  . ricerca anche per utente assegnato, etichette attività
   ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
   . anteprima immagini 
   . tira fuori la synch che la chiami anche dalle pagine come admin se ce n'è la necessità

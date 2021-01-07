@@ -47,9 +47,11 @@ create unique index idx_dn_search_text on dn_search_text (session_id);
 go
 
 --drop table dn_search_tasks
-create table dn_search_tasks (search_id int not null, task_id int not null, synch_folder_id int not null, folder_id int);
+create table dn_search_tasks (search_id int not null, task_id int not null, synch_folder_id int not null, folder_id int, file_id int);
 create unique index idx_dn_search_tasks on dn_search_tasks (search_id, task_id);
 create index idx_dn_search_tasks_2 on dn_search_tasks (search_id);
+create index idx_dn_search_tasks_3 on dn_search_tasks (file_id);
+create index idx_dn_search_tasks_4 on dn_search_tasks (search_id, file_id);
 go
 
 --drop table dn_search_folders

@@ -216,15 +216,17 @@ namespace dn_lib
               }
               // {@cond_bool='<FIELD NAME>','<COND NAME>','<NO COND NAME>'}
               case "cond_bool": {
-                string[] pars = par.Split(new string[] { "','" }, StringSplitOptions.RemoveEmptyEntries);
+                string[] pars = par.Split(new string[] { "','" }, StringSplitOptions.None);
                 string par21 = pars[0], par22 = pars[1], par23 = pars.Length > 2 ? pars[2] : "", val = get_val(par21, flds, dr);
-                if(val == "" || !bool.Parse(val)) {
+                // falso
+                if(val == "" || !bool.Parse(val) && par23 != "") {
                   if(par23 != "" && conds == null)
                     throw new Exception("non sono stati specificate le condizioni per l'istruzione '{@" + cmd + "='" + par + "'}'");
                   if(par23 != "" && !conds.ContainsKey(par23))
                     throw new Exception("la condizione '" + par23 + "' non è specificata per l'istruzione '{@" + cmd + "='" + par + "'}'");
                   value = par23 != "" ? parse(conds[par23], flds, dr) : "";
-                } else {
+                } // vero
+                else if(par22 != "") {
                   if(conds == null)
                     throw new Exception("non sono stati specificate le condizioni per l'istruzione '{@" + cmd + "='" + par + "'}'");
                   if(!conds.ContainsKey(par22))

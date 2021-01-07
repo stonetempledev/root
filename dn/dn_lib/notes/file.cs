@@ -11,10 +11,11 @@ namespace dn_lib {
     public string file_name { get; set; }
     public DateTime dt_ins { get; set; }
     public task task { get; set; }
+    public bool found { get; set; }
 
-    public file(int synch_folder_id, long folder_id, long id, string file_name, DateTime dt_ins) {
+    public file(int synch_folder_id, long folder_id, long id, string file_name, DateTime dt_ins, bool found) {
       this.synch_folder_id = synch_folder_id; this.folder_id = folder_id;
-      this.id = id; this.file_name = file_name; this.dt_ins = dt_ins;
+      this.id = id; this.file_name = file_name; this.dt_ins = dt_ins; this.found = found;
     }
 
   }

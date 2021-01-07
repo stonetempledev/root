@@ -196,15 +196,31 @@
        , ft.des, ft.http_path, ft.lvl, dbo.folder_path(ft.folder_id) as folder_path
        , (select top 1 1 from dn_tasks where folder_id = ft.folder_id) as is_task
       from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft
+      {@cond_bool='search','join-search'}
       order by ft.synch_folder_id, ft.lvl, ft.title]]>
+      <cond name="join-search">
+        <![CDATA[join dn_search_folders sf on sf.search_id = {@field='search_id'} 
+          and sf.synch_folder_id = ft.synch_folder_id and isnull(sf.folder_id, 0) = isnull(ft.folder_id, 0)]]>
+      </cond>      
     </query>
 
     <query name="files">
-      <![CDATA[select f.synch_folder_id, f.file_id, f.folder_id, f.file_name, f.dt_ins
+      <![CDATA[select f.synch_folder_id, f.file_id, f.folder_id, f.file_name, f.dt_ins {@cond_bool='search','field-search','no-field-search'}
        from dn_files f
        where exists (select top 1 1 from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft 
+        {@cond_bool='search','join-search'}
 	      where ft.synch_folder_id = f.synch_folder_id 
           and isnull(ft.folder_id, 0) = isnull(f.folder_id, 0))]]>
+      <cond name="join-search">
+        <![CDATA[join dn_search_folders sf on sf.search_id = {@field='search_id'} 
+          and sf.synch_folder_id = ft.synch_folder_id and isnull(sf.folder_id, 0) = isnull(ft.folder_id, 0)]]>
+      </cond>
+      <cond name="field-search">
+        <![CDATA[, (select top 1 1 from dn_search_tasks where search_id = {@field='search_id'} and file_id = f.file_id) as found_file]]>
+      </cond>
+      <cond name="no-field-search">
+        <![CDATA[, null as found_file]]>
+      </cond>
     </query>
 
     <query name="file-path">
@@ -226,6 +242,7 @@
 	   , t.file_id, t.title, t.[user], t.stato, t.priorita, t.tipo, t.stima, t.dt_ins, t.dt_upd
      , (case when t.dt_ins > t.dt_upd then t.dt_ins else t.dt_upd end) as dt_ref
 	  from dn_tasks t
+    {@cond_bool='search','join-search'}
 	  left join dn_files f on f.file_id = t.file_id
     where ({@field='task_id'} is null or ({@field='task_id'} is not null and t.task_id = {@field='task_id'})) ) t2
     where exists (select top 1 1 from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft 
@@ -236,8 +253,11 @@
    left join dn_task_tipo tt on tt.tipo = t3.tipo
    left join dn_task_stima ts on ts.stima = t3.stima
    where 1 = 1 {@field='filters'}]]>
+      <cond name="join-search">
+        <![CDATA[join (select distinct search_id, task_id from dn_search_tasks) st on st.search_id = {@field='search_id'} and st.task_id = t.task_id]]>
+      </cond>      
     </query>
-  
+
     <query name="set-task-state">
       <![CDATA[update dn_tasks set stato = {@txtqry='stato'} where task_id = {@field='task_id'}]]>
     </query>
@@ -257,7 +277,7 @@
     <query name="set-task-tipo">
       <![CDATA[update dn_tasks set tipo = {@txtqry='tipo'} where task_id = {@field='task_id'}]]>
     </query>
-    
+
     <query name="set-task-title">
       <![CDATA[update dn_tasks set title = {@txtqry='title'} where task_id = {@field='task_id'}]]>
     </query>
@@ -293,16 +313,35 @@
  select synch_folder_id, folder_id, {@txtqry='title'}, {@txtqry='user'}, {@txtqry='stato'}, dt_upd, 1, {@txtqry='priorita'}, {@txtqry='tipo'}, {@txtqry='stima'}, dt_ins
   from dn_folders where folder_id = {@field='folder_id'}]]>
     </query>
-  
+
+    <query name="ins-task-into-search">
+      <![CDATA[insert into dn_search_tasks (search_id, task_id, synch_folder_id, folder_id)
+ select {@field='search_id'} as search_id, task_id, synch_folder_id, folder_id
+ from dn_tasks where task_id = {@field='task_id'}
+
+insert into dn_search_folders (search_id, synch_folder_id, folder_id)
+ select {@field='search_id'} as search_id, f.synch_folder_id, f.folder_id
+ from dn_folders f
+ join dn_tasks t on t.folder_id = f.folder_id
+ where t.task_id = {@field='task_id'}]]>
+    </query>
+
     <query name="get-task-notes">
       <![CDATA[select content from dn_tasks_notes 
        where task_id = {@field='task_id'}]]>
     </query>
 
     <query name="get-task-allegati">
-      <![CDATA[select a.file_id, a.file_name, a.extension, a.http_path
+      <![CDATA[select a.file_id, a.file_name, a.extension, a.http_path {@cond_bool='search','field-search','no-field-search'}       
       from vw_task_allegati a
       where a.task_id = {@field='task_id'}]]>
+      <cond name="field-search">
+        <![CDATA[, (select top 1 1 from dn_search_tasks where search_id = {@field='search_id'} and file_id = a.file_id) as found_file]]>
+      </cond>
+      <cond name="no-field-search">
+        <![CDATA[, null as found_file]]>
+      </cond>
+
     </query>
 
     <query name="info-task-notes">

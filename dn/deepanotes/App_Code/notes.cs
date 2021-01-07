@@ -37,14 +37,14 @@ namespace deepanotes
       return this.synch_folders.FirstOrDefault(x => x.id == synch_folder_id);
     }
 
-    public void load_objets(int? folder_id = null, int? synch_folder_id = null, task_filter tf = null)
+    public void load_objects(int? folder_id = null, int? synch_folder_id = null, task_filter tf = null, int? search_id = null)
     {
 
       // folders structure
-      this.synch_folders = load_folders(folder_id, synch_folder_id);
+      this.synch_folders = load_folders(folder_id, synch_folder_id, search_id);
 
       // tasks
-      this.tasks = load_tasks(folder_id: folder_id, synch_folder_id: synch_folder_id, tf: tf);
+      this.tasks = load_tasks(folder_id: folder_id, synch_folder_id: synch_folder_id, tf: tf, search_id: search_id);
 
       // task -> folder, file
       foreach(task t in this.tasks) {
@@ -70,7 +70,7 @@ namespace deepanotes
 
     public task load_task(int task_id) { List<task> l = load_tasks(task_id); return l.Count > 0 ? l[0] : null; }
 
-    protected List<task> load_tasks(int? task_id = null, int? folder_id = null, int? synch_folder_id = null, task_filter tf = null)
+    protected List<task> load_tasks(int? task_id = null, int? folder_id = null, int? synch_folder_id = null, task_filter tf = null, int? search_id = null)
     {
 
       // filtro
@@ -101,6 +101,7 @@ namespace deepanotes
 
       string[,] pars = new string[,] { { "task_id", task_id.HasValue ? task_id.Value.ToString() : "null" }
         , { "folder_id", folder_id.HasValue ? folder_id.Value.ToString() : "null" }
+        , { "search", search_id.HasValue ? "true" : "false" }, { "search_id", search_id.HasValue ? search_id.Value.ToString() : "0" }
         , { "synch_folder_id", synch_folder_id.HasValue ? synch_folder_id.Value.ToString() : "null" }
         , { "filter_sf", !synch_folder_id.HasValue && folder_id.HasValue ? " ft.tp <> 'synch_folder' and " : "" }
         , { "filters", filters != "" ? " and " + filters : "" } };
@@ -121,10 +122,11 @@ namespace deepanotes
           , db_provider.int_val(dr["task_notes"]) == 1, db_provider.int_val(dr["task_files"]) == 1)).ToList();
     }
 
-    protected List<synch_folder> load_folders(int? folder_id = null, int? synch_folder_id = null)
+    protected List<synch_folder> load_folders(int? folder_id = null, int? synch_folder_id = null, int? search_id = null)
     {
 
       string[,] pars = new string[,] { { "folder_id", folder_id.HasValue ? folder_id.Value.ToString() : "null" }
+        , { "search", search_id.HasValue ? "true" : "false" }, { "search_id", search_id.HasValue ? search_id.Value.ToString() : "0" }
         , { "synch_folder_id", synch_folder_id.HasValue ? synch_folder_id.Value.ToString() : "null" } };
 
       // folders
@@ -161,7 +163,7 @@ namespace deepanotes
         long fi = db_provider.long_val(dr["folder_id"]);
         file f = new file(db_provider.int_val(dr["synch_folder_id"]), db_provider.long_val(dr["folder_id"])
             , db_provider.long_val(dr["file_id"]), db_provider.str_val(dr["file_name"])
-            , db_provider.dt_val(dr["dt_ins"]).Value);
+            , db_provider.dt_val(dr["dt_ins"]).Value, db_provider.int_val(dr["found_file"]) > 0);
         if(fi > 0) res.First(x => x.id == sfi).get_folder(fi).add_file(f);
         else res.First(x => x.id == sfi).add_file(f);
       }
@@ -184,7 +186,7 @@ namespace deepanotes
       if(db_provider.int_val(r["file_id"]) > 0)
         db_conn.exec(core.parse_query("lib-notes.del-file", new string[,] { { "file_id", r["file_id"].ToString() } }));
       else
-        db_conn.exec(core.parse_query("lib-notes.del-folder", new string[,] { { "folder_id", r["folder_id"].ToString() } }));      
+        db_conn.exec(core.parse_query("lib-notes.del-folder", new string[,] { { "folder_id", r["folder_id"].ToString() } }));
     }
 
     public void remove_att(int file_id)
@@ -349,9 +351,10 @@ namespace deepanotes
       return dt.Rows.Count > 0 ? db_provider.str_val(dt.Rows[0]["content"]) : "";
     }
 
-    public DataTable get_task_allegati(int task_id)
+    public DataTable get_task_allegati(int task_id, int? search_id)
     {
-      return db_conn.dt_table(core.parse_query("lib-notes.get-task-allegati", new string[,] { { "task_id", task_id.ToString() } }));
+      return db_conn.dt_table(core.parse_query("lib-notes.get-task-allegati", new string[,] { { "task_id", task_id.ToString() }
+        , { "search", search_id.HasValue ? "true" : "false" }, { "search_id", search_id.HasValue ? search_id.Value.ToString() : "0" } }));
     }
 
     public void save_task_notes(int task_id, string notes)
@@ -431,7 +434,7 @@ namespace deepanotes
           }
         }
         // cartella
-        else {          
+        else {
           string fp = db_provider.str_val(dr["folder_path"]) + "i.txt";
           File.WriteAllText(fp, notes, System.Text.Encoding.UTF8);
           string tp; int cc; DateTime? clwt;
@@ -636,7 +639,7 @@ namespace deepanotes
         Directory.Delete(folder_path, true);
       else {
         foreach(string f in Directory.EnumerateFiles(folder_path)) {
-          if(Path.GetFileName(f).ToLower() == "web.config")            
+          if(Path.GetFileName(f).ToLower() == "web.config")
             continue;
 
           File.Delete(f);
@@ -652,7 +655,7 @@ namespace deepanotes
         db_conn.exec(core.parse_query("clean-synch", new string[,] { { "synch_folder_id", synch_folder_id.ToString() } }), true);
     }
 
-    public void add_task(int synch_folder_id, int folder_id, string stato
+    public void add_task(int synch_folder_id, int folder_id, int? search_id, string stato
       , string title, string assegna, string priorita, string tipo, string stima)
     {
       if(string.IsNullOrEmpty(title)) throw new Exception("il titolo non è stato specificato!");
@@ -692,13 +695,23 @@ namespace deepanotes
       Directory.CreateDirectory(Path.Combine(folder_path, name));
 
       // aggiorno il db
-      long new_id = long.Parse(synch_folder_id > 0 ?
+      long new_folder_id = long.Parse(synch_folder_id > 0 ?
         db_conn.exec(core.parse_query("lib-notes.task-ins-into-synch", new string[,] { { "synch_folder_id", synch_folder_id.ToString() }, { "name", name } }), true)
         : db_conn.exec(core.parse_query("lib-notes.task-ins-into-folder", new string[,] { { "folder_id", folder_id.ToString() }, { "name", name } }), true));
 
-      db_conn.exec(core.parse_query("lib-notes.ins-task-from-folder", new string[,] { { "folder_id", new_id.ToString() }
+      long new_task_id = long.Parse(db_conn.exec(core.parse_query("lib-notes.ins-task-from-folder", new string[,] { { "folder_id", new_folder_id.ToString() }
         , { "title", title }, { "user", assegna }, { "stato", !string.IsNullOrEmpty(stato) ? stato : "da_fare" }
-        , { "priorita", priorita }, { "tipo", tipo }, { "stima", stima }}), true);
+        , { "priorita", priorita }, { "tipo", tipo }, { "stima", stima }}), true));
+
+      if(search_id.HasValue)
+        db_conn.exec(core.parse_query("lib-notes.ins-task-into-search", new string[,] { { "search_id", search_id.ToString() }, { "task_id", new_task_id.ToString() } }));
+    }
+
+    public int search_task(string text, string session_id, out int cc)
+    {
+      DataRow r = db_conn.first_row(core.parse_query("search-notes", new string[,] { { "text", text }, { "session_id", session_id } }));
+      cc = db_provider.int_val(r["cc"]);
+      return db_provider.int_val(r["search_id"]);
     }
   }
 }

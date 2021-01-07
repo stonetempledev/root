@@ -178,7 +178,7 @@
                         window.setTimeout(function () {
                             try {
                                 var res = post_action({
-                                    "action": "add_task", "folder_id": get_param("id"), "synch_folder_id": get_param("sf")
+                                    "action": "add_task", "folder_id": get_param("id"), "synch_folder_id": get_param("sf"), "search_id": $("#search_id_active").val()
                                     , "stato": stato, "title": val_dyn("title"), "assegna": val_dyn("assegna"), "priorita": val_dyn("priorita"), "tipo": val_dyn("tipo"), "stima": val_dyn("stima")
                                 });
                                 if (res) window.location.reload();
@@ -219,8 +219,9 @@
                                 else $("[task-id=" + id + "]").removeClass("task-cut");
                             }
                             else if (tp_id == "att") {
-                                if (added) $("[tp=att-name-" + id + "]").removeClass("badge-light").addClass("badge-warning");
-                                else $("[tp=att-name-" + id + "]").addClass("badge-light").removeClass("badge-warning");
+                                var found = $("[tp=att-name-" + id + "]").attr("found") == "true";
+                                if (added) $("[tp=att-name-" + id + "]").removeClass(!found ? "badge-light" : "badge-danger").addClass("badge-warning");
+                                else $("[tp=att-name-" + id + "]").addClass(!found ? "badge-light" : "badge-danger").removeClass("badge-warning");
                             }
                         }
                     } catch (e) { show_danger("Attenzione!", e.message); }
@@ -339,7 +340,7 @@
                             try {
                                 var t = $("[task-id=" + task_id + "]"), ta = $("[task-id='" + task_id + "'] [tp-item='txt-notes']")
                                     , btn = $("[task-id='" + task_id + "'] [tp-item='btn-notes']");
-                                var res = post_action({ "action": "get_details", "task_id": task_id });
+                                var res = post_action({ "action": "get_details", "task_id": task_id, "search_id": $("#search_id_active").val() });
                                 if (res) {
                                     ta.val(res.contents); sec.attr("readed", "1");
                                     if (!opened) { sec.show(350, "swing", function () { sec.attr("state", "opened"); ta.focus(); }); tf.show(350, "swing"); }
@@ -451,14 +452,13 @@
             } catch (e) { show_danger("Attenzione!", e.message); }
         }
 
-        function cut_att(file_id) { }
-
-        function copy_att(file_id) { }
+        function del_search() { window.location = set_param("cmd", "tasks"); }
 
     </script>
 </asp:Content>
 <asp:Content ContentPlaceHolderID="contents" runat="Server">
     <input id='folder_id' type='hidden' runat='server' />
+    <input id='search_id_active' type='hidden' runat='server' />
     <div class="container-fluid">
         <div class="row mb-4">
             <!-- sidebar menu -->
