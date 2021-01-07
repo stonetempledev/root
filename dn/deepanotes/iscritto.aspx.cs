@@ -6,8 +6,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.Security;
 using System.Data;
-using dlib.db;
-using dlib.tools;
+using dn_lib.db;
+using dn_lib.tools;
 using deepanotes;
 
 public partial class login : tl_page {

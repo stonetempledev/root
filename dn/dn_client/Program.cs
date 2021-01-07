@@ -10,15 +10,16 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using dlib;
-using dlib.db;
-using dlib.tools;
-using dlib.xml;
+using dn_lib;
+using dn_lib.db;
+using dn_lib.tools;
+using dn_lib.xml;
 
 namespace dn_client {
   static class Program {
 
     public static core _c = null;
+    public static int _interval_ss = 300;
 
     /// <summary>
     /// The main entry point for the application.
@@ -62,7 +63,7 @@ namespace dn_client {
         }
 
         // opened client
-        conn.exec(_c.parse_query("client.opened", new string[,] { { "ip_machine", dlib.core.machine_ip() } }));
+        client_opened(conn);
         conn.close_conn(); conn = null;
 
         // data providers
@@ -73,7 +74,7 @@ namespace dn_client {
 
         // test
         //try {
-        //  string cmd = @"c:\tmp\a.sql";
+        //  string cmd = @"C:\_todd\git\dn\dn_client\bin\Debug\att\1340_queries.sql.sql";
         //  Process.Start(new System.Diagnostics.ProcessStartInfo("cmd", "/c \"" + cmd + "\"") {
         //    RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
         //  });
@@ -88,13 +89,37 @@ namespace dn_client {
 
         // close client
         conn = open_conn();
-        conn.exec(_c.parse_query("client.closed", new string[,] { { "ip_machine", dlib.core.machine_ip() } }));
+        conn.exec(_c.parse_query("client.closed", new string[,] { { "ip_machine", sys.machine_ip() }
+            , { "machine_name", sys.machine_name() } }));
         conn.close_conn(); conn = null;
 
       } catch (Exception ex) {
         MessageBox.Show(ex.Message, "Attenzione!", MessageBoxButtons.OK, MessageBoxIcon.Error);
         if (conn != null) { conn.close_conn(); }
       }
+    }
+
+    public static void client_opened(db_provider conn = null) {
+      try {
+        bool close = false;
+        if (conn == null) { conn = Program.open_conn(); close = true; }
+        conn.exec(_c.parse_query("client.opened", new string[,] { { "ip_machine", sys.machine_ip() }
+            , { "machine_name", sys.machine_name() }, { "interval_ss", _interval_ss.ToString() } }));
+        if (close) { conn.close_conn(); conn = null; }
+      } catch { }
+    }
+
+    public static DataTable dt_query(string name, string[,] fields = null) {
+      db_provider conn = null;
+      try {
+        conn = Program.open_conn();
+        return conn.dt_table(_c.parse_query(name, fields));
+      } catch { return null; } finally { if (conn != null) conn.close_conn(); }
+    }
+
+    public static DataRow first_row(string name, string[,] fields = null) {
+      DataTable dt = dt_query(name, fields);
+      return dt != null && dt.Rows.Count > 0 ? dt.Rows[0] : null;
     }
 
     public static db_provider open_conn() {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using dlib.tools;
+using dn_lib.tools;
 using deepanotes;
 
 public class tl_master : System.Web.UI.MasterPage {
@@ -18,7 +18,7 @@ public class tl_master : System.Web.UI.MasterPage {
 
   protected tl_page tlp { get { return ((tl_page)Parent); } }
 
-  protected dlib.tools.config config { get { return tlp.core.config; } }
+  protected config config { get { return tlp.core.config; } }
 
   public virtual void redirect_to (string page) { Response.Redirect(page); }
 

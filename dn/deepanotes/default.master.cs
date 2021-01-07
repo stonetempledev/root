@@ -8,8 +8,8 @@ using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls.WebParts;
 using System.Web.Security;
-using dlib.db;
-using dlib.tools;
+using dn_lib.db;
+using dn_lib.tools;
 using deepanotes;
 
 public partial class _default : tl_master {
@@ -58,7 +58,7 @@ public partial class _default : tl_master {
 
   protected void Page_Load(object sender, EventArgs e) {
     // navbar admin
-    if (tlp.user.type == user.type_user.admin) {
+    if (tlp.user != null && tlp.user.type == user.type_user.admin) {
       string cl = navbar.Attributes["class"];
       navbar.Attributes["class"] = cl.Replace("bg-primary", "bg-warning");
     }

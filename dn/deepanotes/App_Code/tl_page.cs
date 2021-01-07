@@ -12,10 +12,10 @@ using System.Net.Configuration;
 using System.Configuration;
 using System.IO;
 using System.Data;
-using dlib;
-using dlib.tools;
-using dlib.db;
-using dlib.xml;
+using dn_lib;
+using dn_lib.tools;
+using dn_lib.db;
+using dn_lib.xml;
 using deepanotes;
 
 public class tl_page : System.Web.UI.Page {
@@ -236,6 +236,27 @@ public class tl_page : System.Web.UI.Page {
   }
 
   protected string get_url_cmd(string ref_url) { return _core.config.var_value_par("lib-vars.router-cmd", System.Web.HttpUtility.UrlEncode(ref_url)); }
+
+  protected List<element_cut> elements_cut {
+    get {
+      if(Session["elements_cut"] == null) Session["elements_cut"] = new List<element_cut>();
+      return (List<element_cut>)Session["elements_cut"];
+    }
+  }
+
+  protected bool there_element_cut(int id, element_cut.element_cut_type tp) { return elements_cut.FirstOrDefault(x => x.tp == tp && x.id == id) != null; }
+
+  protected element_cut find_element_cut(int id, element_cut.element_cut_type tp) { return elements_cut.FirstOrDefault(x => x.tp == tp && x.id == id); }
+
+  protected void remove_element_cut(int id, element_cut.element_cut_type tp) { elements_cut.Remove(find_element_cut(id, tp)); }
+
+  protected bool? set_element_cut(int id, element_cut.element_cut_type tp, bool copy = false) {
+    element_cut ec = find_element_cut(id, tp);
+    if(ec == null) { elements_cut.Add(new element_cut(id, tp, copy)); return true; }
+    if(ec.copy != copy) { ec.copy = copy; return null; }
+    remove_element_cut(id, tp);
+    return false;
+  }
 
   #endregion
 

@@ -1,23 +1,17 @@
 github.hub
- stonetempledev, molinagarden@gmail.com/Homme33!
  repositories
   https://github.com/stonetempledev/root.git
 
 IN CORSO
- / dn: ottimizzazione
-  . ricerca elementi e filtri
-  / folders, files
-   . file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
-  . gestione allegati!
-   . apertura in locale
-   . salvataggio
-   . drag e drop
-   . cancella
-   . rinomina
-  . folders, files
-   ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
-  . ricerca elementi e filtri
-   . da disco o da db?
+ . dn: ottimizzazione attività
+  . ricerca anche per utente assegnato, etichette attività
+  ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
+  . anteprima immagini 
+  . tira fuori la synch che la chiami anche dalle pagine come admin se ce n'è la necessità
+  . gestione della tabella dn_files_types
+  . percentuale realizzazione di un task!
+  . la storia del task iniziato . ultimo aggiornamento
+  . invio notifiche mail
 
 TODO
  dn
@@ -25,8 +19,3 @@ TODO
   ! passwords, accounts, info tecniche
   ! procedure, scripts, pannelli di controllo
 
-IDEE
- dn
-  . invio notifiche mail
-  . percentuale realizzazione di un task!
-  . la storia del task iniziato . ultimo aggiornamento

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Data;
-using dlib;
-using dlib.db;
-using dlib.tools;
-using dlib;
+using dn_lib;
+using dn_lib.db;
+using dn_lib.tools;
 
 namespace deepanotes {
   // business object
@@ -31,8 +30,6 @@ namespace deepanotes {
         , new string[,] { { "setting", setting }, { "value", string.IsNullOrEmpty(val) ? "" : val }, { "user_id", user_id.ToString() } }));
       return val;
     }
-
-    public static synch create_synch() { bo b = new bo(); return new synch(b.db_conn, b.core, b.config, b.user_id, b.user_name); }
 
   }
 }

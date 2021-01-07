@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data;
-using dlib.db;
+using dn_lib.db;
 
 namespace dn_client {
   public class db_conn {
