@@ -224,11 +224,11 @@
       <![CDATA[<div class='text-dark font-weight-light mb-2' style='display:block;'>allegati</div>{@field='html-allegati'}]]>
     </html-block>
     <html-block name="task-allegato">
-      <![CDATA[<h5 tp='att-{@field='file-id'}' class='d-inline' style='opacity: 0.7;' title="scarica allegato..."><a tp='att-name-{@field='file-id'}' found='{@field='found'}' href="{@field='http-path'}" target='blank' class='badge badge-pill {@field='style'}'>{@field='file-name'}</a></h5>
+      <![CDATA[<h5 tp='att-{@field='file-id'}' class='d-inline' style='opacity: 0.7;' title="scarica allegato..."><a tp='att-name-{@field='file-id'}' tp-att='{@field='tp_att'}' href="{@field='http-path'}" target='blank' class='badge badge-pill {@field='style'}'>{@field='file-name'}</a></h5>
       {@html-block='menu-allegato'}]]>
     </html-block>
     <html-block name="task-allegato-client">
-      <![CDATA[<h5 tp='att-{@field='file-id'}' class='d-inline' style='opacity: 0.7;' title="scarica allegato..."><a tp='att-name-{@field='file-id'}' found='{@field='found'}' href="javascript:open_att({@field='file-id'}, {@field='user-id'}, '{@field='user-name'}')" class='badge badge-pill {@field='style'}'>{@field='file-name'}</a></h5>
+      <![CDATA[<h5 tp='att-{@field='file-id'}' class='d-inline' style='opacity: 0.7;' title="scarica allegato..."><a tp='att-name-{@field='file-id'}' tp-att='{@field='tp_att'}' href="javascript:open_att({@field='file-id'}, {@field='user-id'}, '{@field='user-name'}')" class='badge badge-pill {@field='style'}'>{@field='file-name'}</a></h5>
       {@html-block='menu-allegato'}]]>
     </html-block>
     <html-block name="menu-allegato">
@@ -463,6 +463,12 @@ begin
 	 join dn_tasks t on t.folder_id = f.folder_id or t.file_id = f.file_id
 	 where fc.content like '%' + @txt + '%'
     and not exists (select top 1 1 from dn_tasks_notes where file_id = f.file_id)) t2
+    
+ update st set st.folder_id = f.folder_id
+  from dn_search_tasks st
+  join dn_tasks t on t.task_id = st.task_id
+  join dn_files f on f.file_id = t.file_id
+  where st.search_id = @id and t.file_id is not null 
 
  insert into dn_search_folders (search_id, synch_folder_id, folder_id)
   select @id as search_id, sf.synch_folder_id, null as folder_id

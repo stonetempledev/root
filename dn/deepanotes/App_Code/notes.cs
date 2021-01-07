@@ -50,7 +50,8 @@ namespace deepanotes
       foreach(task t in this.tasks) {
         if(t.folder_id.HasValue && !t.file_id.HasValue)
           this.synch_folders.First(x => x.id == t.synch_folder_id).get_folder(t.folder_id.Value).task = t;
-        else this.synch_folders.First(x => x.id == t.synch_folder_id).get_file(t.file_id.Value).task = t;
+        else 
+          this.synch_folders.First(x => x.id == t.synch_folder_id).get_file(t.file_id.Value).task = t;
       }
 
     }
@@ -160,7 +161,7 @@ namespace deepanotes
       // files
       foreach(DataRow dr in db_conn.dt_table(core.parse_query("lib-notes.files", pars)).Rows) {
         int sfi = db_provider.int_val(dr["synch_folder_id"]);
-        long fi = db_provider.long_val(dr["folder_id"]);
+        long fi = db_provider.long_val(dr["folder_id"]);        
         file f = new file(db_provider.int_val(dr["synch_folder_id"]), db_provider.long_val(dr["folder_id"])
             , db_provider.long_val(dr["file_id"]), db_provider.str_val(dr["file_name"])
             , db_provider.dt_val(dr["dt_ins"]).Value, db_provider.int_val(dr["found_file"]) > 0);

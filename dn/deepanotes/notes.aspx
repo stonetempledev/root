@@ -219,9 +219,9 @@
                                 else $("[task-id=" + id + "]").removeClass("task-cut");
                             }
                             else if (tp_id == "att") {
-                                var found = $("[tp=att-name-" + id + "]").attr("found") == "true";
-                                if (added) $("[tp=att-name-" + id + "]").removeClass(!found ? "badge-light" : "badge-danger").addClass("badge-warning");
-                                else $("[tp=att-name-" + id + "]").addClass(!found ? "badge-light" : "badge-danger").removeClass("badge-warning");
+                                var tp_att = $("[tp=att-name-" + id + "]").attr("tp-att");
+                                if (added) $("[tp=att-name-" + id + "]").removeClass(tp_att).addClass("badge-warning");
+                                else $("[tp=att-name-" + id + "]").addClass(tp_att).removeClass("badge-warning");
                             }
                         }
                     } catch (e) { show_danger("Attenzione!", e.message); }

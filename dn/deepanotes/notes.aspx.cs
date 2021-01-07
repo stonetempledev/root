@@ -226,12 +226,12 @@ public partial class _notes : tl_page
             string html_allegati = "";
             foreach(DataRow dr in ob.get_task_allegati(jr.val_int("task_id"), jr.val_int_null("search_id")).Rows) {
               bool cut = there_element_cut(db_provider.int_val(dr["file_id"]), element_cut.element_cut_type.attachment)
-                , found = db_provider.int_val(dr["found_file"]) > 0;
-              string style = cut ? "badge-warning" : (found ? "badge-danger" : "badge-light");
+                , found = db_provider.int_val(dr["found_file"]) > 0, file_task = db_provider.int_val(dr["file_task"]) > 0;
+              string style = cut ? "badge-warning" : (found ? "badge-danger" : (file_task ? "badge-primary" : "badge-light"));
               html_allegati += !_is_client ? core.parse_html_block("task-allegato", new string[,] { { "file-id", db_provider.str_val(dr["file_id"]) }
-                  , { "http-path", db_provider.str_val(dr["http_path"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, { "style", style }, { "found", found ? "true" : "false" } })
+                  , { "http-path", db_provider.str_val(dr["http_path"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, { "style", style }, { "tp_att", style } })
                 : core.parse_html_block("task-allegato-client", new string[,] {
-                  { "file-id", db_provider.str_val(dr["file_id"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, { "style", style }, { "found", found ? "true" : "false" }
+                  { "file-id", db_provider.str_val(dr["file_id"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, { "style", style }, { "tp_att", style }
                   , { "user-id", ob.user_id.ToString() }, { "user-name", ob.user_name } });
             }
             res.html_element = html_allegati != "" ? core.parse_html_block("task-allegati", new string[,] { { "html-allegati", html_allegati } }) : "";

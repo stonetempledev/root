@@ -236,7 +236,8 @@
       , tt.tipo, tt.[order] as tipo_order, isnull(tt.class, 'light') as tipo_class, isnull(tt.title_plurale, '') as tipo_title_plurale, isnull(tt.title_singolare, '') as tipo_title_singolare
       , ts.stima, ts.[days] as stima_days, isnull(ts.class, 'light') as stima_class, isnull(ts.title_plurale, '') as stima_title_plurale, isnull(ts.title_singolare, '') as stima_title_singolare
       , (select top 1 1 from dn_tasks_notes where task_id = t3.task_id) as task_notes
-      , (select top 1 1 from vw_task_allegati f2 where f2.folder_id = t3.folder_id and t3.file_id is null) as task_files
+      , (select top 1 1 from vw_task_allegati f2 where f2.task_id = t3.task_id 
+          and not exists (select top 1 1 from dn_files_info where file_name = f2.file_name)) as task_files
   from (select t2.*, datediff(day, t2.dt_ref, getdate()) as diff_days
     from (select t.task_id, t.synch_folder_id, isnull(t.folder_id, f.folder_id) as folder_id
 	   , t.file_id, t.title, t.[user], t.stato, t.priorita, t.tipo, t.stima, t.dt_ins, t.dt_upd
@@ -333,6 +334,7 @@ insert into dn_search_folders (search_id, synch_folder_id, folder_id)
 
     <query name="get-task-allegati">
       <![CDATA[select a.file_id, a.file_name, a.extension, a.http_path {@cond_bool='search','field-search','no-field-search'}       
+       , (select top 1 1 from dn_tasks where task_id = a.task_id and file_id = a.file_id) as file_task
       from vw_task_allegati a
       where a.task_id = {@field='task_id'}]]>
       <cond name="field-search">
