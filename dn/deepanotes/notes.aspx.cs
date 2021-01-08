@@ -61,7 +61,7 @@ public partial class _notes : tl_page
                   file.InputStream.CopyTo(streamReader);
                   content = streamReader.ToArray();
                 }
-                add_att(ob, task_id, file.FileName, content);
+                add_att(ob, task_id, Path.GetFileName(file.FileName), content);
               } else throw new Exception("tipo file upload '" + tp_file + "' non supportato!");
             }
           } else throw new Exception("nessun file da caricare!");

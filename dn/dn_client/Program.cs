@@ -85,7 +85,7 @@ namespace dn_client {
         //} catch (Exception ex) { MessageBox.Show(ex.Message); }
 
         Application.SetCompatibleTextRenderingDefault(false);
-        Application.Run(new frm_main(_c));
+        Application.Run(new frm_main(_c));        
 
         // close client
         conn = open_conn();

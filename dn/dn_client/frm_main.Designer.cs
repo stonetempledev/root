@@ -92,7 +92,7 @@
       this.wb_main.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.wb_main.Location = new System.Drawing.Point(-2, 28);
+      this.wb_main.Location = new System.Drawing.Point(0, 31);
       this.wb_main.MinimumSize = new System.Drawing.Size(20, 20);
       this.wb_main.Name = "wb_main";
       this.wb_main.ScriptErrorsSuppressed = true;
