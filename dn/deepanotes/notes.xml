@@ -386,7 +386,7 @@
 	 from dbo.fnc_dn_folders({@field='folder_id'}, {@field='synch_folder_id'}) ft
 	 where ft.lvl > 0) ff on ff.folder_id = f.folder_id and ff.synch_folder_id = f.synch_folder_id;
    
- delete dn from dn_files f
+ delete f from dn_files f
   where file_id is not null and not exists (select top 1 1 from dn_folders where folder_id = f.file_id);
   
  delete dn from dn_files_contents dn

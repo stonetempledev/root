@@ -144,7 +144,7 @@
     <query name="del-folder">
       <![CDATA[delete from dn_folders where folder_id = {@field='folder_id'};
       
-        delete dn from dn_files f
+        delete f from dn_files f
           where file_id is not null and not exists (select top 1 1 from dn_folders where folder_id = f.file_id);
           
         delete dn from dn_files_contents dn

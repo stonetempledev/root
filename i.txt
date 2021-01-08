@@ -4,7 +4,7 @@ github.hub
 
 IN CORSO
  . dn: ottimizzazione attività
-  / ci sono dei problemi per le attività con degli spazi nel nome
+  / attendere prego per le ricerche lunghe
   . ricerca anche per utente assegnato, etichette attività
   ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
   . anteprima immagini 
