@@ -180,24 +180,24 @@ namespace dn_lib.tools {
     public void reset() { _tables.Clear(); _folders.Clear(); _vars.Clear(); _conns.Clear(); _html_blocks.Clear(); _queries.Clear(); }
 
     public void read_vars(xml_doc doc, Dictionary<string, var> dv, string var_key = "", string doc_key = "", bool for_pg = false
-      , string xpath = "") {
-
+      , string xpath = "")
+    {
       // vars
       string nkey = "";
       try {
-        foreach (xml_node vars in doc.nodes(xpath == "" ? "/config/vars" : xpath)) {
-          string machine = vars.get_attr("machine");
-          string bname = vars.get_attr("name");
-          foreach (xml_node var in vars.nodes("var")) {
+        foreach(xml_node vars in doc.nodes(xpath == "" ? "/config/vars" : xpath)) {
+          string machine = vars.get_attr("machine"), bname = vars.get_attr("name");
+          foreach(xml_node var in vars.nodes("var")) {
             string machine2 = var.get_attr("machine") != "" ? var.get_attr("machine") : machine;
-            if (machine2 != "" && _core.machine_key() != machine2.ToLower()) continue;
+            if(machine2 != "" && _core.machine_key() != machine2.ToLower()) continue;
             nkey = var_key + bname + var.get_attr("name");
+            if(dv.Keys.Contains(nkey)) dv.Remove(nkey);
             dv.Add(nkey, new var(doc_key, nkey, _core.parse(var.get_val()), for_pg));
           }
         }
-      } catch (Exception ex) { throw new Exception("chiave vars.'" + nkey + "' - " + ex.Message); }
-
+      } catch(Exception ex) { throw new Exception("chiave vars.'" + nkey + "' - " + ex.Message); }
     }
+
 
     public void load_base_config(string doc_key, string vars_key, xml_doc doc, bool for_pg = false) {
       string var_key = !string.IsNullOrEmpty(vars_key) ? vars_key + "." : "";
