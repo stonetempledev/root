@@ -22,6 +22,7 @@ namespace dn_lib {
     public bool has_notes { get; set; }
     public bool has_files { get; set; }
     public int level_folder { get; set; }
+    public doc_task doc { get; set; }
 
     public task(int synch_folder_id, long id, long? file_id, long? folder_id, string title, string user
       , DateTime? dt_ref, DateTime? dt_ins, DateTime? dt_upd, task_stato stato, task_priorita priorita
@@ -33,17 +34,18 @@ namespace dn_lib {
     }
 
     public task(int synch_folder_id, long? file_id, long? folder_id, string title, string user
-      , string stato, string priorita, string tipo, string stima, DateTime? dt_ins, DateTime? dt_upd) {
+      , string stato, string priorita, string tipo, string stima, DateTime? dt_ins, DateTime? dt_upd, doc_task doc) {
       this.synch_folder_id = synch_folder_id; this.file_id = file_id; this.folder_id = folder_id;
       this.title = title; this.user = user; this.dt_upd = dt_upd; this.dt_ins = dt_ins;
       this.stato = new task_stato(stato, 0, "", "", "");
       this.priorita = new task_priorita(priorita, 0, "", "", "");
       this.tipo = new task_tipo(tipo, 0, "", "", "");
       this.stima = new task_stima(stima, 0, "", "", "");
+      this.doc = doc;
     }
 
-    static public task parse_task(int synch_folder_id, string path, DateTime ct, DateTime lwt
-      , List<string> users, List<free_label> labels, long? folder_id = null, long? file_id = null) {
+    static public task parse_task(core c, int synch_folder_id, string path, DateTime ct, DateTime lwt
+      , List<string> users, List<free_label> labels, long? folder_id = null, long? file_id = null, bool set_index = false) {
       try {
         if (!folder_id.HasValue && !file_id.HasValue) throw new Exception("il task dev'essere un file o un folder");
 
@@ -54,8 +56,14 @@ namespace dn_lib {
         if (folder_id.HasValue && parts[parts.Length - 1] != "task") return null;
         else if (file_id.HasValue && parts[parts.Length - 1] != "task" && parts[parts.Length - 2] != "task") return null;
 
-        // parse
-        string title = "", user = "", stato = "", priorita = "", tipo = "", stima = "";
+        // leggo il doc. indice
+        doc_task it = null;
+        if(folder_id.HasValue && set_index) 
+           it = doc_task.exists_index(c, path) ? doc_task.open_index(c, path) : doc_task.create_index(c, path);
+
+        // parse nome cartella
+        string title = "", user = it != null ? it.user : "", stato = it != null ? it.stato : "", priorita = it != null ? it.priorita : ""
+          , tipo = it != null ? it.tipo : "", stima = it != null ? it.stima : "";
         DateTime? dt = null, dt2 = null;
         for (int i = 0; i < parts.Length; i++) {
           string p = parts[i]; if (p == "task") break;
@@ -65,35 +73,39 @@ namespace dn_lib {
             if (!dt.HasValue) parse_date(p, out dt); 
             else if (!dt2.HasValue) parse_date(p, out dt2);
             if (dt.HasValue && dt2.HasValue && dt2 < dt) { DateTime tmp = dt2.Value; dt = dt2; dt2 = tmp; }
+            if(it != null && it.created && dt.HasValue) it.dt_create = dt;
+            if(it != null && it.created && dt2.HasValue) it.dt_upd = dt2;
             continue;
           }
 
           // state
           free_label lbl = labels.FirstOrDefault(x => !string.IsNullOrEmpty(x.stato) && x.free_txt.ToLower() == p.ToLower());
-          if (stato == "" && lbl != null) { stato = lbl.stato; continue; }
+          if (stato == "" && lbl != null) { stato = lbl.stato; if(it != null) it.stato = stato; continue; }
 
           // priorita
           lbl = labels.FirstOrDefault(x => !string.IsNullOrEmpty(x.priorita) && x.free_txt.ToLower() == p.ToLower());
-          if (priorita == "" && lbl != null) { priorita = lbl.priorita; continue; }
+          if (priorita == "" && lbl != null) { priorita = lbl.priorita; if(it != null) it.priorita = priorita; continue; }
 
           // tipo
           lbl = labels.FirstOrDefault(x => !string.IsNullOrEmpty(x.tipo) && x.free_txt.ToLower() == p.ToLower());
-          if (tipo == "" && lbl != null) { tipo = lbl.tipo; continue; }
+          if (tipo == "" && lbl != null) { tipo = lbl.tipo; if(it != null) it.tipo = tipo; continue; }
 
           // stima
           lbl = labels.FirstOrDefault(x => !string.IsNullOrEmpty(x.stima) && x.free_txt.ToLower() == p.ToLower());
-          if (stima == "" && lbl != null) { stima = lbl.stima; continue; }
+          if (stima == "" && lbl != null) { stima = lbl.stima; if(it != null) it.stima = stima; continue; }
 
           // user
-          if (user == "" && users.FirstOrDefault(x => x.ToLower() == p.ToLower()) != null) { user = p; continue; }
+          if (user == "" && users.FirstOrDefault(x => x.ToLower() == p.ToLower()) != null) { user = p; if(it != null) it.user = user;  continue; }
 
           // title
           if (title == "") title = p;
 
         }
 
+        if(it != null && it.created && !it.dt_upd.HasValue) it.dt_upd = lwt;
+
         return new task(synch_folder_id, file_id, folder_id, title, user, stato, priorita, tipo, stima
-          , dt.HasValue ? dt : ct, dt2.HasValue ? dt2 : lwt);
+          , dt.HasValue ? dt : ct, dt2.HasValue ? dt2 : lwt, it);
       } catch { return null; }
     }
 

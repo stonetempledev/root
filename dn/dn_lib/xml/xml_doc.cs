@@ -34,7 +34,7 @@ namespace dn_lib.xml {
 
     public string xml { get { load(); return _doc.OuterXml; } set { load_xml(value); } }
 
-    public void save (string path = "") { if (_doc == null) return; if (!string.IsNullOrEmpty(path)) _path = path; _doc.Save(_path); }
+    public virtual void save (string path = "") { if (_doc == null) return; if (!string.IsNullOrEmpty(path)) _path = path; _doc.Save(_path); }
 
     protected void load () { if (_doc != null) return; _doc = new XmlDocument(); _doc.Load(_path); }
 

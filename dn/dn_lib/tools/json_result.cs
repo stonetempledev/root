@@ -23,6 +23,7 @@ namespace dn_lib.tools
     public Dictionary<string, string> vars { get; set; }
     public List<string> list { get; set; }
     public void set_var(string name, string val) { if(this.vars.ContainsKey(name)) this.vars[name] = val; else this.vars.Add(name, val); }
+    public object data { get; set; }
 
     public json_result(type_result tr, string message = "", string contents = "")
     {

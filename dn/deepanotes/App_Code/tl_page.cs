@@ -262,48 +262,39 @@ public class tl_page : System.Web.UI.Page {
 
   #endregion
 
-  #region queries
+  #region cache
 
-  protected bool set_cache_var(string var_name, string var_value) {
-    return string.IsNullOrEmpty(var_value) ? reset_cache_var(var_name)
-      : set_cache_var2(var_name, var_value);
+  public bool set_cache_var(string var_name, string var_value)
+  {
+    if(!is_user) return false;
+    int user_id = _user.id;
+    return string.IsNullOrEmpty(var_value) ? reset_cache_var(var_name, user_id)
+      : set_cache_var2(var_name, var_value, user_id);
   }
 
-  private bool set_cache_var2(string var_name, string var_value) {
-    if (!is_user) return false;
-    int user_id = _user.id;
+  private bool set_cache_var2(string var_name, string var_value, int user_id)
+  {
     db_conn.exec(core.parse(config.get_query("lib-base.set-cache-var").text
       , new Dictionary<string, object>() { { "user_id", user_id }, { "var_name", var_name }, { "var_value", var_value } }));
     return true;
   }
 
-  protected bool reset_cache_var(string var_name) {
-    if (!is_user) return false;
-    int user_id = _user.id;
+  protected bool reset_cache_var(string var_name, int user_id)
+  {
     db_conn.exec(core.parse(config.get_query("lib-base.reset-cache-var").text
       , new Dictionary<string, object>() { { "user_id", user_id }, { "var_name", var_name } }));
     return true;
   }
 
-  protected string get_cache_var(string var_name, string def = "") {
-    if (!is_user) return def;
+  public string get_cache_var(string var_name, string def = "")
+  {
+    if(!is_user) return def;
     int user_id = _user.id;
     DataRow dr = db_conn.first_row(core.parse(config.get_query("lib-base.get-cache-var").text
       , new Dictionary<string, object>() { { "user_id", user_id }, { "list_vars", "'" + var_name + "'" } }));
     return dr != null ? db_provider.str_val(dr["var_value"], def) : def;
   }
 
-  protected Dictionary<string, string> get_cache_vars(string var_names) {
-    if (!is_user) return null;
-    int user_id = _user.id;
-    Dictionary<string, string> res = new Dictionary<string, string>();
-    foreach (DataRow dr in db_conn.dt_table(core.parse(config.get_query("lib-base.get-cache-var").text
-      , new Dictionary<string, object>() { { "user_id", user_id }
-        , { "list_vars", string.Join(", ", var_names.Split(new char[]{','}, StringSplitOptions.RemoveEmptyEntries).Select(s => "'" + s + "'")) } })).Rows) {
-      res.Add(db_provider.str_val(dr["var_name"]), db_provider.str_val(dr["var_value"]));
-    }
-    return res;
-  }
-
   #endregion
+
 }

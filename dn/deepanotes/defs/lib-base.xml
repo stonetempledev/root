@@ -33,5 +33,9 @@
       <![CDATA[select setting_id, setting_name, setting_var, machine_name 
         from settings]]>
     </query>
+    <query name="get-setting">
+      <![CDATA[select setting_id, setting_name, setting_var, machine_name
+        from settings where setting_name = '{@field='setting-name'}' and isnull(machine_name, '') = '']]>
+    </query>
   </queries>
 </config>

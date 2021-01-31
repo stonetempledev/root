@@ -58,6 +58,13 @@ public partial class _io : tl_page
             string path = ob.file_path(jr.val_int("id"));
             File.WriteAllBytes(path, bytes);
             s.set_file_content(jr.val_int("id"), Path.GetExtension(path).ToLower(), enc.GetString(bytes), DateTime.Now, DateTime.Now);
+          } // synch folders
+          else if(jr.action == "synch_folders") {
+            synch s = ob.get_synch(jr.val_int("user_id"), jr.val_str("user_name"));
+            s.synch_event += s_synch_event;
+            synch_results rf = s.reload_folders();
+            res.data = rf;
+            res.contents = _synch_events;
           }
 
         } catch(Exception ex) { log.log_err(ex); res = new json_result(json_result.type_result.error, ex.Message); }
@@ -74,6 +81,12 @@ public partial class _io : tl_page
       //} else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
     } catch(Exception ex) { log.log_err(ex); if(!json_request.there_request(this)) master.err_txt(ex.Message); }
+  }
+
+  protected string _synch_events = "";
+  private void s_synch_event(object sender, synch_event_args e)
+  {
+    _synch_events += e.message + "\n";
   }
 
   protected override void OnLoad(EventArgs e)

@@ -45,6 +45,8 @@ public partial class _default : tl_master {
       tlp.set_user(u_id, u_name, u_email, u_tp);
       __utype.Value = u_tp.ToString();
 
+      __sid.Value = this.Session.SessionID;
+
       // command
       txt_cmd.Value = this.cmd = tlp.qry_val("cmd");
 

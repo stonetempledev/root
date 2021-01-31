@@ -29,10 +29,12 @@
       this.ntf_main = new System.Windows.Forms.NotifyIcon(this.components);
       this.tmr_state = new System.Windows.Forms.Timer(this.components);
       this.btn_close = new System.Windows.Forms.Button();
-      this.wb_main = new System.Windows.Forms.WebBrowser();
       this.tmr_att = new System.Windows.Forms.Timer(this.components);
       this.ss_main = new System.Windows.Forms.StatusStrip();
       this.ss_label = new System.Windows.Forms.ToolStripStatusLabel();
+      this.tmr_synch = new System.Windows.Forms.Timer(this.components);
+      this.lw_log = new System.Windows.Forms.ListView();
+      this.chk_fine = new System.Windows.Forms.CheckBox();
       this.ss_main.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -48,7 +50,7 @@
       this.lbl_title.Name = "lbl_title";
       this.lbl_title.Size = new System.Drawing.Size(647, 28);
       this.lbl_title.TabIndex = 0;
-      this.lbl_title.Text = "Deepa Notes Client";
+      this.lbl_title.Text = "Deepa Notes Pannello";
       this.lbl_title.DoubleClick += new System.EventHandler(this.lbl_title_DoubleClick);
       this.lbl_title.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lbl_title_MouseDown);
       this.lbl_title.MouseMove += new System.Windows.Forms.MouseEventHandler(this.lbl_title_MouseMove);
@@ -86,22 +88,6 @@
       this.btn_close.UseVisualStyleBackColor = false;
       this.btn_close.Click += new System.EventHandler(this.btn_close_Click);
       // 
-      // wb_main
-      // 
-      this.wb_main.AllowWebBrowserDrop = false;
-      this.wb_main.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.wb_main.Location = new System.Drawing.Point(0, 31);
-      this.wb_main.MinimumSize = new System.Drawing.Size(20, 20);
-      this.wb_main.Name = "wb_main";
-      this.wb_main.ScriptErrorsSuppressed = true;
-      this.wb_main.Size = new System.Drawing.Size(647, 412);
-      this.wb_main.TabIndex = 5;
-      this.wb_main.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.wb_main_DocumentCompleted);
-      this.wb_main.Navigated += new System.Windows.Forms.WebBrowserNavigatedEventHandler(this.wb_main_Navigated);
-      this.wb_main.Navigating += new System.Windows.Forms.WebBrowserNavigatingEventHandler(this.wb_main_Navigating);
-      // 
       // tmr_att
       // 
       this.tmr_att.Enabled = true;
@@ -126,6 +112,41 @@
       this.ss_label.Name = "ss_label";
       this.ss_label.Size = new System.Drawing.Size(0, 17);
       // 
+      // tmr_synch
+      // 
+      this.tmr_synch.Enabled = true;
+      this.tmr_synch.Interval = 20000;
+      this.tmr_synch.Tick += new System.EventHandler(this.tmr_synch_Tick);
+      // 
+      // lw_log
+      // 
+      this.lw_log.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.lw_log.BorderStyle = System.Windows.Forms.BorderStyle.None;
+      this.lw_log.HideSelection = false;
+      this.lw_log.Location = new System.Drawing.Point(0, 31);
+      this.lw_log.Name = "lw_log";
+      this.lw_log.Size = new System.Drawing.Size(645, 382);
+      this.lw_log.TabIndex = 7;
+      this.lw_log.UseCompatibleStateImageBehavior = false;
+      // 
+      // chk_fine
+      // 
+      this.chk_fine.Checked = true;
+      this.chk_fine.CheckState = System.Windows.Forms.CheckState.Checked;
+      this.chk_fine.Cursor = System.Windows.Forms.Cursors.Hand;
+      this.chk_fine.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+      this.chk_fine.ForeColor = System.Drawing.Color.Gray;
+      this.chk_fine.Location = new System.Drawing.Point(539, 417);
+      this.chk_fine.Name = "chk_fine";
+      this.chk_fine.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
+      this.chk_fine.Size = new System.Drawing.Size(98, 21);
+      this.chk_fine.TabIndex = 8;
+      this.chk_fine.Text = "vai alla fine";
+      this.chk_fine.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+      this.chk_fine.UseVisualStyleBackColor = true;
+      // 
       // frm_main
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -133,8 +154,9 @@
       this.BackColor = System.Drawing.Color.White;
       this.ClientSize = new System.Drawing.Size(645, 465);
       this.ControlBox = false;
+      this.Controls.Add(this.chk_fine);
+      this.Controls.Add(this.lw_log);
       this.Controls.Add(this.ss_main);
-      this.Controls.Add(this.wb_main);
       this.Controls.Add(this.btn_close);
       this.Controls.Add(this.lbl_title);
       this.Font = new System.Drawing.Font("Segoe UI Light", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -159,10 +181,12 @@
     private System.Windows.Forms.NotifyIcon ntf_main;
     private System.Windows.Forms.Timer tmr_state;
     private System.Windows.Forms.Button btn_close;
-    private System.Windows.Forms.WebBrowser wb_main;
     private System.Windows.Forms.Timer tmr_att;
     private System.Windows.Forms.StatusStrip ss_main;
     private System.Windows.Forms.ToolStripStatusLabel ss_label;
+    private System.Windows.Forms.Timer tmr_synch;
+    private System.Windows.Forms.ListView lw_log;
+    private System.Windows.Forms.CheckBox chk_fine;
   }
 }
 

@@ -33,7 +33,17 @@ namespace dn_lib
 
     public void clean_readed() { db_conn.exec(core.parse_query("lib-notes.clean-readed")); }
 
-    public int del_unreaded() { return int.Parse(db_conn.exec(core.parse_query("lib-notes.del-unreaded"))); }
+    public void del_unreaded(out int cc_files, out int cc_folders)
+    {
+      DataRow r = db_conn.first_row(core.parse_query("lib-notes.del-unreaded"));
+      cc_files = Convert.ToInt32(r[0]); cc_folders = Convert.ToInt32(r[1]);
+    }
+
+    public void update_folder_name(string folder_name, long folder_id)
+    {
+      db_conn.exec(core.parse_query("lib-notes.update-folder-name"
+        , new Dictionary<string, object>() { { "folder_id", folder_id.ToString() }, { "folder_name", folder_name } }));
+    }
 
     public long ins_folder(int synch_folder_id, long? parent_id, string folder_name, DateTime dt_ins, DateTime dt_upd, out string tp, out int cc)
     {
@@ -61,12 +71,13 @@ namespace dn_lib
       return ress[0] != "" ? long.Parse(ress[0]) : -1;
     }
 
-    public long ins_task(task t, out string tp, out int cc, out DateTime? notes_lwt)
+    public long ins_task(task t, out string tp, out int cc, out DateTime? notes_lwt, DateTime? lwt_i = null)
     {
       tp = ""; cc = 0; notes_lwt = null;
       string res = db_conn.exec(core.parse_query("lib-notes.ins-task", new Dictionary<string, object>() { { "task", t }
         , { "folder_id", t.folder_id.HasValue ? t.folder_id.Value : 0 }, { "file_id", t.file_id.HasValue ? t.file_id.Value : 0 }
-        , { "stato", t.stato }, { "priorita", t.priorita }, { "tipo", t.tipo }, { "stima", t.stima } }), true, true);
+        , { "stato", t.stato }, { "priorita", t.priorita }, { "tipo", t.tipo }, { "stima", t.stima }
+        , { "dt_index", lwt_i.HasValue ? lwt_i.Value.ToString("yyyy/MM/dd HH:mm:ss") : "" } }), true, true);
 
       string[] ress = res.Split(new char[] { ';' });
       tp = ress[1]; cc = int.Parse(ress[2]);
@@ -166,30 +177,81 @@ namespace dn_lib
 
     public file_type is_type_file(string extension) { reload_settings(); return _f_types.FirstOrDefault(x => x.extension.ToLower() == extension.ToLower()); }
 
-    public synch_results reload_folders()
+    public synch_results reload_folders(bool check = false, bool force = false)
     {
       reload_settings();
 
       synch_results res = new synch_results();
       try {
+
+        // check cache
+        synch_results rc = null;
+        if(!check) {
+          res.scan = true;
+
+          // seconds
+          if(!force) {
+            string prev_last = get_cache_var("synch-last", -1);
+            DateTime last = prev_last != "" ? DateTime.Parse(prev_last) : DateTime.MinValue;
+            setting s = settings.get_setting(core, db_conn, "synch-seconds");
+            if(s != null && last != DateTime.MinValue && (DateTime.Now - last).TotalSeconds < int.Parse(s.value)) {
+              res.scan = false;
+              return res;
+            }
+          }
+
+          // files, folders, lwt          
+          int prev_files = int.Parse(get_cache_var("synch-files", -1, "-1"))
+          , prev_folders = int.Parse(get_cache_var("synch-folders", -1, "-1"));
+          string prev_lwt = get_cache_var("synch-lwt", -1);
+          DateTime lwt = prev_lwt != "" ? DateTime.Parse(prev_lwt) : DateTime.MinValue;
+          rc = reload_folders(true);
+          if(!force && ((prev_files > 0 && prev_files == rc.files)
+            && (prev_folders > 0 && prev_folders == rc.folders)
+            && (lwt != DateTime.MinValue && lwt == rc.lwt))) {
+            set_cache_var("synch-last", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), -1);
+            res.scan = false;
+            return res;
+          }
+        }
+
         DateTime start = DateTime.Now;
-        fire_synch_event("lettura cartelle", true);
+        if(!check) fire_synch_event("elenco cartelle da sincronizzare", true);
 
         // folders to synch
         this.synch_folders = list_synch_folders(Environment.MachineName);
-        foreach(synch_folder f in this.synch_folders)
-          fire_synch_event(string.Format("cartella di sincronizzazione '{0}' - {1}, path: {2}"
-            , f.title, f.des, f.local_path), true);
+        if(!check) {
+          foreach(synch_folder f in this.synch_folders)
+            fire_synch_event(string.Format("   - cartella di sincronizzazione '{0}' - {1}, path: {2}"
+              , f.title, f.des, f.local_path), true);
+        }
 
         // leggo le cartelle
-        clean_readed();
+        if(!check) clean_readed();
         foreach(synch_folder f in this.synch_folders) {
-          fire_synch_event(string.Format("leggo la cartella {0}", f.local_path), true);
-          res = init_synch_folder(f.id, f.local_path, res: res);
+          if(!check) fire_synch_event($"elaboro la cartella {f.local_path}...", true);
+          res = init_synch_folder(f.id, f.local_path, res: res, check: check);
         }
-        res.deleted = del_unreaded();
-        if(res.deleted > 0) fire_synch_event("cancellati " + res.deleted.ToString() + " files/folders/tasks");
+
+        if(!check) {
+          del_unreaded(out int cc_files, out int cc_folders);
+          res.deleted = cc_files + cc_folders;
+          if(res.deleted > 0) {
+            if(cc_files > 0) fire_synch_event($"cancellati dal database: {cc_files} files");
+            if(cc_folders > 0) fire_synch_event($"cancellati dal database: {cc_folders} folders");
+          }
+        }
+
         res.seconds = (int)(DateTime.Now - start).TotalSeconds;
+
+        // check cache
+        if(!check) {
+          set_cache_var("synch-files", rc.files.ToString(), -1);
+          set_cache_var("synch-folders", rc.folders.ToString(), -1);
+          set_cache_var("synch-lwt", rc.lwt.ToString("yyyy/MM/dd HH:mm:ss"), -1);
+          set_cache_var("synch-last", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), -1);
+        }
+
       } catch(Exception ex) { res.err = ex.Message; log.log_err(ex.Message); } finally { }
 
       return res;
@@ -203,7 +265,7 @@ namespace dn_lib
     }
 
     protected synch_results init_synch_folder(int synch_folder_id, string path
-      , long? parent_id = null, task parent_task = null, synch_results res = null)
+      , long? parent_id = null, task parent_task = null, synch_results res = null, bool check = false)
     {
       if(res == null) res = new synch_results();
       try {
@@ -212,70 +274,88 @@ namespace dn_lib
         foreach(string fp in Directory.EnumerateDirectories(path)) {
           DirectoryInfo di = new DirectoryInfo(fp);
           DateTime ct = sys.without_ms(di.CreationTime), lwt = sys.without_ms(di.LastWriteTime);
+          if(lwt > res.lwt) res.lwt = lwt;
+          string folder_name = di.Name, folder_path = fp;
 
-          // folder
-          string tp; int cc = 0;
-          long folder_id = ins_folder(synch_folder_id, parent_id, di.Name, ct, lwt, out tp, out cc);
-          if(tp == "insert") fire_synch_event("added folder: " + fp);
-          else if(tp == "update" && cc > 0) fire_synch_event("updated folder: " + fp);
+          long folder_id = 0; task t = null;
+          if(!check) {
+            // folder
+            string tp; int cc = 0;
+            folder_id = ins_folder(synch_folder_id, parent_id, folder_name, ct, lwt, out tp, out cc);
+            if(tp == "insert") fire_synch_event("aggiunto folder al database: " + fp);
+            else if(tp == "update" && cc > 0) fire_synch_event("aggiornato folder nel database: " + fp);
 
-          // task
-          task t = null;
-          if(parent_task == null) {
-            t = task.parse_task(synch_folder_id, fp, ct, lwt, _users, _labels, folder_id: folder_id);
-            if(t != null) {
-              t.id = ins_task(t, out tp, out cc, out DateTime? notes_lwt);
-              if(tp == "insert") fire_synch_event("added task: " + Path.Combine(path, t.title));
-              else if(tp == "update" && cc > 0) fire_synch_event("updated task: " + Path.Combine(path, t.title));
-            }
+            // task folder 
+            if(parent_task == null)
+              t = elab_task_folder(res, synch_folder_id, fp, ct, lwt, folder_id);
           }
+
           res.folders++;
           if(parent_task != null) parent_task.level_folder++;
-          res = init_synch_folder(synch_folder_id, Path.Combine(path, di.Name), folder_id, t != null ? t : parent_task, res);
+          res = init_synch_folder(synch_folder_id, Path.Combine(path, folder_name), folder_id, t != null ? t : parent_task, res, check);
         }
 
         // files
+        string i_task = core.config.get_var("lib-vars.index-folder").value;
         foreach(string fn in Directory.EnumerateFiles(path)) {
           FileInfo fi = new FileInfo(fn);
           DateTime ct = sys.without_ms(fi.CreationTime), lwt = sys.without_ms(fi.LastWriteTime);
+          if(lwt > res.lwt) res.lwt = lwt;
 
           // web.config
-          if(Path.GetFileName(fn).ToLower() == "web.config" && !parent_id.HasValue)
-            continue;
+          if(fi.Name.ToLower() == "web.config" && !parent_id.HasValue) continue;
 
-          // file          
-          long file_id = ins_file(synch_folder_id, parent_id, fi.Name, fi.Extension, ct, lwt
-            , out string tp, out int cc, out DateTime? content_lwt);
-          if(tp == "insert") fire_synch_event("added file " + file_id.ToString() + ": " + fn);
-          else if(tp == "update" && cc > 0) fire_synch_event("updated file " + file_id.ToString() + ": " + fn);
+          // __i.xml
+          if(parent_task != null && fi.Name == i_task) continue;
 
-          // file content
-          string new_content = "";
-          file_info info = is_info_file(fi.Name);
-          file_type ftp = is_type_file(fi.Extension);
-          if(info != null || ftp != null) {
-            if(tp == "insert" || (tp == "update" && (!content_lwt.HasValue || (content_lwt.HasValue && lwt > content_lwt.Value)))) {
-              new_content = File.ReadAllText(fn);
-              set_file_content((int)file_id, Path.GetExtension(fn).ToLower(), new_content, ct, lwt);
+          if(!check) {
 
-              if(parent_task != null && info != null)
-                set_task_notes(parent_task.id, file_id, new_content, file_type.ft_type_content.info, ct, lwt);
+            // file          
+            long file_id = ins_file(synch_folder_id, parent_id, fi.Name, fi.Extension, ct, lwt
+              , out string tp, out int cc, out DateTime? content_lwt);
+            if(tp == "insert") fire_synch_event("aggiunto file al database: " + fn);
+            else if(tp == "update" && cc > 0) fire_synch_event("aggiornato file nel database: " + fn);
 
-              fire_synch_event("letto contenuto file '" + fn + "'");
+            // file content
+            string new_content = "";
+            file_info info = is_info_file(fi.Name);
+            file_type ftp = is_type_file(fi.Extension);
+            if(info != null || ftp != null) {
+              if(tp == "insert" || (tp == "update" && (!content_lwt.HasValue || (content_lwt.HasValue && lwt > content_lwt.Value)))) {
+                new_content = File.ReadAllText(fn);
+                if(new_content.Replace(" ", "").Replace("\r", "").Replace("\n", "") != "") {
+                  set_file_content((int)file_id, Path.GetExtension(fn).ToLower(), new_content, ct, lwt);
+                  fire_synch_event("salvato contenuto file nel database: " + fn);
+
+                  if(parent_task != null && info != null) {
+                    if(set_task_notes(parent_task.id, file_id, new_content, file_type.ft_type_content.info, ct, lwt))
+                      fire_synch_event($"salvate le note del task nel database: {fn}");
+                  }
+                }
+              }
             }
-          }
 
-          // task
-          if(parent_task == null) {
-            task t = task.parse_task(synch_folder_id, fn, ct, lwt, _users, _labels, file_id: file_id);
-            if(t != null) {
-              long task_id = ins_task(t, out tp, out cc, out DateTime? notes_lwt);
-              if(tp == "insert") fire_synch_event("added task: " + Path.Combine(path, t.title));
-              else if(tp == "update" && cc > 0) fire_synch_event("updated task: " + Path.Combine(path, t.title));
+            // task file
+            if(parent_task == null) {
+              task t = task.parse_task(core, synch_folder_id, fn, ct, lwt, _users, _labels, file_id: file_id);
+              if(t != null) {
+                long task_id = ins_task(t, out tp, out cc, out DateTime? notes_lwt);
+                if(tp == "insert") fire_synch_event("inserito task nel database: " + Path.Combine(path, t.title));
+                else if(tp == "update" && cc > 0) fire_synch_event("aggiornato il task nel database: " + Path.Combine(path, t.title));
 
-              // task notes
-              if(ftp != null && (tp == "insert" || (tp == "update" && (!notes_lwt.HasValue || (notes_lwt.HasValue && lwt > notes_lwt.Value)))))
-                set_task_notes(task_id, file_id, new_content, ftp.type_content, ct, lwt);
+                // task notes
+                string notes = "";
+                if(ftp != null && (tp == "insert" || (tp == "update" && (!notes_lwt.HasValue || (notes_lwt.HasValue && lwt > notes_lwt.Value))))) {
+                  if(set_task_notes(task_id, file_id, new_content, ftp.type_content, ct, lwt, out notes))
+                    fire_synch_event($"salvate le note del task nel database: {fn}");
+                }
+
+                // file -> folder                
+                long folder_id = task_file_to_folder(synch_folder_id, (int)task_id, t.title, fn, (int)file_id, parent_id, ct, out string new_folder_path, notes);
+
+                // reparse folder task
+                elab_task_folder(res, synch_folder_id, new_folder_path, ct, lwt, folder_id);
+              }
             }
           }
 
@@ -283,23 +363,60 @@ namespace dn_lib
         }
 
         // task folder - dt_upd
-        if(parent_task != null) {
+        if(parent_task != null && !check) {
           string cc = db_conn.exec(core.parse_query("lib-notes.upd-task-date", new string[,] { { "task_id", parent_task.id.ToString() } }));
-          if(cc != "0") fire_synch_event("updated task: " + Path.Combine(Path.GetDirectoryName(path), parent_task.title));
+          if(cc != "0") fire_synch_event("aggiornato task date nel database: " + Path.Combine(Path.GetDirectoryName(path), parent_task.title));
         }
 
       } catch(Exception ex) { log.log_err(ex.Message); res.err = ex.Message; }
       return res;
     }
 
+    protected task elab_task_folder(synch_results res, int synch_folder_id, string folder_path, DateTime ct, DateTime lwt, long folder_id)
+    {
+      task t = task.parse_task(core, synch_folder_id, folder_path, ct, lwt, _users, _labels, folder_id: folder_id, set_index: true);
+      if(t != null) {
+
+        // rinomino il folder
+        string folder_name = Path.GetFileName(folder_path);
+        if(folder_name.ToLower() != (t.title + ".task").ToLower()) {
+          try {
+            string dn = Path.GetDirectoryName(folder_path), new_name = t.title + ".task";
+            Directory.Move(folder_path, Path.Combine(dn, new_name));
+            fire_synch_event("rinominato folder: " + folder_path + ", in: " + Path.Combine(dn, new_name));
+            folder_name = new_name; folder_path = Path.Combine(dn, new_name);
+            update_folder_name(folder_name, folder_id);            
+          } catch(Exception ex) { log.log_err(ex); res.err = ex.Message; }
+        }
+
+        // aggiorno l'indice
+        DateTime? lwt_i = null;
+        if(t.doc != null && t.doc.changed) {
+          t.doc.save_into_folder(core, folder_path);
+          fire_synch_event("salvato index doc: " + t.doc.path);
+          lwt_i = t.doc.lwt;
+        }
+
+        t.id = ins_task(t, out string tp, out int cc, out DateTime? notes_lwt, lwt_i);
+        if(tp == "insert") fire_synch_event("aggiunto task al database: " + t.title);
+        else if(tp == "update" && cc > 0) fire_synch_event("aggiornato task nel database: " + t.title);
+      }
+      return t;
+    }
+
     public bool set_task_notes(long task_id, long file_id, string content, file_type.ft_type_content type, DateTime ct, DateTime lwt)
     {
-      bool res = false;
+      return set_task_notes(task_id, file_id, content, type, ct, lwt, out string out_notes);
+    }
+
+    public bool set_task_notes(long task_id, long file_id, string content, file_type.ft_type_content type, DateTime ct, DateTime lwt, out string out_notes)
+    {
+      bool res = false; out_notes = "";
       if(type == file_type.ft_type_content.info) {
         db_conn.exec(core.parse_query("lib-notes.set-task-notes", new string[,] { { "task_id", task_id.ToString() }, { "file_id", file_id.ToString() }
           , { "ct", ct.ToString("yyyy-MM-dd HH:mm:ss") }, { "lwt", lwt.ToString("yyyy-MM-dd HH:mm:ss") } })
           , pars: new System.Data.Common.DbParameter[] { new SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = content } });
-        res = true;
+        out_notes = content; res = true;
       } else if(type == file_type.ft_type_content.source) {
         string key_from = "###FROM_NOTES###", key_to = "###TO_NOTES###";
         int from_n = content.IndexOf(key_from), to_n = from_n >= 0 ? content.IndexOf(key_to, from_n + 1) : -1;
@@ -308,11 +425,137 @@ namespace dn_lib
           db_conn.exec(core.parse_query("lib-notes.set-task-notes", new string[,] { { "task_id", task_id.ToString() }, { "file_id", file_id.ToString() }
             , { "ct", ct.ToString("yyyy-MM-dd HH:mm:ss") }, { "lwt", lwt.ToString("yyyy-MM-dd HH:mm:ss") } })
             , pars: new System.Data.Common.DbParameter[] { new SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes } });
-          res = true;
+          out_notes = notes; res = true;
         }
       }
-      if(res) fire_synch_event($"lette note task {task_id}");
       return res;
+    }
+
+    public long task_file_to_folder(int synch_id, int task_id, string title, string file_path, int file_id, long? parent_folder_id, DateTime c_time, string notes = "")
+    {
+      return task_file_to_folder(synch_id, task_id, title, file_path, file_id, parent_folder_id, c_time, out string new_folder_path, notes);
+    }
+
+    public long task_file_to_folder(int synch_id, int task_id, string title, string file_path, int file_id, long? parent_folder_id, DateTime c_time, out string new_folder_path, string notes = "")
+    {
+      fire_synch_event($"trasformazione task file in task folder: {file_path}");
+
+      file_type ftp = is_type_file(Path.GetExtension(file_path));
+      bool ifile = ftp.type_content == file_type.ft_type_content.info;
+
+      // creo una cartella con questo nome di task e aggiungo le note
+      string parent = Path.GetDirectoryName(file_path)
+        , name_folder = Path.GetFileNameWithoutExtension(file_path);
+      new_folder_path = Path.Combine(parent, name_folder);
+      int sfid = synch_id; long? pfid = parent_folder_id;
+      Directory.CreateDirectory(new_folder_path);
+      string tp; int cc; DateTime? clwt;
+      long folder_id = ins_folder(sfid, pfid, name_folder, c_time, c_time, out tp, out cc);
+      fire_synch_event("creato folder: " + new_folder_path);
+
+      // sposto il task file      
+      string name_file = (ifile ? "i" : "content") + Path.GetExtension(file_path);
+      File.Move(file_path, Path.Combine(new_folder_path, name_file));
+      db_conn.exec(core.parse_query("lib-notes.del-file", new string[,] { { "file_id", file_id.ToString() } }));
+      long nid = ins_file(sfid, folder_id, name_file, Path.GetExtension(file_path).ToLower(), c_time, c_time, out tp, out cc, out clwt);
+      set_folder_task(task_id, (int)folder_id);
+      fire_synch_event("spostato file da: " + file_path + ", a:" + Path.Combine(new_folder_path, name_file));
+      if(ifile) {
+        init_task_notes(task_id, (int)nid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+        fire_synch_event("salvate le note del task: " + new_folder_path);
+      }
+
+      // setto le note
+      if(notes != "" && !ifile) {
+        File.WriteAllText(Path.Combine(new_folder_path, "i.txt"), notes, System.Text.Encoding.UTF8);
+        nid = ins_file(sfid, folder_id, "i.txt", ".txt", c_time, c_time, out tp, out cc, out clwt);
+        set_file_content((int)nid, ".txt", notes.Trim(new char[] { ' ', '\n', '\r' }), c_time, c_time);
+        init_task_notes(task_id, (int)nid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+        fire_synch_event("salvate le note nel file: " + Path.Combine(new_folder_path, "i.txt"));
+      }
+
+      return folder_id;
+    }
+
+    protected void set_folder_task(int task_id, int folder_id)
+    {
+      db_conn.exec(core.parse_query("lib-notes.set-task-folder", new string[,] { { "task_id", task_id.ToString() }, { "folder_id", folder_id.ToString() } }));
+    }
+
+    public void save_task_notes(int task_id, string notes)
+    {
+      DataTable dt = db_conn.dt_table(core.parse_query("lib-notes.info-task-notes", new string[,] { { "task_id", task_id.ToString() } }));
+      if(dt.Rows.Count == 0) throw new Exception("l'attività " + task_id.ToString() + " non è registrata correttamente!");
+
+      DataRow dr = dt.Rows[0];
+      DateTime ct = DateTime.Now;
+
+      // aggiornamento del file
+      if(db_provider.str_val(dr["file_id_notes"]) != "") {
+        int fid = db_provider.int_val(dr["file_id_notes"]);
+        string file_path = db_provider.str_val(dr["file_path_notes"]) != "" ?
+          db_provider.str_val(dr["file_path_notes"]) : db_provider.str_val(dr["file_path"]);
+        System.Text.Encoding e = encoding_type.GetType(file_path);
+        // file sorgente
+        if(db_provider.str_val(dr["type_content"]) == "source") {
+          string all = File.ReadAllText(file_path, e), oc = db_provider.str_val(dr["open_comment"])
+            , cc = db_provider.str_val(dr["close_comment"]), key_from = "###FROM_NOTES###", key_to = "###TO_NOTES###";
+          // cerco i commenti 
+          int from = all.IndexOf(key_from), to = all.IndexOf(key_to, from + 1);
+          string src = "";
+          if(from >= 0 && to > 0)
+            src = all.Substring(0, from + key_from.Length) + "\r\n" + notes + "\r\n" + all.Substring(to);
+          else
+            src = oc + " " + key_from + "\r\n" + notes + "\r\n" + key_to + cc + "\n\n" + all;
+          File.WriteAllText(file_path, src, e);
+          set_file_content(fid, Path.GetExtension(file_path).ToLower(), src, ct, ct);
+          init_task_notes(task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+        }
+        // file info
+        else {
+          File.WriteAllText(file_path, notes, e);
+          set_file_content(fid, Path.GetExtension(file_path).ToLower(), notes.Trim(new char[] { ' ', '\n', '\r' }), ct, ct);
+          init_task_notes(task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+        }
+      } // nuovo commento
+      else {
+        // file
+        if(db_provider.str_val(dr["file_id"]) != "") {
+          int fid = db_provider.int_val(dr["file_id"]);
+          string file_path = db_provider.str_val(dr["file_path"]);
+          System.Text.Encoding e = encoding_type.GetType(file_path);
+          // sorgente
+          if(db_provider.str_val(dr["type_content"]) == "source") {
+            string all = File.ReadAllText(file_path, e), oc = db_provider.str_val(dr["open_comment"])
+              , cc = db_provider.str_val(dr["close_comment"]), key_from = "###FROM_NOTES###", key_to = "###TO_NOTES###";
+            string src = oc + " " + key_from + "\r\n" + notes + "\r\n" + key_to + cc + "\n\n" + all;
+            File.WriteAllText(file_path, src, e);
+            set_file_content(fid, Path.GetExtension(file_path).ToLower(), src, ct, ct);
+            init_task_notes(task_id, fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+          } else {
+            // task file -> folder
+            string title = db_provider.str_val(dr["title"]), parent = Path.GetDirectoryName(file_path)
+              , name_folder = Path.GetFileNameWithoutExtension(file_path), new_folder = Path.Combine(parent, name_folder);
+            int sfid = db_provider.int_val(dr["synch_folder_id"]); long? pfid = db_provider.long_val_null(dr["parent_folder_id"]);
+            task_file_to_folder(sfid, task_id, title, file_path, fid, pfid, ct, notes);
+          }
+        }
+        // cartella
+        else {
+          string fp = db_provider.str_val(dr["folder_path"]) + "i.txt";
+          File.WriteAllText(fp, notes, System.Text.Encoding.UTF8);
+          string tp; int cc; DateTime? clwt;
+          long fid = ins_file(db_provider.int_val(dr["synch_folder_id"]), db_provider.int_val(dr["folder_id"]), "i.txt", ".txt", ct, ct, out tp, out cc, out clwt);
+          set_file_content((int)fid, ".txt", notes.Trim(new char[] { ' ', '\n', '\r' }), ct, ct);
+          init_task_notes(task_id, (int)fid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+        }
+      }
+    }
+
+    public void init_task_notes(int task_id, int file_id, string notes)
+    {
+      db_conn.exec(core.parse_query("lib-notes.init-notes", new string[,] { { "task_id", task_id.ToString() }, { "file_id", file_id.ToString() } })
+        , pars: new System.Data.Common.DbParameter[] { new System.Data.SqlClient.SqlParameter("@content", System.Data.SqlDbType.VarChar) { Value = notes } });
     }
 
     #endregion

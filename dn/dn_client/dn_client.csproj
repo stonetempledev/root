@@ -126,6 +126,8 @@
     <Content Include="defs\client.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\google-docs-err.ico" />
+    <None Include="Resources\google-docs.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\dn_lib\dn_lib.csproj">

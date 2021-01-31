@@ -45,6 +45,18 @@
     <script type="text/javascript" language="javascript">
 
         $(document).ready(function () {
+
+            // synch
+            if (__action_page && __action_page == "synch") {
+                window.setTimeout(function () {
+                    var res = post_action({ "action": "synch_folders", "user_id": __user_id, "user_name": __user_name });
+                    $("#content").html($("#content").html() + (res.contents ? res.contents : ""));
+                    if(res.data.err) $("#content").html($("#content").html() + "<span class='text-danger'>si è verifiato un errore: " + res.data.err + "</span><br/>");
+                    $("#content").html($("#content").html() + "<br/><br/><u>tempo di esecuzione: " + res.data.seconds.toString() + " secondi</u><br/>");
+                }, 500);
+                return;
+            }
+
             if ($("#folder_id").val()) {
                 window.setTimeout(function () {
                     $("#menu").scrollTop($("[tp-item='folder'][item-id='" + $("#folder_id").val() + "']").position().top + 100);
@@ -414,7 +426,10 @@
         }
 
         function open_att(file_id, user_id, user_name) {
-            try { window.external.open_att(file_id, user_id, user_name); } catch (e) { show_danger("Attenzione!", e.message); }
+            try {
+                alert("wip...");
+                //window.external.open_att(file_id, user_id, user_name);
+            } catch (e) { show_danger("Attenzione!", e.message); }
         }
 
         function del_att(file_id) {

@@ -101,11 +101,12 @@ namespace fsynch
         log_debug("inizializzazione");
         try {
           _synch = true;
+          status_txt("lettura cartelle...");
           reload_folders(true);
           tmr_synch.Interval = _sm.seconds * 1000;
           tmr_synch.Start();
-        } finally { _synch = false; }
-      } catch(Exception ex) { log_err(ex.Message); }
+        } finally { _synch = false; status_txt(); }
+      } catch(Exception ex) { log_err(ex.Message); } 
     }
 
     private void s_synch_event(object sender, synch_event_args e) { if(e.init && !_first_synch) return; log_debug(e.message); }
@@ -200,7 +201,7 @@ namespace fsynch
       _first_synch = first;
 
       synch_results res = _s.reload_folders();
-      if(_sm != null) _s.last_synch_machine(_sm.synch_machine_id, res.folders, res.files, res.deleted, res.seconds);
+      if(_sm != null && res.scan) _s.last_synch_machine(_sm.synch_machine_id, res.folders, res.files, res.deleted, res.seconds);
       if(!string.IsNullOrEmpty(res.err)) throw new Exception(res.err);
     }
 

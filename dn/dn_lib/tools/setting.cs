@@ -41,10 +41,11 @@ namespace dn_lib
       setting s = this.list.FirstOrDefault(x => x.name == setting_name && x.machine_name == sys.machine_name());
       return s != null ? s.value : this.list.FirstOrDefault(x => x.name == setting_name).value;
     }
-    //public string set_value(string setting_name, string value)
-    //{
-    //  this.list.FirstOrDefault(x => x.name == setting_name).value = value;
-    //  return value;
-    //}
+    public static setting get_setting(core c, db_provider conn, string setting_name)
+    {
+      DataRow r = conn.first_row(c.parse_query("lib-base.get-setting", new string[,] { { "setting-name", setting_name } }));
+      return r == null ? null : new setting((int)r["setting_id"], (string)r["setting_name"]
+          , db_provider.str_val(r["setting_var"]), db_provider.str_val(r["machine_name"]));
+    }
   }
 }

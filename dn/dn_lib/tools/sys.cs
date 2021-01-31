@@ -30,5 +30,18 @@ namespace dn_lib.tools
     {
       return new DateTime(from.Year, from.Month, from.Day, from.Hour, from.Minute, from.Second);
     }
+
+    protected static List<string> _macs = null;
+    public static string mac_address()
+    {
+      if(_macs != null) return _macs.Count > 0 ? _macs[0] : "";
+      _macs = new List<string>();
+      foreach(System.Net.NetworkInformation.NetworkInterface nic in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()) {
+        string ma = string.Join(":", nic.GetPhysicalAddress().GetAddressBytes().Select(b => b.ToString("X2")));
+        if(!string.IsNullOrEmpty(ma)) _macs.Add(ma);        
+      }
+      _macs.Sort();
+      return _macs.Count > 0 ? _macs[0] : "";
+    }
   }
 }

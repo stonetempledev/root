@@ -387,6 +387,7 @@
         <input id='__action' type='hidden' runat='server' />
         <input id='__args' type='hidden' runat='server' />
         <input id='__utype' type='hidden' runat='server' />
+        <input id='__sid' type='hidden' runat='server' />
         <!-- cmd -->
         <input id='cmd_action' type='hidden' runat='server' />
         <input id='cmd_obj' type='hidden' runat='server' />

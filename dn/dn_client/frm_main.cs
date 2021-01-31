@@ -19,10 +19,10 @@ namespace dn_client
 {
   public partial class frm_main : Form
   {
-
     public static core _c = null;
     protected Point _dp = Point.Empty;
     protected settings _settings = null;
+    protected string _key = "";
 
     public frm_main(core c)
     {
@@ -65,9 +65,7 @@ namespace dn_client
 
     private void ntf_main_DoubleClick(object sender, EventArgs e)
     {
-      Show();
-      this.WindowState = FormWindowState.Normal;
-      ntf_main.Visible = false;
+      System.Diagnostics.Process.Start(_settings.get_value("url") + "?ck=" + _key);
     }
 
     private void frm_main_Load(object sender, EventArgs e)
@@ -77,17 +75,51 @@ namespace dn_client
         db_provider conn = Program.open_conn();
         _settings = settings.read_settings(_c, conn);
 
+        this.WindowState = FormWindowState.Minimized;
+        this.ShowInTaskbar = false;
+
         // tray
         ntf_main.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
         ntf_main.ContextMenuStrip.Items.Add("Apri...", null, this.MenuApri_Click);
+        ntf_main.ContextMenuStrip.Items.Add("Pannello...", null, this.MenuPannello_Click);
         ntf_main.ContextMenuStrip.Items.Add("Esci", null, this.MenuExit_Click);
         ntf_main.ContextMenuStrip.BackColor = Color.Gray;
         ntf_main.ContextMenuStrip.ForeColor = Color.White;
         ntf_main.ContextMenuStrip.Font = new Font("segoe ui light", 9, FontStyle.Regular);
 
-        wb_main.ObjectForScripting = new client_external(this);
-        wb_main.Navigate(_settings.get_value("url"));
-      } catch { }
+        _key = sys.mac_address();
+        if(string.IsNullOrEmpty(_key)) throw new Exception("client key empty");
+        _key = _key.Replace(":", "");
+        log_txt($"client key: {_key}");
+
+      } catch(Exception ex) { log_err(ex.Message); }
+    }
+
+    protected void log_err(string txt) { log_txt(txt, Color.Tomato); }
+
+    protected void log_txt(string txt, Color? clr = null)
+    {
+      if(lw_log.Tag == null) {
+        lw_log.View = View.Details;
+        lw_log.GridLines = true;
+        lw_log.FullRowSelect = true;
+        lw_log.Columns.Add(new ColumnHeader() { Text = "Messaggio", Width = 450 });        
+        lw_log.Tag = "init";
+        
+      }
+
+      lw_log.Items.Add(new ListViewItem(txt) { ForeColor = !clr.HasValue ? Color.DarkSlateGray : clr.Value });
+      if(chk_fine.Checked) {
+        lw_log.Items[lw_log.Items.Count - 1].EnsureVisible();
+        Application.DoEvents();
+      }
+    }
+
+    void MenuPannello_Click(object sender, EventArgs e)
+    {
+      Show();
+      this.WindowState = FormWindowState.Normal;
+      ntf_main.Visible = false;
     }
 
     void MenuApri_Click(object sender, EventArgs e)
@@ -224,8 +256,10 @@ namespace dn_client
       try {
         lbl_message(log.log_info($"upload file {n.get_attr("http_path")}"));
         System.Text.Encoding e = encoding_type.GetType(path);
-        var file = new { action = "save_file", id = id_file, bin_data = e.GetString(File.ReadAllBytes(path)), enc = e.HeaderName
-          , user_id = n.get_int("user_id"), user_name = n.get_val("user_name") };
+        var file = new {
+          action = "save_file", id = id_file, bin_data = e.GetString(File.ReadAllBytes(path)), enc = e.HeaderName
+          , user_id = n.get_int("user_id"), user_name = n.get_val("user_name")
+        };
         json_request.post(_c.base_url + _c.config.get_var("client.io-page").value, file);
         lbl_message(log.log_info($"uploaded file {n.get_attr("http_path")}!"), 2);
       } catch(Exception ex) {
@@ -274,20 +308,21 @@ namespace dn_client
       } catch { }
     }
 
-    private void wb_main_Navigating(object sender, WebBrowserNavigatingEventArgs e) { lbl_message(log.log_info($"open {e.Url}")); }
-
-    private void wb_main_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e) { lbl_message(); }
-
-    private void wb_main_Navigated(object sender, WebBrowserNavigatedEventArgs e) { lbl_message(); }
-  }
-
-  [ComVisible(true)]
-  [ClassInterface(ClassInterfaceType.None)]
-  public class client_external
-  {
-    protected frm_main _form = null;
-    public client_external(frm_main form) { _form = form; }
-    public void open_att(int file_id, int user_id, string user_name) { _form.open_att(file_id, user_id, user_name); }
+    protected bool _synch = false;
+    private void tmr_synch_Tick(object sender, EventArgs e)
+    {
+      try {
+        if(_synch) return;
+        _synch = true;
+        lbl_message(log.log_info($"synch folders..."));
+        var a = new { action = "synch_folders", user_id = -1, user_name = "client" };
+        json_result res = json_request.post(_c.base_url + _c.config.get_var("client.io-page").value, a);
+        lbl_message(log.log_info($"synch folders!"), 2);
+      } catch(Exception ex) {
+        log.log_err(ex);
+        lbl_message($"synch folders error {ex.Message}!", 5, true);
+      } finally { _synch = false; }
+    }
   }
 }
 

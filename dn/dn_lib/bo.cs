@@ -29,5 +29,46 @@ namespace dn_lib {
       return val;
     }
 
+    // CACHE
+
+    public bool set_cache_var(string var_name, string var_value, int user_id)
+    {
+      return string.IsNullOrEmpty(var_value) ? reset_cache_var(var_name, user_id)
+        : set_cache_var2(var_name, var_value, user_id);
+    }
+
+    private bool set_cache_var2(string var_name, string var_value, int user_id)
+    {
+      db_conn.exec(core.parse(config.get_query("lib-base.set-cache-var").text
+        , new Dictionary<string, object>() { { "user_id", user_id }, { "var_name", var_name }, { "var_value", var_value } }));
+      return true;
+    }
+
+    protected bool reset_cache_var(string var_name, int user_id)
+    {
+      db_conn.exec(core.parse(config.get_query("lib-base.reset-cache-var").text
+        , new Dictionary<string, object>() { { "user_id", user_id }, { "var_name", var_name } }));
+      return true;
+    }
+
+    public string get_cache_var(string var_name, int user_id, string def = "")
+    {
+      DataRow dr = db_conn.first_row(core.parse(config.get_query("lib-base.get-cache-var").text
+        , new Dictionary<string, object>() { { "user_id", user_id }, { "list_vars", "'" + var_name + "'" } }));
+      return dr != null ? db_provider.str_val(dr["var_value"], def) : def;
+    }
+
+    //protected Dictionary<string, string> get_cache_vars(string var_names, int user_id)
+    //{
+    //  Dictionary<string, string> res = new Dictionary<string, string>();
+    //  foreach(DataRow dr in db_conn.dt_table(core.parse(config.get_query("lib-base.get-cache-var").text
+    //    , new Dictionary<string, object>() { { "user_id", user_id }
+    //    , { "list_vars", string.Join(", ", var_names.Split(new char[]{','}, StringSplitOptions.RemoveEmptyEntries).Select(s => "'" + s + "'")) } })).Rows) {
+    //    res.Add(db_provider.str_val(dr["var_name"]), db_provider.str_val(dr["var_value"]));
+    //  }
+    //  return res;
+    //}
+
+
   }
 }

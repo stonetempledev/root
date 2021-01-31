@@ -55,6 +55,7 @@
     <Compile Include="core.cs" />
     <Compile Include="notes\file_info.cs" />
     <Compile Include="notes\file_type.cs" />
+    <Compile Include="notes\doc_task.cs" />
     <Compile Include="notes\task_tipo.cs" />
     <Compile Include="notes\task_stima.cs" />
     <Compile Include="notes\task_priorita.cs" />

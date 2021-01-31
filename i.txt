@@ -4,15 +4,14 @@ github.hub
 
 IN CORSO
  . dn: ottimizzazione attività
-  / attendere prego per le ricerche lunghe
   . ricerca anche per utente assegnato, etichette attività
-  ! file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
+  / file __i.xml nascosto con tutte le info nome, data inizio, data ultimo aggiornamento, etc...
+   . percentuale realizzazione di un task!
+   . la storia del task iniziato . ultimo aggiornamento
   . anteprima immagini 
-  . tira fuori la synch che la chiami anche dalle pagine come admin se ce n'è la necessità
   . gestione della tabella dn_files_types
-  . percentuale realizzazione di un task!
-  . la storia del task iniziato . ultimo aggiornamento
   . invio notifiche mail
+  . un editor cazzuto con html e liste e tabelle
 
 TODO
  dn

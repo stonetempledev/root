@@ -59,5 +59,25 @@ namespace dn_client.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Icon simile a (Icona).
+        /// </summary>
+        internal static System.Drawing.Icon google_docs {
+            get {
+                object obj = ResourceManager.GetObject("google_docs", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Icon simile a (Icona).
+        /// </summary>
+        internal static System.Drawing.Icon google_docs_err {
+            get {
+                object obj = ResourceManager.GetObject("google_docs_err", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }

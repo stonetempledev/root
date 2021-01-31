@@ -51,6 +51,8 @@ SINTASSI DICHIARAZIONE object, subobj
              page="notes.aspx" des="vista attivita deepa-notes" call="true"/>
         <row group="deepa-notes" action="search" action-opt="true" object="task" subobj="{testo da ricercare}"
              page="notes.aspx" des="ricerca attivita deepa-notes" call="true"/>
+        <row group="deepa-notes" action="synch" 
+             page="notes.aspx" des="sincronizza le cartelle con il database" call="true"/>
       </rows>
     </table>
   </tables>

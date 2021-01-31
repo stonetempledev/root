@@ -238,7 +238,14 @@ public partial class _notes : tl_page
           }
           // save_task_notes
           else if(jr.action == "save_task_notes") {
-            ob.save_task_notes(jr.val_int("task_id"), jr.val_str("text"));
+            synch s = ob.get_synch(jr.val_int("user_id"), jr.val_str("user_name"));
+            s.save_task_notes(jr.val_int("task_id"), jr.val_str("text"));
+          } else if(jr.action == "synch_folders") {
+            synch s = ob.get_synch(jr.val_int("user_id"), jr.val_str("user_name"));
+            s.synch_event += s_synch_event;
+            synch_results rf = s.reload_folders(force: true);
+            res.data = rf;
+            res.contents = _synch_events;
           }
 
         } catch(Exception ex) { log.log_err(ex); res = new json_result(json_result.type_result.error, ex.Message); }
@@ -248,8 +255,17 @@ public partial class _notes : tl_page
         return;
       }
 
+      // synch
+      if(_cmd != null && _cmd.action == "synch") {
+        content.InnerHtml = "<p>sincronizzazione cartelle...</p>";
+        ClientScript.RegisterStartupScript(GetType(), "__action"
+          , "var __action_page = '" + _cmd.action + "';\r\n"
+            + "var __user_id = " + this.user.id + ";\r\n"
+            + "var __user_name = '" + this.user.name + "';\r\n", true);
+      }
+
       // tasks
-      if(_cmd != null && ((_cmd.action == "view" && _cmd.obj == "tasks")
+      else if(_cmd != null && ((_cmd.action == "view" && _cmd.obj == "tasks")
         || (_cmd.action == "search" && _cmd.obj == "task"))) {
 
         int? fi = qry_val("idt") != "" ? qry_int("idt") : (qry_val("id") != "" ? qry_int("id") : (int?)null)
@@ -285,14 +301,23 @@ public partial class _notes : tl_page
           + parse_tasks(ob, stati, tf, title, f != null ? ob.find_synch_folder(f.synch_folder_id).title + f.path : "", tfs, search: search_id.HasValue ? search : "");
 
         ClientScript.RegisterStartupScript(GetType(), "__task_states"
-          , "var __task_priorita = " + JsonConvert.SerializeObject(db_conn.dt_table(core.parse_query("task-priorita"))) + ";\r\n"
-           + "var __task_stime = " + JsonConvert.SerializeObject(db_conn.dt_table(core.parse_query("task-stime"))) + ";\r\n"
-           + "var __task_tipi = " + JsonConvert.SerializeObject(db_conn.dt_table(core.parse_query("task-tipi"))) + ";\r\n"
-           + "var __task_assegna = " + JsonConvert.SerializeObject(db_conn.dt_table(core.parse_query("task-assegna"))) + ";\r\n", true);
+          , "var __action_page = '';\r\n"
+            + "var __task_priorita = " + JsonConvert.SerializeObject(db_conn.dt_table(core.parse_query("task-priorita"))) + ";\r\n"
+            + "var __task_stime = " + JsonConvert.SerializeObject(db_conn.dt_table(core.parse_query("task-stime"))) + ";\r\n"
+            + "var __task_tipi = " + JsonConvert.SerializeObject(db_conn.dt_table(core.parse_query("task-tipi"))) + ";\r\n"
+            + "var __task_assegna = " + JsonConvert.SerializeObject(db_conn.dt_table(core.parse_query("task-assegna"))) + ";\r\n"
+            + "var __user_id = " + this.user.id + ";\r\n"
+            + "var __user_name = '" + this.user.name + "';\r\n", true);
 
       } else throw new Exception("COMANDO NON RICONOSCIUTO!");
 
     } catch(Exception ex) { log.log_err(ex); if(!json_request.there_request(this)) master.err_txt(ex.Message); }
+  }
+
+  protected string _synch_events = "";
+  private void s_synch_event(object sender, synch_event_args e)
+  {
+    _synch_events += e.message + "<br/>";
   }
 
   protected void add_att(notes ob, int task_id, string file_name, byte[] content = null)
@@ -315,7 +340,7 @@ public partial class _notes : tl_page
       s.set_file_content((int)nid, Path.GetExtension(file_name).ToLower()
         , content != null ? System.Text.Encoding.UTF8.GetString(content) : "", DateTime.Now, DateTime.Now);
     if(s.is_info_file(file_name) != null && db_provider.int_val(dr["file_notes_id"]) <= 0)
-      ob.init_task_notes(task_id, (int)nid, content != null ? System.Text.Encoding.UTF8.GetString(content) : "");
+      s.init_task_notes(task_id, (int)nid, content != null ? System.Text.Encoding.UTF8.GetString(content) : "");
   }
 
   protected bool nome_valido(string nome) { return (new Regex("^[a-zA-Z0-9 ,ìèéùàò_]*$")).IsMatch(nome); }
@@ -326,7 +351,7 @@ public partial class _notes : tl_page
 
     StringBuilder sb = new StringBuilder();
 
-    sb.Append(core.parse_html_block(search != "" ? (title_folder == "" ? "title-attivita-search" : "title-attivita-folder-search") 
+    sb.Append(core.parse_html_block(search != "" ? (title_folder == "" ? "title-attivita-search" : "title-attivita-folder-search")
         : (title_folder == "" ? "title-attivita" : "title-attivita-folder")
       , new string[,] { { "title-folder", title_folder }, { "path-folder", path_folder }
       , { "filter-title", search != "" ? "ricerca attività" : (tf != null ? tf.title : "") }
