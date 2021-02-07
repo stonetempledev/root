@@ -102,7 +102,7 @@ namespace dn_lib {
 
         }
 
-        if(it != null && it.created && !it.dt_upd.HasValue) it.dt_upd = lwt;
+        //if(it != null && it.created && !it.dt_upd.HasValue) it.dt_upd = lwt;
 
         return new task(synch_folder_id, file_id, folder_id, title, user, stato, priorita, tipo, stima
           , dt.HasValue ? dt : ct, dt2.HasValue ? dt2 : lwt, it);

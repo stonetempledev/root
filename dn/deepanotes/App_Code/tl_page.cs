@@ -25,7 +25,6 @@ public class tl_page : System.Web.UI.Page {
   protected user _user = null;
   protected bool _db_connected = false;
   protected bool _is_mobile = false;
-  protected bool _is_client = false;
 
   protected string _base_path = null;
   public string base_path { get { if (_base_path == null) _base_path = System.Web.HttpContext.Current.Server.MapPath("~"); return _base_path; } }
@@ -40,7 +39,6 @@ public class tl_page : System.Web.UI.Page {
 
     // base
     _is_mobile = this.master.is_mobile();
-    _is_client = Request.Browser.Type == "IE7" && Request.Browser.Browser == "IE";
   }
 
   protected override void OnPreInit(EventArgs e) {
@@ -169,6 +167,15 @@ public class tl_page : System.Web.UI.Page {
     HttpContext.Current.ApplicationInstance.CompleteRequest();
   }
 
+  protected bool base_elab_action(json_request jr, json_result res)
+  {
+    if(jr.action == "client_cmd") {
+      set_client_cmd(jr.val_str("cmd"));
+      return true;
+    }
+    return false;
+  }
+
   #region data
 
   public string val_str(object val, string def = "") { return val != null && val != DBNull.Value ? val.ToString() : def; }
@@ -258,6 +265,13 @@ public class tl_page : System.Web.UI.Page {
     if(ec.copy != copy) { ec.copy = copy; return null; }
     remove_element_cut(id, tp);
     return false;
+  }
+
+  protected void set_client_cmd(string cmd)
+  {
+    if(master.client_key == "") return;
+    db_conn.exec(core.parse(config.get_query("lib-base.set-client-cmd").text
+      , new Dictionary<string, object>() { { "client_key", master.client_key }, { "cmd", cmd } }));
   }
 
   #endregion

@@ -385,7 +385,7 @@ namespace dn_lib
             Directory.Move(folder_path, Path.Combine(dn, new_name));
             fire_synch_event("rinominato folder: " + folder_path + ", in: " + Path.Combine(dn, new_name));
             folder_name = new_name; folder_path = Path.Combine(dn, new_name);
-            update_folder_name(folder_name, folder_id);            
+            update_folder_name(folder_name, folder_id);
           } catch(Exception ex) { log.log_err(ex); res.err = ex.Message; }
         }
 
@@ -454,21 +454,21 @@ namespace dn_lib
       fire_synch_event("creato folder: " + new_folder_path);
 
       // sposto il task file      
-      string name_file = (ifile ? "i" : "content") + Path.GetExtension(file_path);
-      File.Move(file_path, Path.Combine(new_folder_path, name_file));
-      db_conn.exec(core.parse_query("lib-notes.del-file", new string[,] { { "file_id", file_id.ToString() } }));
-      long nid = ins_file(sfid, folder_id, name_file, Path.GetExtension(file_path).ToLower(), c_time, c_time, out tp, out cc, out clwt);
+      string name_file = (ifile ? "i" : "content"), ext = Path.GetExtension(file_path);
+      File.Move(file_path, Path.Combine(new_folder_path, name_file + ext));
+      db_conn.exec(core.parse_query("lib-notes.move-file", new string[,] { { "synch_folder_id", synch_id.ToString() }
+        , { "name_file", name_file + ext }, { "folder_id", folder_id.ToString() }, { "file_id", file_id.ToString() } }));
       set_folder_task(task_id, (int)folder_id);
-      fire_synch_event("spostato file da: " + file_path + ", a:" + Path.Combine(new_folder_path, name_file));
+      fire_synch_event("spostato file da: " + file_path + ", a:" + Path.Combine(new_folder_path, name_file + ext));
       if(ifile) {
-        init_task_notes(task_id, (int)nid, notes.Trim(new char[] { ' ', '\n', '\r' }));
+        init_task_notes(task_id, file_id, notes.Trim(new char[] { ' ', '\n', '\r' }));
         fire_synch_event("salvate le note del task: " + new_folder_path);
       }
 
       // setto le note
       if(notes != "" && !ifile) {
         File.WriteAllText(Path.Combine(new_folder_path, "i.txt"), notes, System.Text.Encoding.UTF8);
-        nid = ins_file(sfid, folder_id, "i.txt", ".txt", c_time, c_time, out tp, out cc, out clwt);
+        long nid = ins_file(sfid, folder_id, "i.txt", ".txt", c_time, c_time, out tp, out cc, out clwt);
         set_file_content((int)nid, ".txt", notes.Trim(new char[] { ' ', '\n', '\r' }), c_time, c_time);
         init_task_notes(task_id, (int)nid, notes.Trim(new char[] { ' ', '\n', '\r' }));
         fire_synch_event("salvate le note nel file: " + Path.Combine(new_folder_path, "i.txt"));

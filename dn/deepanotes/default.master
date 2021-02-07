@@ -483,8 +483,11 @@
         <nav id='navbar' class="navbar navbar-expand navbar-dark bg-primary fixed-top pt-1 pb-0"
             runat="server">
             <div class="d-flex flex-grow-1">
-                <a class="navbar-brand" href="./">
+                <a id="icona_normal" runat="server" class="navbar-brand" href="./">
                     <img src="images/dn-40.png" class="d-inline-block align-middle" alt="">
+                </a>
+                <a id="icona_client" runat="server" class="navbar-brand" style="display:none" title="client connesso" href="./">
+                    <img src="images/dn-40-cl.png" class="d-inline-block align-middle" alt="">
                 </a>
 
                 <div id='grp_vai' runat="server" class="w-100 d-flex">

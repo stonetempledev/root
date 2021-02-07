@@ -22,7 +22,8 @@ namespace dn_client
     public static core _c = null;
     protected Point _dp = Point.Empty;
     protected settings _settings = null;
-    protected string _key = "";
+    protected string _client_key = "";
+    protected int _interval_ss = 60;
 
     public frm_main(core c)
     {
@@ -47,14 +48,7 @@ namespace dn_client
       _dp = Point.Empty;
     }
 
-    private void btn_close_Click(object sender, EventArgs e)
-    {
-      if(!_c.config.var_bool("client.tray-icon")) {
-        this.Close(); return;
-      }
-
-      this.WindowState = FormWindowState.Minimized;
-    }
+    private void btn_close_Click(object sender, EventArgs e) { this.WindowState = FormWindowState.Minimized; }
 
     private void frm_main_Resize(object sender, EventArgs e)
     {
@@ -65,14 +59,17 @@ namespace dn_client
 
     private void ntf_main_DoubleClick(object sender, EventArgs e)
     {
-      System.Diagnostics.Process.Start(_settings.get_value("url") + "?ck=" + _key);
+      System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer", "\"" + _settings.get_value("url") + "?ck=" + _client_key + "\"") {
+        RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
+      });
     }
 
     private void frm_main_Load(object sender, EventArgs e)
     {
       try {
-        tmr_state.Interval = Program._interval_ss * 1000;
+        tmr_state.Interval = _interval_ss * 1000;
         db_provider conn = Program.open_conn();
+        client_opened(conn, true);
         _settings = settings.read_settings(_c, conn);
 
         this.WindowState = FormWindowState.Minimized;
@@ -87,11 +84,6 @@ namespace dn_client
         ntf_main.ContextMenuStrip.ForeColor = Color.White;
         ntf_main.ContextMenuStrip.Font = new Font("segoe ui light", 9, FontStyle.Regular);
 
-        _key = sys.mac_address();
-        if(string.IsNullOrEmpty(_key)) throw new Exception("client key empty");
-        _key = _key.Replace(":", "");
-        log_txt($"client key: {_key}");
-
       } catch(Exception ex) { log_err(ex.Message); }
     }
 
@@ -103,9 +95,8 @@ namespace dn_client
         lw_log.View = View.Details;
         lw_log.GridLines = true;
         lw_log.FullRowSelect = true;
-        lw_log.Columns.Add(new ColumnHeader() { Text = "Messaggio", Width = 450 });        
+        lw_log.Columns.Add(new ColumnHeader() { Text = "Messaggio", Width = 450 });
         lw_log.Tag = "init";
-        
       }
 
       lw_log.Items.Add(new ListViewItem(txt) { ForeColor = !clr.HasValue ? Color.DarkSlateGray : clr.Value });
@@ -148,7 +139,29 @@ namespace dn_client
       MenuExit_Click(sender, e);
     }
 
-    private void tmr_state_Tick(object sender, EventArgs e) { Program.client_opened(); }
+    private void tmr_state_Tick(object sender, EventArgs e) { client_opened(); }
+
+    protected void client_opened(db_provider conn = null, bool first = false)
+    {
+      try {
+        bool close = false;
+        if(conn == null) { conn = Program.open_conn(); close = true; }
+
+        if(_client_key == "") _client_key = strings.random_hex(20);
+
+        conn.exec(_c.parse_query("lib-base.client-refresh", new string[,] { { "client_key", _client_key }, { "ip_machine", sys.machine_ip() }
+            , { "first", first ? "1" : "0" }, { "machine_name", sys.machine_name() }, { "interval_ss", _interval_ss.ToString() } }));
+        if(first) log_txt($"connected client key '{_client_key}'", Color.Blue);
+
+        if(close) { conn.close_conn(); conn = null; }
+      } catch { }
+    }
+
+    protected void close_client()
+    {
+      Program.open_conn().exec(_c.parse_query("lib-base.client-close", new string[,] { { "client_key", _client_key } }));
+      log_txt($"close client '{_client_key}'", Color.Blue);
+    }
 
     public void open_att(int file_id, int user_id, string user_name)
     {
@@ -280,6 +293,8 @@ namespace dn_client
     {
       if(ss_label.Tag != null && ss_label.Tag.ToString() == "delayed") return;
 
+      if(!error) log_txt(txt); else log_err(txt);
+
       if(error) {
         ss_label.BackColor = Color.Tomato;
         ss_main.BackColor = Color.Tomato;
@@ -308,20 +323,50 @@ namespace dn_client
       } catch { }
     }
 
-    protected bool _synch = false;
-    private void tmr_synch_Tick(object sender, EventArgs e)
+    // synch folders    
+    //protected bool _synch = false;
+    //private void tmr_synch_Tick(object sender, EventArgs e)
+    //{
+    //  try {
+    //    if(_synch) return;
+    //    _synch = true;
+    //    lbl_message(log.log_info($"synch folders..."));
+    //    var a = new { action = "synch_folders", user_id = -1, user_name = "client" };
+    //    json_result res = json_request.post(_c.base_url + _c.config.get_var("client.io-page").value, a);
+    //    lbl_message(log.log_info($"synch folders!"), 2);
+    //  } catch(Exception ex) {
+    //    log.log_err(ex);
+    //    lbl_message($"synch folders error {ex.Message}!", 5, true);
+    //  } finally { _synch = false; }
+    //}
+
+    private void frm_main_FormClosed(object sender, FormClosedEventArgs e)
     {
+      try { close_client(); } catch { }
+    }
+
+    bool _cmd = false;
+    private void tmr_cmds_Tick(object sender, EventArgs e)
+    {
+      if(_cmd) return;
+      _cmd = true;
+      db_provider conn = null;
       try {
-        if(_synch) return;
-        _synch = true;
-        lbl_message(log.log_info($"synch folders..."));
-        var a = new { action = "synch_folders", user_id = -1, user_name = "client" };
-        json_result res = json_request.post(_c.base_url + _c.config.get_var("client.io-page").value, a);
-        lbl_message(log.log_info($"synch folders!"), 2);
-      } catch(Exception ex) {
-        log.log_err(ex);
-        lbl_message($"synch folders error {ex.Message}!", 5, true);
-      } finally { _synch = false; }
+        conn = Program.open_conn();
+        DataRow r = conn.first_row(_c.parse_query("lib-base.client-cmd-to-elab", new string[,] { { "client_key", _client_key } }));
+        if(r != null) {
+          int id_cmd = db_provider.int_val(r["id_client_cmd"]);
+          string cmd = db_provider.str_val(r["cmd"]);
+          log_txt($"elab command '{cmd}'");
+          conn.exec(_c.parse_query("lib-base.client-remove-cmd", new string[,] { { "id_cmd", id_cmd.ToString() } }));
+
+          client_cmd cc = new client_cmd(cmd);
+          if(cc.function == "open_att")
+            open_att(cc.par_int("file_id"), cc.par_int("user_id"), cc.par("user_name"));
+        }
+
+      } catch(Exception ex) { log_err(ex.Message); } finally { if(conn != null) conn.close_conn(); }
+      _cmd = false;
     }
   }
 }

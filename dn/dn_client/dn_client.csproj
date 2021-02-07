@@ -71,6 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="client_cmd.cs" />
     <Compile Include="db_conn.cs" />
     <Compile Include="fi.cs" />
     <Compile Include="frm_main.cs">

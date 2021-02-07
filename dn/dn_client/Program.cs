@@ -19,7 +19,6 @@ namespace dn_client {
   static class Program {
 
     public static core _c = null;
-    public static int _interval_ss = 300;
 
     /// <summary>
     /// The main entry point for the application.
@@ -63,7 +62,6 @@ namespace dn_client {
         }
 
         // opened client
-        client_opened(conn);
         conn.close_conn(); conn = null;
 
         // data providers
@@ -87,26 +85,10 @@ namespace dn_client {
         Application.SetCompatibleTextRenderingDefault(false);
         Application.Run(new frm_main(_c));        
 
-        // close client
-        conn = open_conn();
-        conn.exec(_c.parse_query("client.closed", new string[,] { { "ip_machine", sys.machine_ip() }
-            , { "machine_name", sys.machine_name() } }));
-        conn.close_conn(); conn = null;
-
       } catch (Exception ex) {
         MessageBox.Show(ex.Message, "Attenzione!", MessageBoxButtons.OK, MessageBoxIcon.Error);
         if (conn != null) { conn.close_conn(); }
       }
-    }
-
-    public static void client_opened(db_provider conn = null) {
-      try {
-        bool close = false;
-        if (conn == null) { conn = Program.open_conn(); close = true; }
-        conn.exec(_c.parse_query("client.opened", new string[,] { { "ip_machine", sys.machine_ip() }
-            , { "machine_name", sys.machine_name() }, { "interval_ss", _interval_ss.ToString() } }));
-        if (close) { conn.close_conn(); conn = null; }
-      } catch { }
     }
 
     public static DataTable dt_query(string name, string[,] fields = null) {

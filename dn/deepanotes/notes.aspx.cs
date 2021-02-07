@@ -81,8 +81,12 @@ public partial class _notes : tl_page
 
           json_request jr = new json_request(this);
 
+          // base
+          if(base_elab_action(jr, res)) {
+            // fatta
+          }
           // add_att
-          if(jr.action == "add_att") {
+          else if(jr.action == "add_att") {
             add_att(ob, jr.val_int("task_id"), jr.val_str("name"));
           }
           // task_state
@@ -136,7 +140,7 @@ public partial class _notes : tl_page
           // remove_att
           else if(jr.action == "remove_att") {
             ob.remove_att(jr.val_int("id"));
-          }
+          }          
           // ren_att
           else if(jr.action == "ren_att") {
             ob.ren_file(jr.val_int("file_id"), jr.val_str("name"));
@@ -228,7 +232,7 @@ public partial class _notes : tl_page
               bool cut = there_element_cut(db_provider.int_val(dr["file_id"]), element_cut.element_cut_type.attachment)
                 , found = db_provider.int_val(dr["found_file"]) > 0, file_task = db_provider.int_val(dr["file_task"]) > 0;
               string style = cut ? "badge-warning" : (found ? "badge-danger" : (file_task ? "badge-primary" : "badge-light"));
-              html_allegati += !_is_client ? core.parse_html_block("task-allegato", new string[,] { { "file-id", db_provider.str_val(dr["file_id"]) }
+              html_allegati += master.client_key == "" ? core.parse_html_block("task-allegato", new string[,] { { "file-id", db_provider.str_val(dr["file_id"]) }
                   , { "http-path", db_provider.str_val(dr["http_path"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, { "style", style }, { "tp_att", style } })
                 : core.parse_html_block("task-allegato-client", new string[,] {
                   { "file-id", db_provider.str_val(dr["file_id"]) }, { "file-name", db_provider.str_val(dr["file_name"]) }, { "style", style }, { "tp_att", style }

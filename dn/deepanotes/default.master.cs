@@ -50,6 +50,22 @@ public partial class _default : tl_master {
       // command
       txt_cmd.Value = this.cmd = tlp.qry_val("cmd");
 
+      // client key    
+      if(tlp.qry_val("ck") != "") {
+        this.client_key = tlp.qry_val("ck");
+        Session["ck"] = tlp.qry_val("ck");
+        DataRow r = tlp.db_conn.first_row(tlp.core.parse_query("lib-base.client-session-id"
+          , new string[,] { { "session_id", Session.SessionID }, { "client_key", this.client_key } }), true);
+        if(!(r != null && (int)r[0] == 1)) this.client_key = "";
+      } else {
+        this.client_key = (Session["ck"] != null ? Session["ck"].ToString() : "");
+        if(this.client_key != "") {
+          DataRow r = tlp.db_conn.first_row(tlp.core.parse_query("lib-base.client-session-id"
+            , new string[,] { { "session_id", Session.SessionID }, { "client_key", this.client_key } }), true);
+          if(!(r != null && (int)r[0] == 1)) this.client_key = "";
+        }
+      }
+
       // parameters
       _qvals = new Dictionary<string, string>();
       foreach (string qs in Request.QueryString.AllKeys.Where(x => x != "cmd"))
@@ -58,12 +74,18 @@ public partial class _default : tl_master {
     } catch { }
   }
 
-  protected void Page_Load(object sender, EventArgs e) {
+  protected void Page_Load(object sender, EventArgs e)
+  {
     // navbar admin
-    if (tlp.user != null && tlp.user.type == user.type_user.admin) {
+    if(tlp.user != null && tlp.user.type == user.type_user.admin) {
       string cl = navbar.Attributes["class"];
       navbar.Attributes["class"] = cl.Replace("bg-primary", "bg-warning");
     }
+    
+    icona_normal.Visible = this.client_key == "" ? true : false;
+    if(this.client_key != "") {
+      icona_client.Style["display"] = "";
+    }    
   }
 
   public override void set_status_txt(string text) {

@@ -37,5 +37,48 @@
       <![CDATA[select setting_id, setting_name, setting_var, machine_name
         from settings where setting_name = '{@field='setting-name'}' and isnull(machine_name, '') = '']]>
     </query>
+    <!-- client -->
+    <query name="client-refresh">
+      <![CDATA[
+      if {@field='first'} = 1
+      begin
+        delete from clients where datediff(second, dt_refresh, getdate()) > interval_ss;
+      end
+      
+if exists (select top 1 1 from clients where client_key = {@txtqry='client_key'})
+ update clients set dt_refresh = getdate(), interval_ss = {@field='interval_ss'}
+   , machine_name = {@txtqry='machine_name'}, machine_ip = {@txtqry='ip_machine'}
+  where client_key = {@txtqry='client_key'};
+else 
+ insert into clients (client_key, machine_ip, machine_name, interval_ss, dt_refresh)
+  values ({@txtqry='client_key'}, {@txtqry='ip_machine'}, {@txtqry='machine_name'}, {@field='interval_ss'}, getdate());]]>
+    </query>
+    <query name="client-session-id">
+      <![CDATA[
+ update clients set session_id = {@txtqry='session_id'}, dt_session_id = getdate() where client_key = {@txtqry='client_key'};
+ select top 1 1 from clients where client_key = {@txtqry='client_key'} 
+  and datediff(second, dt_refresh, getdate()) < interval_ss + 5;]]>
+    </query>
+    <query name="set-client-cmd">
+      <![CDATA[insert into clients_cmds (client_key, cmd)
+  select t.ck, t.cmd
+   from (select {@txtqry='client_key'} as ck, {@txtqry='cmd'} as cmd) t
+   join clients c on c.client_key = t.ck and datediff(second, c.dt_refresh, getdate()) < c.interval_ss + 5]]>
+    </query>
+    <query name="client-cmd-to-elab">
+      <![CDATA[select top 1 id_client_cmd, cmd
+        from clients_cmds where client_key = {@txtqry='client_key'}]]>
+    </query>
+    <query name="client-remove-cmd">
+      <![CDATA[delete from clients_cmds where id_client_cmd = {@field='id_cmd'};
+      delete cc from clients_cmds cc 
+        where not exists (select top 1 1 from clients where client_key = cc.client_key);]]>
+    </query>
+    <query name="client-close">
+      <![CDATA[delete from clients where client_key = {@txtqry='client_key'};
+        delete from clients where datediff(second, dt_refresh, getdate()) > interval_ss + 5;
+        ]]>
+    </query>
+
   </queries>
 </config>

@@ -51,7 +51,7 @@
                 window.setTimeout(function () {
                     var res = post_action({ "action": "synch_folders", "user_id": __user_id, "user_name": __user_name });
                     $("#content").html($("#content").html() + (res.contents ? res.contents : ""));
-                    if(res.data.err) $("#content").html($("#content").html() + "<span class='text-danger'>si è verifiato un errore: " + res.data.err + "</span><br/>");
+                    if (res.data.err) $("#content").html($("#content").html() + "<span class='text-danger'>si è verifiato un errore: " + res.data.err + "</span><br/>");
                     $("#content").html($("#content").html() + "<br/><br/><u>tempo di esecuzione: " + res.data.seconds.toString() + " secondi</u><br/>");
                 }, 500);
                 return;
@@ -389,7 +389,7 @@
                 $("[task-id=" + task_id + "]").css("border-color", "lightgreen").css("box-shadow", "4px 4px 4px lightgreen");
                 window.setTimeout(function () {
                     var t = $("[task-id=" + task_id + "]"), ta = $("[task-id='" + task_id + "'] [tp-item='txt-notes']");
-                    if (post_action({ "action": "save_task_notes", "task_id": task_id, "text": txt }))
+                    if (post_action({ "action": "save_task_notes", "task_id": task_id, "text": txt, "user_id": __user_id, "user_name": __user_name }))
                         t.css("border-color", "").css("box-shadow", "");
                     else
                         t.css("border-color", "tomato").css("box-shadow", "3px 3px 3px tomato");
@@ -427,8 +427,8 @@
 
         function open_att(file_id, user_id, user_name) {
             try {
-                alert("wip...");
-                //window.external.open_att(file_id, user_id, user_name);
+                post_data({ "action": "client_cmd", "cmd": "open_att#file_id:" + file_id + "#user_id:" + user_id + "#user_name:" + user_name });
+                return false;
             } catch (e) { show_danger("Attenzione!", e.message); }
         }
 

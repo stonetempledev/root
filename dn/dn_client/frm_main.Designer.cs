@@ -32,7 +32,7 @@
       this.tmr_att = new System.Windows.Forms.Timer(this.components);
       this.ss_main = new System.Windows.Forms.StatusStrip();
       this.ss_label = new System.Windows.Forms.ToolStripStatusLabel();
-      this.tmr_synch = new System.Windows.Forms.Timer(this.components);
+      this.tmr_cmds = new System.Windows.Forms.Timer(this.components);
       this.lw_log = new System.Windows.Forms.ListView();
       this.chk_fine = new System.Windows.Forms.CheckBox();
       this.ss_main.SuspendLayout();
@@ -112,11 +112,11 @@
       this.ss_label.Name = "ss_label";
       this.ss_label.Size = new System.Drawing.Size(0, 17);
       // 
-      // tmr_synch
+      // tmr_cmds
       // 
-      this.tmr_synch.Enabled = true;
-      this.tmr_synch.Interval = 20000;
-      this.tmr_synch.Tick += new System.EventHandler(this.tmr_synch_Tick);
+      this.tmr_cmds.Enabled = true;
+      this.tmr_cmds.Interval = 1000;
+      this.tmr_cmds.Tick += new System.EventHandler(this.tmr_cmds_Tick);
       // 
       // lw_log
       // 
@@ -166,6 +166,7 @@
       this.MinimizeBox = false;
       this.Name = "frm_main";
       this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frm_main_FormClosing);
+      this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frm_main_FormClosed);
       this.Load += new System.EventHandler(this.frm_main_Load);
       this.Resize += new System.EventHandler(this.frm_main_Resize);
       this.ss_main.ResumeLayout(false);
@@ -184,7 +185,7 @@
     private System.Windows.Forms.Timer tmr_att;
     private System.Windows.Forms.StatusStrip ss_main;
     private System.Windows.Forms.ToolStripStatusLabel ss_label;
-    private System.Windows.Forms.Timer tmr_synch;
+    private System.Windows.Forms.Timer tmr_cmds;
     private System.Windows.Forms.ListView lw_log;
     private System.Windows.Forms.CheckBox chk_fine;
   }
