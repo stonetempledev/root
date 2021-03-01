@@ -337,14 +337,14 @@ public partial class _notes : tl_page
     if(content != null) File.WriteAllBytes(file_path, content); else File.WriteAllText(file_path, "");
 
     // aggiorno il db
-    string tp; int cc; DateTime? clwt;
-    long nid = s.ins_file(db_provider.int_val(dr["synch_folder_id"]), db_provider.int_val(dr["folder_id"]), file_name, Path.GetExtension(file_name)
-      , DateTime.Now, DateTime.Now, out tp, out cc, out clwt);
+    string tp; int cc; 
+    long nid = s.set_file_db(db_provider.int_val(dr["synch_folder_id"]), db_provider.int_val(dr["folder_id"]), file_name, Path.GetExtension(file_name)
+      , DateTime.Now, DateTime.Now, out tp, out cc);
     if(s.is_type_file(Path.GetExtension(file_name)) != null)
-      s.set_file_content((int)nid, Path.GetExtension(file_name).ToLower()
+      s.set_file_content_db((int)nid, Path.GetExtension(file_name).ToLower()
         , content != null ? System.Text.Encoding.UTF8.GetString(content) : "", DateTime.Now, DateTime.Now);
     if(s.is_info_file(file_name) != null && db_provider.int_val(dr["file_notes_id"]) <= 0)
-      s.init_task_notes(task_id, (int)nid, content != null ? System.Text.Encoding.UTF8.GetString(content) : "");
+      s.init_task_notes_db(task_id, (int)nid, content != null ? System.Text.Encoding.UTF8.GetString(content) : "");
   }
 
   protected bool nome_valido(string nome) { return (new Regex("^[a-zA-Z0-9 ,ìèéùàò_]*$")).IsMatch(nome); }

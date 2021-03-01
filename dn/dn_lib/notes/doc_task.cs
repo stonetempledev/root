@@ -21,14 +21,18 @@ namespace dn_lib
     public doc_task(string path) : base(path) { this.lwt = sys.without_ms(new FileInfo(path).LastWriteTime); }
     public doc_task() : base() { }
 
-    public override void save(string path = "") { base.save(path); this.lwt = sys.without_ms(DateTime.Now); this.changed = false; }
-    public void save_into_folder(core c, string folder_path) {
+    public override void save(string path = "") { base.save(path); this.lwt = sys.without_ms(new FileInfo(path).LastWriteTime); this.changed = false; }
+    public void save_into_folder(core c, string folder_path)
+    {
       string i_name = c.config.get_var("lib-vars.index-folder").value
         , fp = Path.Combine(folder_path, i_name);
       this.save(fp);
+
+      FileInfo fi = new FileInfo(fp); _lwt = sys.without_ms(fi.LastWriteTime);
     }
 
-    public static bool exists_index(core c, string folder_path) {
+    public static bool exists_index(core c, string folder_path)
+    {
       return File.Exists(Path.Combine(folder_path, c.config.get_var("lib-vars.index-folder").value));
     }
 
@@ -45,7 +49,7 @@ namespace dn_lib
       doc_task res = new doc_task() { xml = "<root/>", created = true };
       string i_name = c.config.get_var("lib-vars.index-folder").value
         , fp = Path.Combine(folder_path, i_name);
-      res.save(fp);      
+      res.save(fp);
       return res;
     }
 
@@ -57,9 +61,13 @@ namespace dn_lib
     public string stima { get { return this.root_value("stima"); } set { if(this.stima != value) this.changed = true; this.set_root_attr("stima", value); } }
     public string user { get { return this.root_value("user"); } set { if(this.user != value) this.changed = true; this.set_root_attr("user", value); } }
 
-    public DateTime? dt_create { get { string val = this.root_value("dt_create"); return val != "" ? DateTime.Parse(val) : (DateTime?)null; }
-      set { if(this.dt_create.HasValue != value.HasValue || (this.dt_create.HasValue && value.HasValue && this.dt_create != value)) this.changed = true;
-        this.set_root_attr("dt_create", value.HasValue ? value.Value.ToString("yyyy/MM/dd HH:mm:ss") : ""); } }
+    public DateTime? dt_create {
+      get { string val = this.root_value("dt_create"); return val != "" ? DateTime.Parse(val) : (DateTime?)null; }
+      set {
+        if(this.dt_create.HasValue != value.HasValue || (this.dt_create.HasValue && value.HasValue && this.dt_create != value)) this.changed = true;
+        this.set_root_attr("dt_create", value.HasValue ? value.Value.ToString("yyyy/MM/dd HH:mm:ss") : "");
+      }
+    }
 
     public DateTime? dt_upd {
       get { string val = this.root_value("dt_upd"); return val != "" ? DateTime.Parse(val) : (DateTime?)null; }

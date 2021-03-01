@@ -18,4 +18,4 @@ TODO
   ! documentazione, appunti
   ! passwords, accounts, info tecniche
   ! procedure, scripts, pannelli di controllo
-
+ toyn: per un futuro migliore

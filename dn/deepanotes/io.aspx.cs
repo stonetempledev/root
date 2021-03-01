@@ -57,7 +57,7 @@ public partial class _io : tl_page
             byte[] bytes = jr.val_bytes("bin_data", enc);
             string path = ob.file_path(jr.val_int("id"));
             File.WriteAllBytes(path, bytes);
-            s.set_file_content(jr.val_int("id"), Path.GetExtension(path).ToLower(), enc.GetString(bytes), DateTime.Now, DateTime.Now);
+            s.set_file_content_db(jr.val_int("id"), Path.GetExtension(path).ToLower(), enc.GetString(bytes), DateTime.Now, DateTime.Now);
           } // synch folders
           else if(jr.action == "synch_folders") {
             synch s = ob.get_synch(jr.val_int("user_id"), jr.val_str("user_name"));

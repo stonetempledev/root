@@ -4,8 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Data;
 using System.IO;
-using dn_lib.db;
 using dn_lib;
+using dn_lib.db;
 
 namespace deepanotes
 {
@@ -50,7 +50,7 @@ namespace deepanotes
       foreach(task t in this.tasks) {
         if(t.folder_id.HasValue && !t.file_id.HasValue)
           this.synch_folders.First(x => x.id == t.synch_folder_id).get_folder(t.folder_id.Value).task = t;
-        else 
+        else
           this.synch_folders.First(x => x.id == t.synch_folder_id).get_file(t.file_id.Value).task = t;
       }
 
@@ -111,7 +111,7 @@ namespace deepanotes
         .Select(dr => new task(db_provider.int_val(dr["synch_folder_id"]), db_provider.long_val(dr["task_id"])
           , db_provider.long_val_null(dr["file_id"]), db_provider.long_val_null(dr["folder_id"])
           , db_provider.str_val(dr["title"]), db_provider.str_val(dr["user"])
-          , db_provider.dt_val(dr["dt_ref"]), db_provider.dt_val(dr["dt_ins"]), db_provider.dt_val(dr["dt_upd"])
+          , db_provider.dt_val(dr["dt_lwt"]), db_provider.dt_val(dr["dt_ref"]), db_provider.dt_val(dr["dt_ins"]), db_provider.dt_val(dr["dt_upd"])
           , new task_stato(db_provider.str_val(dr["stato"]), db_provider.int_val(dr["stato_order"], 99)
             , db_provider.str_val(dr["stato_class"]), db_provider.str_val(dr["stato_title_plurale"]), db_provider.str_val(dr["stato_title_singolare"]))
           , new task_priorita(db_provider.str_val(dr["priorita"]), db_provider.int_val(dr["priorita_order"], 99)
@@ -161,7 +161,7 @@ namespace deepanotes
       // files
       foreach(DataRow dr in db_conn.dt_table(core.parse_query("lib-notes.files", pars)).Rows) {
         int sfi = db_provider.int_val(dr["synch_folder_id"]);
-        long fi = db_provider.long_val(dr["folder_id"]);        
+        long fi = db_provider.long_val(dr["folder_id"]);
         file f = new file(db_provider.int_val(dr["synch_folder_id"]), db_provider.long_val(dr["folder_id"])
             , db_provider.long_val(dr["file_id"]), db_provider.str_val(dr["file_name"])
             , db_provider.dt_val(dr["dt_ins"]).Value, db_provider.int_val(dr["found_file"]) > 0);
@@ -177,8 +177,8 @@ namespace deepanotes
       // aggiorno il file/folder
       DataRow r = db_conn.first_row(core.parse_query("lib-notes.task-paths", new string[,] { { "task_id", task_id.ToString() } }));
       if(r == null) throw new Exception("il task " + task_id.ToString() + " non c'è in tabella!");
-      string folder_path = db_provider.str_val(r["folder_path"]), name = db_provider.str_val(r["task_name"])
-        , src = Path.Combine(folder_path, name);
+      string folder_path = db_provider.str_val(r["folder_path"]), f_name = db_provider.str_val(r["folder_name"])
+        , src = Path.Combine(folder_path, f_name);
       if(db_provider.int_val(r["file_id"]) > 0) {
         if(File.Exists(src)) File.Delete(src);
       } else { if(Directory.Exists(src)) Directory.Delete(src, true); }
@@ -209,110 +209,74 @@ namespace deepanotes
       // aggiorno il file/folder
       DataRow r = db_conn.first_row(core.parse_query("lib-notes.task-paths", new string[,] { { "task_id", task_id.ToString() } }));
       if(r == null) throw new Exception("il task " + task_id.ToString() + " non c'è in tabella!");
+      if(db_provider.int_val(r["file_id"]) > 0) throw new Exception("questo tipo di task non è supportato, lanciare il comando synch!");
       rel_path = db_provider.str_val(r["rel_path"]);
-      string folder_path = db_provider.str_val(r["folder_path"]), name = db_provider.str_val(r["task_name"]), new_name = name;
+      string folder_path = db_provider.str_val(r["folder_path"]), name = !string.IsNullOrEmpty(title) ? title : db_provider.str_val(r["task_name"])
+        , f_name = db_provider.str_val(r["folder_name"]), src = Path.Combine(folder_path, f_name);
 
-      // stato
+      // leggo il doc. indice
+      doc_task it = null;
+      if(doc_task.exists_index(core, src))
+        it = doc_task.open_index(core, src);
+      else it = doc_task.create_index(core, src);
+
+      // rinomino il folder
+      string folder_name = Path.GetFileName(src);
+      if(folder_name.ToLower() != (name + ".task").ToLower()) {
+        string new_name = name + ".task", new_path = Path.Combine(Path.GetDirectoryName(src), new_name);
+        Directory.Move(src, new_path);
+        src = new_path;
+        db_conn.exec(core.parse_query("lib-notes.update-folder-name"
+          , new Dictionary<string, object>() { { "folder_id", r["folder_id"].ToString() }, { "folder_name", new_name } }));
+
+        // title
+        if(!string.IsNullOrEmpty(title))
+          db_conn.exec(core.parse_query("lib-notes.set-task-title"
+            , new string[,] { { "title", title }, { "task_id", task_id.ToString() } }));
+      }
+
+      // stato 
       if(stato != null) {
-        free_label l = fl.FirstOrDefault(x => x.stato == stato && x.def);
-        if(l == null) throw new Exception("non è stata definita la free label per lo stato '" + stato + "'!");
-        if(db_provider.str_val(r["free_state"]) != "")
-          new_name = new_name.Replace("." + db_provider.str_val(r["free_state"]) + ".", "." + l.free_txt + ".");
-        else
-          new_name = new_name.Substring(0, new_name.IndexOf(".task")) + "." + l.free_txt + new_name.Substring(new_name.IndexOf(".task"));
+        it.stato = stato;
+        db_conn.exec(core.parse_query("lib-notes.set-task-state"
+          , new string[,] { { "stato", stato }, { "task_id", task_id.ToString() } }));
       }
 
       // assegna
       if(assegna != null) {
-        if(db_provider.str_val(r["free_assegna"]) != "")
-          new_name = new_name.Replace("." + db_provider.str_val(r["free_assegna"]) + ".", "." + (assegna != "" ? assegna + "." : ""));
-        else
-          new_name = new_name.Substring(0, new_name.IndexOf(".task")) + (assegna != "" ? "." + assegna : "")
-            + new_name.Substring(new_name.IndexOf(".task"));
+        it.user = assegna;
+        db_conn.exec(core.parse_query("lib-notes.set-task-user"
+          , new string[,] { { "user", assegna }, { "task_id", task_id.ToString() } }));
       }
 
-      // priorita
+      // priorita 
       if(priorita != null) {
-        free_label l = priorita != "" ? fl.FirstOrDefault(x => x.priorita == priorita && x.def) : null;
-        if(priorita != "" && l == null) throw new Exception("non è stata definita la free label per la priorita '" + priorita + "'!");
+        it.priorita = priorita;
+        db_conn.exec(core.parse_query("lib-notes.set-task-priorita"
+          , new string[,] { { "priorita", priorita }, { "task_id", task_id.ToString() } }));
+      }
 
-        if(db_provider.str_val(r["free_priorita"]) != "")
-          new_name = new_name.Replace("." + db_provider.str_val(r["free_priorita"]) + ".", "." + (priorita != "" ? l.free_txt + "." : ""));
-        else
-          new_name = new_name.Substring(0, new_name.IndexOf(".task")) + (priorita != "" ? "." + l.free_txt : "")
-            + new_name.Substring(new_name.IndexOf(".task"));
+      // stima 
+      if(stima != null) {
+        it.stima = stima;
+        db_conn.exec(core.parse_query("lib-notes.set-task-stima"
+          , new string[,] { { "stima", stima }, { "task_id", task_id.ToString() } }));
       }
 
       // tipo
       if(tipo != null) {
-        free_label l = tipo != "" ? fl.FirstOrDefault(x => x.tipo == tipo && x.def) : null;
-        if(tipo != "" && l == null) throw new Exception("non è stata definita la free label per il tipo '" + tipo + "'!");
-
-        if(db_provider.str_val(r["free_tipo"]) != "")
-          new_name = new_name.Replace("." + db_provider.str_val(r["free_tipo"]) + ".", "." + (tipo != "" ? l.free_txt + "." : ""));
-        else
-          new_name = new_name.Substring(0, new_name.IndexOf(".task")) + (tipo != "" ? "." + l.free_txt : "")
-            + new_name.Substring(new_name.IndexOf(".task"));
-      }
-
-      // stima
-      if(stima != null) {
-        free_label l = stima != "" ? fl.FirstOrDefault(x => x.stima == stima && x.def) : null;
-        if(stima != "" && l == null) throw new Exception("non è stata definita la free label per la stima '" + stima + "'!");
-
-        if(db_provider.str_val(r["free_stima"]) != "")
-          new_name = new_name.Replace("." + db_provider.str_val(r["free_stima"]) + ".", "." + (stima != "" ? l.free_txt + "." : ""));
-        else
-          new_name = new_name.Substring(0, new_name.IndexOf(".task")) + (stima != "" ? "." + l.free_txt : "") + new_name.Substring(new_name.IndexOf(".task"));
-      }
-
-      // title
-      if(!string.IsNullOrEmpty(title)) new_name = new_name.Replace(db_provider.str_val(r["title"]) + ".", title + ".");
-
-      string src = Path.Combine(folder_path, name);
-      if(db_provider.int_val(r["file_id"]) > 0) {
-        if(!File.Exists(src)) throw new Exception("il file non c'è, non è possibile aggiornare l'attività!");
-        File.Move(src, Path.Combine(folder_path, new_name));
-      } else {
-        if(!Directory.Exists(src)) throw new Exception("la cartella non c'è, non è possibile aggiornare l'attività!");
-        Directory.Move(src, Path.Combine(folder_path, new_name));
-      }
-
-      // stato 
-      if(stato != null)
-        db_conn.exec(core.parse_query("lib-notes.set-task-state"
-          , new string[,] { { "stato", stato }, { "task_id", task_id.ToString() } }));
-
-      // assegna
-      if(assegna != null)
-        db_conn.exec(core.parse_query("lib-notes.set-task-user"
-          , new string[,] { { "user", assegna }, { "task_id", task_id.ToString() } }));
-
-      // priorita 
-      if(priorita != null)
-        db_conn.exec(core.parse_query("lib-notes.set-task-priorita"
-          , new string[,] { { "priorita", priorita }, { "task_id", task_id.ToString() } }));
-
-      // stima 
-      if(stima != null)
-        db_conn.exec(core.parse_query("lib-notes.set-task-stima"
-          , new string[,] { { "stima", stima }, { "task_id", task_id.ToString() } }));
-
-      // tipo
-      if(tipo != null)
+        it.tipo = tipo;
         db_conn.exec(core.parse_query("lib-notes.set-task-tipo"
           , new string[,] { { "tipo", tipo }, { "task_id", task_id.ToString() } }));
+      }
 
-      // title
-      if(!string.IsNullOrEmpty(title))
-        db_conn.exec(core.parse_query("lib-notes.set-task-title"
-          , new string[,] { { "title", title }, { "task_id", task_id.ToString() } }));
-
-      // aggiorno il file nel db
-      if(db_provider.int_val(r["file_id"]) > 0)
-        db_conn.exec(core.parse_query("lib-notes.set-file-name", new string[,] { { "file_id", r["file_id"].ToString() }, { "file_name", new_name } }));
-      else
-        db_conn.exec(core.parse_query("lib-notes.set-folder-name", new string[,] { { "folder_id", r["folder_id"].ToString() }, { "folder_name", new_name } }));
+      // aggiorno l'indice      
+      if(it.changed) {
+        it.dt_upd = dn_lib.tools.sys.without_ms(DateTime.Now);
+        it.save_into_folder(core, src);
+        db_conn.exec(core.parse_query("lib-notes.set-task-upd"
+          , new string[,] { { "i_lwt", it.lwt.ToString("yyyy-MM-dd HH:mm:ss") }, { "dt_upd", it.dt_upd.Value.ToString("yyyy-MM-dd HH:mm:ss") }, { "task_id", task_id.ToString() } }));
+      }
     }
 
     public void ren_task(int task_id, string title)
@@ -320,12 +284,13 @@ namespace deepanotes
       // aggiorno il file/folder
       DataRow r = db_conn.first_row(core.parse_query("lib-notes.task-paths", new string[,] { { "task_id", task_id.ToString() } }));
       if(r == null) throw new Exception("il task " + task_id.ToString() + " non c'è in tabella!");
-      string folder_path = db_provider.str_val(r["folder_path"]), name = db_provider.str_val(r["task_name"]), new_name = name;
+      string folder_path = db_provider.str_val(r["folder_path"]), name = db_provider.str_val(r["task_name"])
+        , f_name = db_provider.str_val(r["folder_name"]), new_name = f_name;
 
       // title
       if(!string.IsNullOrEmpty(title)) new_name = new_name.Replace(db_provider.str_val(r["title"]) + ".", title + ".");
 
-      string src = Path.Combine(folder_path, name);
+      string src = Path.Combine(folder_path, f_name);
       if(db_provider.int_val(r["file_id"]) > 0) {
         if(!File.Exists(src)) throw new Exception("il file non c'è, non è possibile aggiornare l'attività!");
         File.Move(src, Path.Combine(folder_path, new_name));

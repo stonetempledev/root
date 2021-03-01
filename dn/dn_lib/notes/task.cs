@@ -12,6 +12,7 @@ namespace dn_lib {
     public long? folder_id { get; set; }
     public string title { get; set; }
     public string user { get; set; }
+    public DateTime? dt_lwt { get; set; }
     public DateTime? dt_ref { get; set; }
     public DateTime? dt_upd { get; set; }
     public DateTime? dt_ins { get; set; }
@@ -23,20 +24,21 @@ namespace dn_lib {
     public bool has_files { get; set; }
     public int level_folder { get; set; }
     public doc_task doc { get; set; }
+    public string path { get; set; }
 
     public task(int synch_folder_id, long id, long? file_id, long? folder_id, string title, string user
-      , DateTime? dt_ref, DateTime? dt_ins, DateTime? dt_upd, task_stato stato, task_priorita priorita
-      , task_stima stima, task_tipo tipo, bool has_notes, bool has_files) {
+      , DateTime? dt_lwt, DateTime? dt_ref, DateTime? dt_ins, DateTime? dt_upd, task_stato stato
+      , task_priorita priorita, task_stima stima, task_tipo tipo, bool has_notes, bool has_files) {
       this.synch_folder_id = synch_folder_id; this.id = id; this.file_id = file_id; this.folder_id = folder_id;
-      this.title = title; this.user = user; this.dt_ref = dt_ref; this.dt_upd = dt_upd; this.dt_ins = dt_ins;
+      this.title = title; this.user = user; this.dt_lwt = dt_lwt; this.dt_ref = dt_ref; this.dt_upd = dt_upd; this.dt_ins = dt_ins;
       this.stato = stato; this.priorita = priorita; this.tipo = tipo; this.stima = stima; this.has_notes = has_notes; 
       this.has_files = has_files;
     }
 
     public task(int synch_folder_id, long? file_id, long? folder_id, string title, string user
-      , string stato, string priorita, string tipo, string stima, DateTime? dt_ins, DateTime? dt_upd, doc_task doc) {
+      , string stato, string priorita, string tipo, string stima, DateTime? dt_ins, DateTime? dt_upd, DateTime? dt_lwt, doc_task doc) {
       this.synch_folder_id = synch_folder_id; this.file_id = file_id; this.folder_id = folder_id;
-      this.title = title; this.user = user; this.dt_upd = dt_upd; this.dt_ins = dt_ins;
+      this.title = title; this.user = user; this.dt_upd = dt_upd; this.dt_ins = dt_ins; this.dt_lwt = dt_lwt;
       this.stato = new task_stato(stato, 0, "", "", "");
       this.priorita = new task_priorita(priorita, 0, "", "", "");
       this.tipo = new task_tipo(tipo, 0, "", "", "");
@@ -52,7 +54,7 @@ namespace dn_lib {
         string[] parts = Path.GetFileName(path).Split(new char[] { '.' });
         if (parts.Length <= 1) return null;
 
-        // taks
+        // task
         if (folder_id.HasValue && parts[parts.Length - 1] != "task") return null;
         else if (file_id.HasValue && parts[parts.Length - 1] != "task" && parts[parts.Length - 2] != "task") return null;
 
@@ -80,19 +82,19 @@ namespace dn_lib {
 
           // state
           free_label lbl = labels.FirstOrDefault(x => !string.IsNullOrEmpty(x.stato) && x.free_txt.ToLower() == p.ToLower());
-          if (stato == "" && lbl != null) { stato = lbl.stato; if(it != null) it.stato = stato; continue; }
+          if (lbl != null) { stato = lbl.stato; if(it != null) it.stato = stato; continue; }
 
           // priorita
           lbl = labels.FirstOrDefault(x => !string.IsNullOrEmpty(x.priorita) && x.free_txt.ToLower() == p.ToLower());
-          if (priorita == "" && lbl != null) { priorita = lbl.priorita; if(it != null) it.priorita = priorita; continue; }
+          if (lbl != null) { priorita = lbl.priorita; if(it != null) it.priorita = priorita; continue; }
 
           // tipo
           lbl = labels.FirstOrDefault(x => !string.IsNullOrEmpty(x.tipo) && x.free_txt.ToLower() == p.ToLower());
-          if (tipo == "" && lbl != null) { tipo = lbl.tipo; if(it != null) it.tipo = tipo; continue; }
+          if (lbl != null) { tipo = lbl.tipo; if(it != null) it.tipo = tipo; continue; }
 
           // stima
           lbl = labels.FirstOrDefault(x => !string.IsNullOrEmpty(x.stima) && x.free_txt.ToLower() == p.ToLower());
-          if (stima == "" && lbl != null) { stima = lbl.stima; if(it != null) it.stima = stima; continue; }
+          if (lbl != null) { stima = lbl.stima; if(it != null) it.stima = stima; continue; }
 
           // user
           if (user == "" && users.FirstOrDefault(x => x.ToLower() == p.ToLower()) != null) { user = p; if(it != null) it.user = user;  continue; }
@@ -102,10 +104,8 @@ namespace dn_lib {
 
         }
 
-        //if(it != null && it.created && !it.dt_upd.HasValue) it.dt_upd = lwt;
-
         return new task(synch_folder_id, file_id, folder_id, title, user, stato, priorita, tipo, stima
-          , dt.HasValue ? dt : ct, dt2.HasValue ? dt2 : lwt, it);
+          , it != null ? it.dt_create : (dt.HasValue ? dt : ct), it != null ? it.dt_upd : (DateTime?)null, lwt, it) { path = path };
       } catch { return null; }
     }
 
