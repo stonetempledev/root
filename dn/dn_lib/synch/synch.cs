@@ -381,6 +381,7 @@ namespace dn_lib
           try {
             string dn = Path.GetDirectoryName(folder_path), new_name = t.title + ".task";
             t.path = Path.Combine(dn, new_name);
+            if (Directory.Exists(t.path)) throw new Exception("cè già la cartella " + t.path);
             Directory.Move(folder_path, t.path);
             fire_synch_event("rinominato folder: " + folder_path + ", in: " + Path.Combine(dn, new_name));
             folder_name = new_name; folder_path = Path.Combine(dn, new_name);
