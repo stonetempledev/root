@@ -455,6 +455,8 @@ namespace dn_lib
 
       // sposto il task file      
       string name_file = (ifile ? "i" : "content"), ext = Path.GetExtension(file_path);
+      if (File.Exists(Path.Combine(new_folder_path, name_file + ext)))
+        File.Delete(Path.Combine(new_folder_path, name_file + ext));
       File.Move(file_path, Path.Combine(new_folder_path, name_file + ext));
       db_conn.exec(core.parse_query("lib-notes.move-file", new string[,] { { "synch_folder_id", synch_id.ToString() }
         , { "name_file", name_file + ext }, { "folder_id", folder_id.ToString() }, { "file_id", file_id.ToString() } }));

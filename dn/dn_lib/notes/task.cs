@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using dn_lib.tools;
 
 namespace dn_lib {
   public class task {
@@ -106,7 +107,7 @@ namespace dn_lib {
 
         return new task(synch_folder_id, file_id, folder_id, title, user, stato, priorita, tipo, stima
           , it != null ? it.dt_create : (dt.HasValue ? dt : ct), it != null ? it.dt_upd : (DateTime?)null, lwt, it) { path = path };
-      } catch { return null; }
+      } catch(Exception ex) { log.log_err(ex); return null; }
     }
 
     static protected bool parse_date(string txt, out DateTime? dt) {

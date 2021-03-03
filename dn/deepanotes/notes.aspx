@@ -51,7 +51,7 @@
                 window.setTimeout(function () {
                     var res = post_action({ "action": "synch_folders", "user_id": __user_id, "user_name": __user_name });
                     $("#content").html($("#content").html() + (res.contents ? res.contents : ""));
-                    if (res.data.err) $("#content").html($("#content").html() + "<span class='text-danger'>si è verifiato un errore: " + res.data.err + "</span><br/>");
+                    if (res.data.err) $("#content").html($("#content").html() + "<span class='text-danger'>si &eacute; verificato un errore: " + res.data.err + "</span><br/>");
                     $("#content").html($("#content").html() + "<br/><br/><u>tempo di esecuzione: " + res.data.seconds.toString() + " secondi</u><br/>");
                 }, 500);
                 return;
