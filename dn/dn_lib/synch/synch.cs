@@ -381,6 +381,7 @@ namespace dn_lib
           try {
             string dn = Path.GetDirectoryName(folder_path), new_name = t.title + ".task";
             t.path = Path.Combine(dn, new_name);
+            if (Directory.Exists(t.path)) throw new Exception("cè già la cartella " + t.path);
             Directory.Move(folder_path, t.path);
             fire_synch_event("rinominato folder: " + folder_path + ", in: " + Path.Combine(dn, new_name));
             folder_name = new_name; folder_path = Path.Combine(dn, new_name);
@@ -455,6 +456,8 @@ namespace dn_lib
 
       // sposto il task file      
       string name_file = (ifile ? "i" : "content"), ext = Path.GetExtension(file_path);
+      if (File.Exists(Path.Combine(new_folder_path, name_file + ext)))
+        File.Delete(Path.Combine(new_folder_path, name_file + ext));
       File.Move(file_path, Path.Combine(new_folder_path, name_file + ext));
       db_conn.exec(core.parse_query("lib-notes.move-file", new string[,] { { "synch_folder_id", synch_id.ToString() }
         , { "name_file", name_file + ext }, { "folder_id", folder_id.ToString() }, { "file_id", file_id.ToString() } }));

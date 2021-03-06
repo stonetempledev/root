@@ -224,6 +224,7 @@ namespace deepanotes
       string folder_name = Path.GetFileName(src);
       if(folder_name.ToLower() != (name + ".task").ToLower()) {
         string new_name = name + ".task", new_path = Path.Combine(Path.GetDirectoryName(src), new_name);
+        if (Directory.Exists(new_path)) throw new Exception("cè già la cartella " + new_path);
         Directory.Move(src, new_path);
         src = new_path;
         db_conn.exec(core.parse_query("lib-notes.update-folder-name"
