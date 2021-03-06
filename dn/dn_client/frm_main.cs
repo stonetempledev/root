@@ -78,7 +78,7 @@ namespace dn_client
         // tray
         ntf_main.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
         ntf_main.ContextMenuStrip.Items.Add("Apri...", null, this.MenuApri_Click);
-        ntf_main.ContextMenuStrip.Items.Add("Pannello...", null, this.MenuPannello_Click);
+        //ntf_main.ContextMenuStrip.Items.Add("Pannello...", null, this.MenuPannello_Click);
         ntf_main.ContextMenuStrip.Items.Add("Esci", null, this.MenuExit_Click);
         ntf_main.ContextMenuStrip.BackColor = Color.Gray;
         ntf_main.ContextMenuStrip.ForeColor = Color.White;
@@ -91,19 +91,19 @@ namespace dn_client
 
     protected void log_txt(string txt, Color? clr = null)
     {
-      if(lw_log.Tag == null) {
-        lw_log.View = View.Details;
-        lw_log.GridLines = true;
-        lw_log.FullRowSelect = true;
-        lw_log.Columns.Add(new ColumnHeader() { Text = "Messaggio", Width = 450 });
-        lw_log.Tag = "init";
-      }
+      //if(lw_log.Tag == null) {
+      //  lw_log.View = View.Details;
+      //  lw_log.GridLines = true;
+      //  lw_log.FullRowSelect = true;
+      //  lw_log.Columns.Add(new ColumnHeader() { Text = "Messaggio", Width = 450 });
+      //  lw_log.Tag = "init";
+      //}
 
-      lw_log.Items.Add(new ListViewItem(txt) { ForeColor = !clr.HasValue ? Color.DarkSlateGray : clr.Value });
-      if(chk_fine.Checked) {
-        lw_log.Items[lw_log.Items.Count - 1].EnsureVisible();
-        Application.DoEvents();
-      }
+      //lw_log.Items.Add(new ListViewItem(txt) { ForeColor = !clr.HasValue ? Color.DarkSlateGray : clr.Value });
+      //if(chk_fine.Checked) {
+      //  lw_log.Items[lw_log.Items.Count - 1].EnsureVisible();
+      //  Application.DoEvents();
+      //}
     }
 
     void MenuPannello_Click(object sender, EventArgs e)

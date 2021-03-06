@@ -33,8 +33,6 @@
       this.ss_main = new System.Windows.Forms.StatusStrip();
       this.ss_label = new System.Windows.Forms.ToolStripStatusLabel();
       this.tmr_cmds = new System.Windows.Forms.Timer(this.components);
-      this.lw_log = new System.Windows.Forms.ListView();
-      this.chk_fine = new System.Windows.Forms.CheckBox();
       this.ss_main.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -48,7 +46,7 @@
       this.lbl_title.ForeColor = System.Drawing.SystemColors.MenuHighlight;
       this.lbl_title.Location = new System.Drawing.Point(0, 0);
       this.lbl_title.Name = "lbl_title";
-      this.lbl_title.Size = new System.Drawing.Size(647, 28);
+      this.lbl_title.Size = new System.Drawing.Size(815, 28);
       this.lbl_title.TabIndex = 0;
       this.lbl_title.Text = "Deepa Notes Pannello";
       this.lbl_title.DoubleClick += new System.EventHandler(this.lbl_title_DoubleClick);
@@ -80,7 +78,7 @@
       this.btn_close.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
       this.btn_close.Font = new System.Drawing.Font("Arial", 17F);
       this.btn_close.ForeColor = System.Drawing.Color.SteelBlue;
-      this.btn_close.Location = new System.Drawing.Point(617, -3);
+      this.btn_close.Location = new System.Drawing.Point(785, -3);
       this.btn_close.Name = "btn_close";
       this.btn_close.Size = new System.Drawing.Size(29, 34);
       this.btn_close.TabIndex = 4;
@@ -99,9 +97,9 @@
       this.ss_main.BackColor = System.Drawing.Color.White;
       this.ss_main.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ss_label});
-      this.ss_main.Location = new System.Drawing.Point(0, 443);
+      this.ss_main.Location = new System.Drawing.Point(0, 514);
       this.ss_main.Name = "ss_main";
-      this.ss_main.Size = new System.Drawing.Size(645, 22);
+      this.ss_main.Size = new System.Drawing.Size(813, 22);
       this.ss_main.TabIndex = 6;
       this.ss_main.Text = "statusStrip1";
       // 
@@ -118,44 +116,13 @@
       this.tmr_cmds.Interval = 1000;
       this.tmr_cmds.Tick += new System.EventHandler(this.tmr_cmds_Tick);
       // 
-      // lw_log
-      // 
-      this.lw_log.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.lw_log.BorderStyle = System.Windows.Forms.BorderStyle.None;
-      this.lw_log.HideSelection = false;
-      this.lw_log.Location = new System.Drawing.Point(0, 31);
-      this.lw_log.Name = "lw_log";
-      this.lw_log.Size = new System.Drawing.Size(645, 382);
-      this.lw_log.TabIndex = 7;
-      this.lw_log.UseCompatibleStateImageBehavior = false;
-      // 
-      // chk_fine
-      // 
-      this.chk_fine.Checked = true;
-      this.chk_fine.CheckState = System.Windows.Forms.CheckState.Checked;
-      this.chk_fine.Cursor = System.Windows.Forms.Cursors.Hand;
-      this.chk_fine.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-      this.chk_fine.ForeColor = System.Drawing.Color.Gray;
-      this.chk_fine.Location = new System.Drawing.Point(539, 417);
-      this.chk_fine.Name = "chk_fine";
-      this.chk_fine.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
-      this.chk_fine.Size = new System.Drawing.Size(98, 21);
-      this.chk_fine.TabIndex = 8;
-      this.chk_fine.Text = "vai alla fine";
-      this.chk_fine.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-      this.chk_fine.UseVisualStyleBackColor = true;
-      // 
       // frm_main
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.White;
-      this.ClientSize = new System.Drawing.Size(645, 465);
+      this.ClientSize = new System.Drawing.Size(813, 536);
       this.ControlBox = false;
-      this.Controls.Add(this.chk_fine);
-      this.Controls.Add(this.lw_log);
       this.Controls.Add(this.ss_main);
       this.Controls.Add(this.btn_close);
       this.Controls.Add(this.lbl_title);
@@ -186,8 +153,6 @@
     private System.Windows.Forms.StatusStrip ss_main;
     private System.Windows.Forms.ToolStripStatusLabel ss_label;
     private System.Windows.Forms.Timer tmr_cmds;
-    private System.Windows.Forms.ListView lw_log;
-    private System.Windows.Forms.CheckBox chk_fine;
   }
 }
 

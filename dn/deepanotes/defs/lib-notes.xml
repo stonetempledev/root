@@ -250,7 +250,7 @@
   from (select t2.*, datediff(day, t2.dt_ref, getdate()) as diff_days
     from (select t.task_id, t.synch_folder_id, isnull(t.folder_id, f.folder_id) as folder_id
 	   , t.file_id, t.title, t.[user], t.stato, t.priorita, t.tipo, t.stima, t.dt_ins, t.dt_upd
-     , t.dt_lwt, (case when t.dt_ins > t.dt_upd then t.dt_ins else t.dt_upd end) as dt_ref
+     , t.dt_lwt, (case when isnull(t.dt_ins, 0) > isnull(t.dt_upd, 0) then t.dt_ins else t.dt_upd end) as dt_ref
 	  from dn_tasks t
     {@cond_bool='search','join-search'}
 	  left join dn_files f on f.file_id = t.file_id
