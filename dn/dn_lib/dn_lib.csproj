@@ -80,6 +80,7 @@
     <Compile Include="tools\json_result.cs" />
     <Compile Include="tools\log.cs" />
     <Compile Include="tools\procs.cs" />
+    <Compile Include="tools\req.cs" />
     <Compile Include="tools\setting.cs" />
     <Compile Include="tools\strings.cs" />
     <Compile Include="tools\sys.cs" />

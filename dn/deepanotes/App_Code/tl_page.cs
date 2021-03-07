@@ -227,7 +227,7 @@ public class tl_page : System.Web.UI.Page {
   #region functionalities
 
   protected void send_mail(string to, string obj, string body) {
-    SmtpSection cfg = (SmtpSection)ConfigurationManager.GetSection("mailSettings/" + _core.machine_key());
+    SmtpSection cfg = (SmtpSection)ConfigurationManager.GetSection("mailSettings/" + _core.network_key());
     using (MailMessage mm = new MailMessage() {
       From = new MailAddress(cfg.From), Subject = obj, IsBodyHtml = true, Body = body
     }) {

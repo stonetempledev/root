@@ -209,6 +209,17 @@
   <metadata name="tmr_cmds.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>402, 17</value>
   </metadata>
+  <data name="pb_close.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAB
+        LAAAASwBBI/ZxAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAEMSURBVFhHzZfB
+        DcIwDEXDEIzBASHG7xIdo0uYuK0jQn5S22lUDk8iP/V/ljglEFGgV3jQ+zbRM9zX80jYwS52xrPIlwhF
+        5qFLbPJ5dy3sDvHHtAfCmCVyuTDVLs5douE4/KAos3LQrf7QhaLTPKBG2ZUPMWcsYejIDomeJYyzRZDw
+        LOGYgWHCUuiQMzDM0BQ75QwMC1qCDjkDQ0hN1CFnYFgFL/GNSc7AsEl9CbOcgWGTSxeoy4WBfwGW87nM
+        DEvAsKAm57x1h7p+gGGGRtCxBAwTlmLnEjBc8RQ6ZmDokgvG2SLokguGjuxwilxQdpkHTCg61R+6Oege
+        Kxcajj94ml3+OOWLbYkLnucUPrxqQT8l5IkTAAAAAElFTkSuQmCC
+</value>
+  </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>60</value>
   </metadata>

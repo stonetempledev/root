@@ -21,7 +21,7 @@ namespace dn_lib
     public doc_task(string path) : base(path) { this.lwt = sys.without_ms(new FileInfo(path).LastWriteTime); }
     public doc_task() : base() { }
 
-    public override void save(string path = "") { base.save(path); this.lwt = sys.without_ms(new FileInfo(path).LastWriteTime); this.changed = false; }
+    public override void save(string path = "") { base.save(path); this.lwt = sys.without_ms(new FileInfo(_path).LastWriteTime); this.changed = false; }
     public void save_into_folder(core c, string folder_path)
     {
       string i_name = c.config.get_var("lib-vars.index-folder").value
@@ -48,7 +48,7 @@ namespace dn_lib
     {
       doc_task res = new doc_task() { xml = "<root/>", created = true };
       string i_name = c.config.get_var("lib-vars.index-folder").value
-        , fp = Path.Combine(folder_path, i_name);
+        , fp = Path.Combine(folder_path, i_name);      
       res.save(fp);
       return res;
     }

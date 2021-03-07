@@ -313,8 +313,9 @@
     </query>
 
     <query name="ins-task-from-folder">
-      <![CDATA[insert into dn_tasks (synch_folder_id, folder_id, title, [user], stato, dt_upd, readed, priorita, tipo, stima, dt_ins)
- select synch_folder_id, folder_id, {@txtqry='title'}, {@txtqry='user'}, {@txtqry='stato'}, dt_upd, 1, {@txtqry='priorita'}, {@txtqry='tipo'}, {@txtqry='stima'}, dt_ins
+      <![CDATA[insert into dn_tasks (synch_folder_id, folder_id, title, [user], stato, dt_upd, readed, priorita, tipo, stima, dt_ins, dt_lwt_index)
+ select synch_folder_id, folder_id, {@txtqry='title'}, {@txtqry='user'}, {@txtqry='stato'}, dt_upd, 1, {@txtqry='priorita'}
+    , {@txtqry='tipo'}, {@txtqry='stima'}, dt_ins, {@dateqry='dt_lwt_index'}
   from dn_folders where folder_id = {@field='folder_id'}]]>
     </query>
 

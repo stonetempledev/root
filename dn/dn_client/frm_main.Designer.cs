@@ -28,25 +28,34 @@
       this.lbl_title = new System.Windows.Forms.Label();
       this.ntf_main = new System.Windows.Forms.NotifyIcon(this.components);
       this.tmr_state = new System.Windows.Forms.Timer(this.components);
-      this.btn_close = new System.Windows.Forms.Button();
       this.tmr_att = new System.Windows.Forms.Timer(this.components);
       this.ss_main = new System.Windows.Forms.StatusStrip();
       this.ss_label = new System.Windows.Forms.ToolStripStatusLabel();
       this.tmr_cmds = new System.Windows.Forms.Timer(this.components);
+      this.tab_main = new System.Windows.Forms.TabControl();
+      this.tab_eventi = new System.Windows.Forms.TabPage();
+      this.chk_passo = new System.Windows.Forms.CheckBox();
+      this.rt_main = new System.Windows.Forms.RichTextBox();
+      this.tab_impostazioni = new System.Windows.Forms.TabPage();
+      this.pb_close = new System.Windows.Forms.PictureBox();
+      this.tab_comandi = new System.Windows.Forms.TabPage();
       this.ss_main.SuspendLayout();
+      this.tab_main.SuspendLayout();
+      this.tab_eventi.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.pb_close)).BeginInit();
       this.SuspendLayout();
       // 
       // lbl_title
       // 
       this.lbl_title.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.lbl_title.BackColor = System.Drawing.Color.Honeydew;
+      this.lbl_title.BackColor = System.Drawing.Color.DimGray;
       this.lbl_title.Cursor = System.Windows.Forms.Cursors.Hand;
-      this.lbl_title.Font = new System.Drawing.Font("Segoe UI Light", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.lbl_title.ForeColor = System.Drawing.SystemColors.MenuHighlight;
+      this.lbl_title.Font = new System.Drawing.Font("Segoe UI Light", 16F);
+      this.lbl_title.ForeColor = System.Drawing.Color.Tomato;
       this.lbl_title.Location = new System.Drawing.Point(0, 0);
       this.lbl_title.Name = "lbl_title";
-      this.lbl_title.Size = new System.Drawing.Size(815, 28);
+      this.lbl_title.Size = new System.Drawing.Size(815, 33);
       this.lbl_title.TabIndex = 0;
       this.lbl_title.Text = "Deepa Notes Pannello";
       this.lbl_title.DoubleClick += new System.EventHandler(this.lbl_title_DoubleClick);
@@ -68,23 +77,6 @@
       this.tmr_state.Enabled = true;
       this.tmr_state.Interval = 300000;
       this.tmr_state.Tick += new System.EventHandler(this.tmr_state_Tick);
-      // 
-      // btn_close
-      // 
-      this.btn_close.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btn_close.BackColor = System.Drawing.Color.Honeydew;
-      this.btn_close.Cursor = System.Windows.Forms.Cursors.Hand;
-      this.btn_close.FlatAppearance.BorderSize = 0;
-      this.btn_close.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-      this.btn_close.Font = new System.Drawing.Font("Arial", 17F);
-      this.btn_close.ForeColor = System.Drawing.Color.SteelBlue;
-      this.btn_close.Location = new System.Drawing.Point(785, -3);
-      this.btn_close.Name = "btn_close";
-      this.btn_close.Size = new System.Drawing.Size(29, 34);
-      this.btn_close.TabIndex = 4;
-      this.btn_close.Text = "X";
-      this.btn_close.UseVisualStyleBackColor = false;
-      this.btn_close.Click += new System.EventHandler(this.btn_close_Click);
       // 
       // tmr_att
       // 
@@ -116,6 +108,96 @@
       this.tmr_cmds.Interval = 1000;
       this.tmr_cmds.Tick += new System.EventHandler(this.tmr_cmds_Tick);
       // 
+      // tab_main
+      // 
+      this.tab_main.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.tab_main.Controls.Add(this.tab_eventi);
+      this.tab_main.Controls.Add(this.tab_impostazioni);
+      this.tab_main.Controls.Add(this.tab_comandi);
+      this.tab_main.Location = new System.Drawing.Point(4, 35);
+      this.tab_main.Name = "tab_main";
+      this.tab_main.SelectedIndex = 0;
+      this.tab_main.Size = new System.Drawing.Size(807, 466);
+      this.tab_main.TabIndex = 41;
+      // 
+      // tab_eventi
+      // 
+      this.tab_eventi.Controls.Add(this.chk_passo);
+      this.tab_eventi.Controls.Add(this.rt_main);
+      this.tab_eventi.Location = new System.Drawing.Point(4, 26);
+      this.tab_eventi.Name = "tab_eventi";
+      this.tab_eventi.Padding = new System.Windows.Forms.Padding(3);
+      this.tab_eventi.Size = new System.Drawing.Size(799, 436);
+      this.tab_eventi.TabIndex = 0;
+      this.tab_eventi.Text = "Log Eventi";
+      this.tab_eventi.UseVisualStyleBackColor = true;
+      // 
+      // chk_passo
+      // 
+      this.chk_passo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+      this.chk_passo.AutoSize = true;
+      this.chk_passo.Checked = true;
+      this.chk_passo.CheckState = System.Windows.Forms.CheckState.Checked;
+      this.chk_passo.Cursor = System.Windows.Forms.Cursors.Hand;
+      this.chk_passo.ForeColor = System.Drawing.Color.Gray;
+      this.chk_passo.Location = new System.Drawing.Point(698, 412);
+      this.chk_passo.Name = "chk_passo";
+      this.chk_passo.Size = new System.Drawing.Size(99, 23);
+      this.chk_passo.TabIndex = 6;
+      this.chk_passo.Text = "tieni il passo";
+      this.chk_passo.UseVisualStyleBackColor = true;
+      this.chk_passo.CheckedChanged += new System.EventHandler(this.chk_passo_CheckedChanged);
+      // 
+      // rt_main
+      // 
+      this.rt_main.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.rt_main.BackColor = System.Drawing.Color.Black;
+      this.rt_main.BorderStyle = System.Windows.Forms.BorderStyle.None;
+      this.rt_main.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.rt_main.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+      this.rt_main.HideSelection = false;
+      this.rt_main.Location = new System.Drawing.Point(0, 2);
+      this.rt_main.Name = "rt_main";
+      this.rt_main.ReadOnly = true;
+      this.rt_main.Size = new System.Drawing.Size(799, 408);
+      this.rt_main.TabIndex = 4;
+      this.rt_main.Text = "";
+      // 
+      // tab_impostazioni
+      // 
+      this.tab_impostazioni.Location = new System.Drawing.Point(4, 26);
+      this.tab_impostazioni.Name = "tab_impostazioni";
+      this.tab_impostazioni.Size = new System.Drawing.Size(799, 436);
+      this.tab_impostazioni.TabIndex = 2;
+      this.tab_impostazioni.Text = "Impostazioni";
+      this.tab_impostazioni.UseVisualStyleBackColor = true;
+      // 
+      // pb_close
+      // 
+      this.pb_close.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.pb_close.BackColor = System.Drawing.Color.DimGray;
+      this.pb_close.Cursor = System.Windows.Forms.Cursors.Hand;
+      this.pb_close.Image = ((System.Drawing.Image)(resources.GetObject("pb_close.Image")));
+      this.pb_close.Location = new System.Drawing.Point(783, 0);
+      this.pb_close.Name = "pb_close";
+      this.pb_close.Size = new System.Drawing.Size(32, 32);
+      this.pb_close.TabIndex = 42;
+      this.pb_close.TabStop = false;
+      this.pb_close.Click += new System.EventHandler(this.pb_close_Click);
+      // 
+      // tab_comandi
+      // 
+      this.tab_comandi.Location = new System.Drawing.Point(4, 26);
+      this.tab_comandi.Name = "tab_comandi";
+      this.tab_comandi.Size = new System.Drawing.Size(799, 436);
+      this.tab_comandi.TabIndex = 3;
+      this.tab_comandi.Text = "Comandi";
+      this.tab_comandi.UseVisualStyleBackColor = true;
+      // 
       // frm_main
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -123,8 +205,9 @@
       this.BackColor = System.Drawing.Color.White;
       this.ClientSize = new System.Drawing.Size(813, 536);
       this.ControlBox = false;
+      this.Controls.Add(this.pb_close);
+      this.Controls.Add(this.tab_main);
       this.Controls.Add(this.ss_main);
-      this.Controls.Add(this.btn_close);
       this.Controls.Add(this.lbl_title);
       this.Font = new System.Drawing.Font("Segoe UI Light", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -138,6 +221,10 @@
       this.Resize += new System.EventHandler(this.frm_main_Resize);
       this.ss_main.ResumeLayout(false);
       this.ss_main.PerformLayout();
+      this.tab_main.ResumeLayout(false);
+      this.tab_eventi.ResumeLayout(false);
+      this.tab_eventi.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.pb_close)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -148,11 +235,17 @@
     private System.Windows.Forms.Label lbl_title;
     private System.Windows.Forms.NotifyIcon ntf_main;
     private System.Windows.Forms.Timer tmr_state;
-    private System.Windows.Forms.Button btn_close;
     private System.Windows.Forms.Timer tmr_att;
     private System.Windows.Forms.StatusStrip ss_main;
     private System.Windows.Forms.ToolStripStatusLabel ss_label;
     private System.Windows.Forms.Timer tmr_cmds;
+    private System.Windows.Forms.TabControl tab_main;
+    private System.Windows.Forms.TabPage tab_eventi;
+    private System.Windows.Forms.RichTextBox rt_main;
+    private System.Windows.Forms.TabPage tab_impostazioni;
+    private System.Windows.Forms.PictureBox pb_close;
+    private System.Windows.Forms.CheckBox chk_passo;
+    private System.Windows.Forms.TabPage tab_comandi;
   }
 }
 

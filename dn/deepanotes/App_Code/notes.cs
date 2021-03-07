@@ -535,32 +535,19 @@ namespace deepanotes
 
       List<free_label> fl = load_free_labels();
 
-      string name = DateTime.Now.ToString("yyyy").Substring(2, 2) + DateTime.Now.ToString("MMdd") + "." + title;
-      if(!string.IsNullOrEmpty(assegna)) name += "." + assegna;
-      if(!string.IsNullOrEmpty(stato)) {
-        free_label l = fl.FirstOrDefault(x => x.stato == stato && x.def);
-        if(l == null) throw new Exception("non è stata definita l'etichetta per lo stato '" + stato + "'!");
-        name += "." + l.free_txt;
-      }
-      if(!string.IsNullOrEmpty(priorita)) {
-        free_label l = fl.FirstOrDefault(x => x.priorita == priorita && x.def);
-        if(l == null) throw new Exception("non è stata definita l'etichetta per la priorità '" + priorita + "'!");
-        name += "." + l.free_txt;
-      }
-      if(!string.IsNullOrEmpty(tipo)) {
-        free_label l = fl.FirstOrDefault(x => x.tipo == tipo && x.def);
-        if(l == null) throw new Exception("non è stata definita l'etichetta per il tipo '" + tipo + "'!");
-        name += "." + l.free_txt;
-      }
-      if(!string.IsNullOrEmpty(stima)) {
-        free_label l = fl.FirstOrDefault(x => x.stima == stima && x.def);
-        if(l == null) throw new Exception("non è stata definita l'etichetta per la stima '" + stima + "'!");
-        name += "." + l.free_txt;
-      }
-      name += ".task";
-
       // creo la cartella fisica
-      Directory.CreateDirectory(Path.Combine(folder_path, name));
+      string name = title + ".task", fp = Path.Combine(folder_path, name);
+      Directory.CreateDirectory(fp);
+
+      // creo l'indice      
+      doc_task it = doc_task.exists_index(this.core, fp) ? doc_task.open_index(this.core, fp) : doc_task.create_index(this.core, fp);
+      it.dt_create = DateTime.Now;
+      if(!string.IsNullOrEmpty(assegna)) it.user = assegna;
+      if(!string.IsNullOrEmpty(stato)) it.stato = stato;
+      if(!string.IsNullOrEmpty(priorita)) it.priorita = priorita;
+      if(!string.IsNullOrEmpty(tipo)) it.tipo = tipo;
+      if(!string.IsNullOrEmpty(stima)) it.stima = stima;
+      it.save();
 
       // aggiorno il db
       long new_folder_id = long.Parse(synch_folder_id > 0 ?
@@ -569,7 +556,7 @@ namespace deepanotes
 
       long new_task_id = long.Parse(db_conn.exec(core.parse_query("lib-notes.ins-task-from-folder", new string[,] { { "folder_id", new_folder_id.ToString() }
         , { "title", title }, { "user", assegna }, { "stato", !string.IsNullOrEmpty(stato) ? stato : "da_fare" }
-        , { "priorita", priorita }, { "tipo", tipo }, { "stima", stima }}), true));
+        , { "priorita", priorita }, { "tipo", tipo }, { "stima", stima }, { "dt_lwt_index", it.lwt.ToString("yyyy/MM/dd HH:mm:ss") } }), true));
 
       if(search_id.HasValue)
         db_conn.exec(core.parse_query("lib-notes.ins-task-into-search", new string[,] { { "search_id", search_id.ToString() }, { "task_id", new_task_id.ToString() } }));

@@ -186,10 +186,10 @@ namespace dn_lib.tools {
       string nkey = "";
       try {
         foreach(xml_node vars in doc.nodes(xpath == "" ? "/config/vars" : xpath)) {
-          string machine = vars.get_attr("machine"), bname = vars.get_attr("name");
+          string network = vars.get_attr("network"), bname = vars.get_attr("name");
           foreach(xml_node var in vars.nodes("var")) {
-            string machine2 = var.get_attr("machine") != "" ? var.get_attr("machine") : machine;
-            if(machine2 != "" && _core.machine_key() != machine2.ToLower()) continue;
+            string network2 = var.get_attr("network") != "" ? var.get_attr("network") : network;
+            if(network2 != "" && _core.network_key() != network2.ToLower()) continue;
             nkey = var_key + bname + var.get_attr("name");
             if(dv.Keys.Contains(nkey)) dv.Remove(nkey);
             dv.Add(nkey, new var(doc_key, nkey, _core.parse(var.get_val()), for_pg));

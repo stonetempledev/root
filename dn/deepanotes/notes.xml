@@ -447,7 +447,7 @@ begin
  insert into dn_search_tasks (search_id, synch_folder_id, task_id, folder_id, file_id)
   select distinct @id as search_id, t2.synch_folder_id, t2.task_id, t2.folder_id, t2.file_id
    from (select t.task_id, t.synch_folder_id, t.folder_id, null as file_id 
-	 from dn_tasks t where t.title like '%' + @txt + '%'
+	 from dn_tasks t where t.title like '%' + @txt + '%' 
 	union select t.task_id, t.synch_folder_id, t.folder_id, null as file_id 
 	 from dn_tasks_notes n
 	 join dn_tasks t on t.task_id = n.task_id

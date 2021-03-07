@@ -27,14 +27,8 @@ namespace dn_lib
     protected config _config = null;
     public config config { get { return _config; } }
 
-    Dictionary<string, string> _machines = new Dictionary<string, string>();
-    public string machine_key()
-    {
-      string mn = sys.machine_name();
-      if(!_machines.ContainsKey(mn))
-        throw new Exception("è necessario registrare il pc '" + mn + "' nella sezione machines del base config!");
-      return _machines[mn];
-    }
+    string _network = null;
+    public string network_key() { if(string.IsNullOrEmpty(_network)) throw new Exception("network non individuato!"); return _network; }
 
     public core(string base_path, string base_url = "", bool? mobile = null)
     {
@@ -48,9 +42,8 @@ namespace dn_lib
     {
       xml_doc bdoc = new xml_doc(app_setting("settings-file", false));
 
-      // machines
-      foreach(xml_node n in bdoc.nodes("/base/machines/machine"))
-        _machines.Add(n.get_attr("name").ToLower(), n.get_val());
+      // network
+      _network = bdoc.node("/base/networks/network").text;
 
       // vars
       Dictionary<string, config.var> vars = new Dictionary<string, config.var>();

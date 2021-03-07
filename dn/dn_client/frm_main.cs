@@ -24,6 +24,8 @@ namespace dn_client
     protected settings _settings = null;
     protected string _client_key = "";
     protected int _interval_ss = 60;
+    protected int _max_lines_log = 10000, _min_lines_log = 3000, _threads = 3;
+    protected RichTextBox _cache_log;
 
     public frm_main(core c)
     {
@@ -47,8 +49,6 @@ namespace dn_client
       if(e.Button != MouseButtons.Left) return;
       _dp = Point.Empty;
     }
-
-    private void btn_close_Click(object sender, EventArgs e) { this.WindowState = FormWindowState.Minimized; }
 
     private void frm_main_Resize(object sender, EventArgs e)
     {
@@ -75,10 +75,17 @@ namespace dn_client
         this.WindowState = FormWindowState.Minimized;
         this.ShowInTaskbar = false;
 
+        // log
+        this._cache_log = new RichTextBox();
+        this._cache_log.BackColor = Color.Black;
+        this._cache_log.BorderStyle = BorderStyle.None;
+        this._cache_log.Font = new Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+        this._cache_log.ForeColor = Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+
         // tray
         ntf_main.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
         ntf_main.ContextMenuStrip.Items.Add("Apri...", null, this.MenuApri_Click);
-        //ntf_main.ContextMenuStrip.Items.Add("Pannello...", null, this.MenuPannello_Click);
+        ntf_main.ContextMenuStrip.Items.Add("Pannello...", null, this.MenuPannello_Click);
         ntf_main.ContextMenuStrip.Items.Add("Esci", null, this.MenuExit_Click);
         ntf_main.ContextMenuStrip.BackColor = Color.Gray;
         ntf_main.ContextMenuStrip.ForeColor = Color.White;
@@ -91,19 +98,24 @@ namespace dn_client
 
     protected void log_txt(string txt, Color? clr = null)
     {
-      //if(lw_log.Tag == null) {
-      //  lw_log.View = View.Details;
-      //  lw_log.GridLines = true;
-      //  lw_log.FullRowSelect = true;
-      //  lw_log.Columns.Add(new ColumnHeader() { Text = "Messaggio", Width = 450 });
-      //  lw_log.Tag = "init";
-      //}
+      if(String.IsNullOrEmpty(txt)) return;
 
-      //lw_log.Items.Add(new ListViewItem(txt) { ForeColor = !clr.HasValue ? Color.DarkSlateGray : clr.Value });
-      //if(chk_fine.Checked) {
-      //  lw_log.Items[lw_log.Items.Count - 1].EnsureVisible();
-      //  Application.DoEvents();
-      //}
+      RichTextBox rtb = chk_passo.Checked ? rt_main : _cache_log;
+      lock(rtb) {
+        try {
+          rtb.SelectionStart = rtb.TextLength;
+          rtb.SelectionLength = 0;
+          if(clr.HasValue) rtb.SelectionColor = clr.Value;
+          rtb.AppendText(DateTime.Now.ToString("HH:mm:ss") + " - " + txt + Environment.NewLine);
+          rtb.SelectionColor = rtb.ForeColor;
+          if(rtb.Lines.Length > _max_lines_log) {
+            int start_index = rtb.GetFirstCharIndexFromLine(0);
+            int count = rtb.GetFirstCharIndexFromLine((rtb.Lines.Count() - _min_lines_log) + 1) - start_index;
+            rtb.Text = rtb.Text.Remove(start_index, count);
+          }
+          if(chk_passo.Checked) rtb.ScrollToCaret();
+        } catch { }
+      }
     }
 
     void MenuPannello_Click(object sender, EventArgs e)
@@ -151,7 +163,7 @@ namespace dn_client
 
         conn.exec(_c.parse_query("lib-base.client-refresh", new string[,] { { "client_key", _client_key }, { "ip_machine", sys.machine_ip() }
             , { "first", first ? "1" : "0" }, { "machine_name", sys.machine_name() }, { "interval_ss", _interval_ss.ToString() } }));
-        if(first) log_txt($"connected client key '{_client_key}'", Color.Blue);
+        if(first) log_txt($"connected client key '{_client_key}'", Color.Azure);
 
         if(close) { conn.close_conn(); conn = null; }
       } catch { }
@@ -160,7 +172,7 @@ namespace dn_client
     protected void close_client()
     {
       Program.open_conn().exec(_c.parse_query("lib-base.client-close", new string[,] { { "client_key", _client_key } }));
-      log_txt($"close client '{_client_key}'", Color.Blue);
+      log_txt($"close client '{_client_key}'", Color.Azure);
     }
 
     public void open_att(int file_id, int user_id, string user_name)
@@ -367,6 +379,21 @@ namespace dn_client
 
       } catch(Exception ex) { log_err(ex.Message); } finally { if(conn != null) conn.close_conn(); }
       _cmd = false;
+    }
+
+    private void pb_close_Click(object sender, EventArgs e) { this.WindowState = FormWindowState.Minimized; }
+
+    private void chk_passo_CheckedChanged(object sender, EventArgs e)
+    {
+      try {
+        if(chk_passo.Checked) {
+          _cache_log.SelectAll();
+          rt_main.SelectionStart = rt_main.TextLength;
+          rt_main.SelectionLength = 0;
+          rt_main.SelectedRtf = _cache_log.SelectedRtf;
+          _cache_log.Clear();
+        }
+      } catch { }
     }
   }
 }
