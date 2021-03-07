@@ -10,6 +10,7 @@ IN CORSO
   . gestione della tabella dn_files_types
   . invio notifiche mail
   . un editor cazzuto con html e liste e tabelle
+  . ogni tanto dal client dargli una synch
 
 TODO
  dn
