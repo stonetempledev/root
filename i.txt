@@ -5,16 +5,15 @@ github.hub
 IN CORSO
  . dn: ottimizzazione attività 
   / percentuale realizzazione di un task!
+  . ogni tanto dal client dargli una synch
+  . un editor cazzuto con html e liste e tabelle
   . la storia del task iniziato . ultimo aggiornamento
   . anteprima immagini 
   . gestione della tabella dn_files_types
   . invio notifiche mail
-  . un editor cazzuto con html e liste e tabelle
-  . ogni tanto dal client dargli una synch
 
-TODO
- dn
+PARADAISE
+ toyn: per un futuro migliore
   ! documentazione, appunti
   ! passwords, accounts, info tecniche
   ! procedure, scripts, pannelli di controllo
- toyn: per un futuro migliore
