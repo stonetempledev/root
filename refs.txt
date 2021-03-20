@@ -1,0 +1,27 @@
+github.hub
+ stonetempledev, molinagarden@gmail.com/Homme33!
+ repositories
+  https://github.com/stonetempledev/root.git
+
+thelantern.it
+ https://admin.aruba.it
+ 7144739@aruba.it/Cornell32 (il tuo migliore amico: nessuno)
+  http://hosting.aruba.it/Domini/spediscidatidominio.asp
+  http://assistenza.aruba.it/kb
+ webmail
+  postmaster@thelantern.it/Molina32!
+  toyn@thelantern.it/mailtoyn32!
+  webmaildomini.aruba.it
+ db
+  http://mssql.aruba.it/
+  Host DataBase: 62.149.153.44
+  Nome DataBase: MSSql127020
+  Login DataBase: MSSql127020
+  PassWord DataBase: 2bg54np080
+  Spazio Totale DataBase: 1000 MB
+ Pacchetto Hosting Easy Windows
+  Indirizzo: .thelantern.it
+  Porta: 21
+  Utente: @aruba.it
+  Indirizzo: .aruba.it
+ 
