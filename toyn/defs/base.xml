@@ -29,9 +29,5 @@
           where setting_name = {@txtqry='setting'} and [user_id] = {@field='user_id'};
         end ]]>
     </query>
-    <!-- emphasis -->
-    <query name="emphasies">
-      <![CDATA[select style, title, [order] from emphasis order by [order]]]>
-    </query>
   </queries>
 </config>

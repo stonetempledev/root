@@ -1,20 +1,67 @@
-﻿todo
-  tags
-  docs
-   elements structure
-    . doc -> chapter, paragraph
-    . chapter -> chapter, paragraph 
-    . paragraph -> text, link
-   elements attributes
-    . doc (title, sub-title)
-    . chapter (text)
-    . paragraph (title)
-    . text (text, style: bold, italic, underline)
-    . link (text, ref, style: bold, italic, underline)
-   elements html attributes
-    . doc: tp='doc'
-    . chapter: tp='chap'
-    . paragraph: tp='par'
-    . text: tp='txt'
-    . link: tp='url'
+﻿todo  
+ ! pulizia generale e base di partenza bella solida!
+ / spese https://mdbootstrap.com/docs/standard/layout/grid/
+  . paginetta spese che fa tutto   
+   / aggiunta, modifica
+   . elimina
+   . filtri
+   . ordina
+   . statistiche
+   . notifiche
+   . avvisi
+ . home
+  . menu 
+ ~ docs.aspx
+  elements structure
+   . doc -> chapter, paragraph
+   . chapter -> chapter, paragraph 
+   . paragraph -> text, link
+  elements attributes
+   . doc (title, sub-title)
+   . chapter (text)
+   . paragraph (title)
+   . text (text, style: bold, italic, underline)
+   . link (text, ref, style: bold, italic, underline)
+  elements html attributes
+   . doc: tp='doc'
+   . chapter: tp='chap'
+   . paragraph: tp='par'
+   . text: tp='txt'
+   . link: tp='url'
 
+
+
+
+        // menu
+        /*
+        menu.InnerHtml = @"<ul class='nav flex-column' style='padding:0px;margin-top:0px;'>
+           <div tp='virtual'></div>
+           <li>
+            <div style='display:block;'><a class='h5' style='color:steelblue;' href='#ele_1'>Temple of your Notes</a></div></li>
+            <li menu_id='90' style=''><div style='display:block;'>
+              <a style='color:skyblue;margin-top:10px;padding-top:5px;padding-left:3px;' href='#ele_90'>
+                <img src='images/tr-gray-10.png' style='margin-right:3px;'>linea guida</a></div></li>
+            <li menu_id='110' style=''><div style='display:block;'>
+              <a style='color:skyblue;margin-top:10px;padding-top:5px;padding-left:3px;' href='#ele_110'>
+                <img src='images/tr-gray-10.png' style='margin-right:3px;'>riferimenti e librerie</a></div></li>
+            <ul menu_childs_id='90'>
+              <li><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_112'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>gojs</a></div></li>
+              <li menu_id='111' style=''><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_111'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>laravel</a></div></li>
+              <li menu_id='114' style=''><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_114'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>CodeMirror</a></div></li>
+              <li menu_id='113' style=''><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_113'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>Newtonsoft - Json.NET</a></div></li>
+              <li menu_id='789' style=''><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_789'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>Font Awesome</a></div></li>
+              <li menu_id='790' style=''><div style='display:block;'>
+                <a style='font-size:95%;color:lightcyan;' href='#ele_790'>
+                  <img src='images/tr-gray-10.png' style='margin-right:3px;'>Material Design for Bootstrap</a></div></li></ul>
+            </ul>
+          </ul>"; */

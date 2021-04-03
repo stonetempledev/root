@@ -108,6 +108,8 @@ namespace mlib.db {
         ? (DateTime?)null : Convert.ToDateTime(fld);
     }
 
+    static public decimal dec_val(object fld, int def = 0) { return fld == null || fld == DBNull.Value ? def : Convert.ToDecimal(fld); }
+
     public static string row_to_csv(DataRow dr) {
       string res = "";
       foreach (DataColumn dc in dr.Table.Columns) {
