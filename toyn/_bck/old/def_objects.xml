@@ -1,0 +1,37 @@
+﻿<config>
+  <html-blocks>
+    <html-block name="rebuild-objects">
+      <![CDATA[<h4 class='p-1 note-success text-uppercase'>Inizializzazione Viste Oggetti Utente</h4>
+      <div tp='virtual' style='d-none'></div>
+      {@field='rebuild-views'}
+      ]]>
+    </html-block>
+    <html-block name="rebuild-open"><![CDATA[<div tp='action' order='{@field='order'}' action='{@field='action'}' object-type='{@field='object-type'}' title="{@field='title'}">]]></html-block>
+    <html-block name="rebuild-todo">
+      <![CDATA[{@html-block='rebuild-open'}
+        <h5 class='m-3'><i class="far fa-square mr-2"></i>{@field='title'} - DA FARE</h5></div>]]>
+    </html-block>
+    <html-block name="rebuild-progress">
+      <![CDATA[{@html-block='rebuild-open'}
+        <h5 class='m-3 text-warning'><i class="fas fa-square mr-2"></i>{@field='title'} - IN CORSO</h5></div>]]>
+    </html-block>
+    <html-block name="rebuild-ok">
+      <![CDATA[{@html-block='rebuild-open'}
+        <h5 class='m-3 text-success'><i class="far fa-check-square mr-2"></i>{@field='title'} - FATTA
+         <small class='p-4 d-block'>{@field='des_action'}</small></h5></div>]]>
+    </html-block>
+    <html-block name="rebuild-error">
+      <![CDATA[{@html-block='rebuild-open'}
+        <h5 class='m-3 text-danger'><i class="fas fa-exclamation mr-3"></i>{@field='title'} - IN ERRORE
+         <small class='p-4 d-block'>{@field='des_error'}</small></h5></div>]]>
+    </html-block>
+  </html-blocks>
+  <queries>
+    <query name="objects-types">
+      <![CDATA[select distinct ot.object_type
+  , (select top 1 object_des from objects_types where object_type = ot.object_type) as object_des
+ from objects_types ot order by 1]]>
+    </query>
+  </queries>
+</config>
+

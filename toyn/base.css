@@ -119,6 +119,14 @@ html {
     color: tomato;
 }
 
+.clr-a {
+    color: lightblue;
+}
+
+.c-hand {
+    cursor: pointer;
+}
+
 .no-wrap {
     white-space: nowrap
 }

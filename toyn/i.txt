@@ -3,6 +3,9 @@
  / spese https://mdbootstrap.com/docs/standard/layout/grid/
   . paginetta spese che fa tutto   
    / aggiunta, modifica
+    . upload row
+    . combo tipo scontrino
+	. combo evento
    . elimina
    . filtri
    . ordina
