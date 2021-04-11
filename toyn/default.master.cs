@@ -21,7 +21,7 @@ public partial class _default : tl_master {
     try {
       // base
       bool mb = is_mobile();
-      this.head.Controls.Add(new Literal() { Text = @"<link href=""" + (mb ? "base-mobile.css" : "base.css") + @""" type=""text/css"" rel=""stylesheet"" />" });
+      this.head.Controls.Add(new Literal() { Text = @"<link href=""" + (mb ? "base-mobile.css?ver=1" : "base.css?ver=1") + @""" type=""text/css"" rel=""stylesheet"" />" });
       __mobile.Value = mb ? "true" : "false";
 
       // check user

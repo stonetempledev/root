@@ -65,7 +65,7 @@
                         r.css("border", "1pt solid tomato").css("box-shadow", "-2px -2px 2px tomato");
                         r.attr("err", "true");
                         r.find('[tp=err]').remove();
-                        r.append("<div tp='err' class='op-5 col-12 clr-alert'><span class='badge badge-pill badge-danger fw-n fs-110'>si &#233; verificato un errore durante l'aggiornamento: " + result.message + "</span></div>");
+                        r.append("<div tp='err' class='op-5 col-12 clr-alert'><span class='badge badge-pill badge-danger ws-n fw-n fs-110'>si &#233; verificato un errore durante l'aggiornamento della rava e della fava: " + result.message + "</span></div>");
                     }
                 }
             }, 1000);
