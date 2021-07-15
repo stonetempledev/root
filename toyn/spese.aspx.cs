@@ -63,9 +63,12 @@ public partial class _spese : tl_page
       // view
       if(_cmd.action == "view" && _cmd.obj == "spese") {
 
-        sub_title.InnerText = sub_title_sm.InnerText = "le tue ultime 1000 spese quotidiane ordinate per data descresente";        
+        int top = 100;
+        List<spesa> l = load_spese(top);
+        sub_title.InnerText = sub_title_sm.InnerText = l.Count == top ? "le tue ultime " + top.ToString() + " spese quotidiane ordinate per data descresente"
+          : "le tue spese quotidiane ordinate per data descresente";
         StringBuilder sb = new StringBuilder(); bool alt_row = false;
-        foreach(spesa s in load_spese(1000)) {
+        foreach(spesa s in l) {
           sb.Append(core.parse_html_block("row-spesa", new Dictionary<string, object>() { { "spesa", s }, { "alt-class", alt_row ? "bck-ws" : "" } }));
           alt_row = !alt_row;
         }

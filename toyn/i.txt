@@ -5,6 +5,8 @@
    / aggiunta, modifica
     . upload row
     . combo tipo scontrino
+	   https://mdbootstrap.com/docs/standard/forms/autocomplete/
+       https://getbootstrap.com/docs/5.0/forms/form-control/#datalists
 	. combo evento
    . elimina
    . filtri
