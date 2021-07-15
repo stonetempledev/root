@@ -63,7 +63,7 @@
     <dbgroup name='dev'/>
   </dbgroups>
 
-  <dbconns default='dell-pc' openonrequest='true'>
+  <dbconns default='lenovo' openonrequest='true'>
     <dbconn name="thelantern.it" des="connessione www.thelantern.it" group="web">
       <formats datetoquery='yyyy-MM-dd HH:mm:ss' datetoquery2='yyyy-MM-dd HH:mm:ss.fffffff'/>
     </dbconn>
@@ -71,6 +71,9 @@
       <formats datetoquery='yyyy-dd-MM HH:mm:ss' datetoquery2='yyyy-MM-dd HH:mm:ss.fffffff'/>
     </dbconn>
     <dbconn name="dell-pc" des="connessione portatile contenente i tuoi dati personali" group="web">
+      <formats datetoquery='yyyy-MM-dd HH:mm:ss' datetoquery2='yyyy-MM-dd HH:mm:ss.fffffff'/>
+    </dbconn>
+    <dbconn name="lenovo" des="connessione portatile contenente i tuoi dati personali" group="web">
       <formats datetoquery='yyyy-MM-dd HH:mm:ss' datetoquery2='yyyy-MM-dd HH:mm:ss.fffffff'/>
     </dbconn>
     <dbconn name="dbmaster" des="connessione portatile database master" group="dev">
