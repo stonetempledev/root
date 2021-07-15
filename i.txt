@@ -1,3 +1,7 @@
 !ocio! !obso!
 
 lantern: la base di partenza
+
+dn: deepa notes
+
+toyn: temple of your notes
