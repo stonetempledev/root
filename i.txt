@@ -1,6 +1,8 @@
 !ocio! !obso!
 
-lantern: la base di partenza
+mw: my way - il pilastro, il monoblocco
+
+lantern: la base obsoleta 
 
 dn: deepa notes
 
